@@ -8,7 +8,7 @@ import { TopBar } from "./top-bar";
 import { CommandPalette } from "./command-palette";
 import type { ReactNode } from "react";
 
-const SHELL_EXCLUDED_ROUTES = ["/"];
+const SHELL_EXCLUDED_ROUTES = ["/", "/unauthorized"];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
