@@ -3,6 +3,7 @@
 import { PageHeader, Button, EmptyState, OwnerAvatar, Modal } from "@/components/design-system";
 import { Users, Shield, ChevronDown, Plus, Mail } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,14 @@ interface Member {
 }
 
 const ROLE_LABELS: Record<string, string> = {
+  SUPER_ADMIN: "Super Admin",
+  ADMIN: "Admin",
+  EVENT_LEAD: "Event Lead",
+  VOLUNTEER: "Volunteer",
+  VIEWER: "Viewer",
+};
+
+const ASSIGNABLE_ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
   EVENT_LEAD: "Event Lead",
   VOLUNTEER: "Volunteer",
@@ -23,6 +32,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
+  SUPER_ADMIN: "text-rose-400",
   ADMIN: "text-accent",
   EVENT_LEAD: "text-status-progress",
   VOLUNTEER: "text-status-done",
@@ -32,9 +42,11 @@ const ROLE_COLORS: Record<string, string> = {
 function RoleDropdown({
   currentRole,
   onSelect,
+  disabled,
 }: {
   currentRole: string;
   onSelect: (role: string) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -71,6 +83,21 @@ function RoleDropdown({
     };
   }, [open, updatePosition]);
 
+  if (disabled) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium",
+          "border border-border",
+          ROLE_COLORS[currentRole]
+        )}
+      >
+        <Shield className="h-3 w-3" />
+        {ROLE_LABELS[currentRole] ?? currentRole}
+      </span>
+    );
+  }
+
   return (
     <>
       <button
@@ -93,7 +120,7 @@ function RoleDropdown({
             className="fixed z-[100] w-40 bg-surface border border-border rounded-lg shadow-xl py-1 animate-fade-in"
             style={{ top: pos.top, left: pos.left }}
           >
-            {Object.entries(ROLE_LABELS).map(([role, label]) => (
+            {Object.entries(ASSIGNABLE_ROLE_LABELS).map(([role, label]) => (
               <button
                 key={role}
                 onClick={() => {
@@ -203,7 +230,7 @@ function AddMemberModal({
             onChange={(e) => setRole(e.target.value)}
             className={INPUT_CLASS}
           >
-            {Object.entries(ROLE_LABELS).map(([value, label]) => (
+            {Object.entries(ASSIGNABLE_ROLE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -229,6 +256,8 @@ function AddMemberModal({
 }
 
 export default function MembersPage() {
+  const { data: session } = useSession();
+  const myRole = session?.user?.globalRole ?? "VIEWER";
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -341,6 +370,11 @@ export default function MembersPage() {
               <RoleDropdown
                 currentRole={member.globalRole}
                 onSelect={(role) => updateRole(member.id, role)}
+                disabled={
+                  member.globalRole === "SUPER_ADMIN" ||
+                  member.id === session?.user?.id ||
+                  (myRole === "ADMIN" && member.globalRole === "ADMIN")
+                }
               />
               <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
                 {new Date(member.createdAt).toLocaleDateString("en-US", {

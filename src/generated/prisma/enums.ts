@@ -10,6 +10,7 @@
 */
 
 export const GlobalRole = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
   ADMIN: 'ADMIN',
   EVENT_LEAD: 'EVENT_LEAD',
   VOLUNTEER: 'VOLUNTEER',

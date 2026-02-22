@@ -8,6 +8,7 @@ const ROLE_HIERARCHY: Record<string, number> = {
   VOLUNTEER: 1,
   EVENT_LEAD: 2,
   ADMIN: 3,
+  SUPER_ADMIN: 4,
 };
 
 const EVENT_ROLE_HIERARCHY: Record<string, number> = {
@@ -36,7 +37,7 @@ export async function canUserAccessEvent(
   });
 
   if (!user) return false;
-  if (user.globalRole === "ADMIN") return true;
+  if (user.globalRole === "SUPER_ADMIN" || user.globalRole === "ADMIN") return true;
   if (action === "read" && hasMinimumRole(user.globalRole, "VIEWER")) return true;
 
   const membership = await prisma.eventMember.findUnique({

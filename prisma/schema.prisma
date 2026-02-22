@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum GlobalRole {
+  SUPER_ADMIN
   ADMIN
   EVENT_LEAD
   VOLUNTEER

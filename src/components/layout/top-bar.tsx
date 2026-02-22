@@ -1,9 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Search, Bell, Sun, Moon } from "lucide-react";
+import { Search, Bell, Sun, Moon, LogOut } from "lucide-react";
 import { OwnerAvatar } from "@/components/design-system/owner-avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 interface TopBarProps {
   sidebarCollapsed: boolean;
@@ -11,11 +12,29 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
+  const { data: session } = useSession();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
   }, [theme]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const userName = session?.user?.name ?? "User";
+  const userEmail = session?.user?.email;
+  const userImage = session?.user?.image;
 
   return (
     <header
@@ -66,9 +85,32 @@ export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
 
         <div className="h-6 w-px bg-border mx-1" />
 
-        <button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-surface-hover transition-all duration-150 cursor-pointer">
-          <OwnerAvatar name="User" size="sm" />
-        </button>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-surface-hover transition-all duration-150 cursor-pointer"
+          >
+            <OwnerAvatar name={userName} image={userImage} size="sm" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-56 bg-surface border border-border rounded-xl shadow-xl py-1 animate-fade-in z-50">
+              <div className="px-3 py-2.5 border-b border-border">
+                <p className="text-sm font-medium truncate">{userName}</p>
+                {userEmail && (
+                  <p className="text-xs text-muted truncate">{userEmail}</p>
+                )}
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const validRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
-  const role = validRoles.includes(globalRole) ? globalRole : "VIEWER";
+  const assignableRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const role = assignableRoles.includes(globalRole) ? globalRole : "VIEWER";
 
   const user = await prisma.user.create({
     data: {
@@ -108,22 +108,37 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Missing userId or globalRole" }, { status: 400 });
   }
 
-  const validRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
-  if (!validRoles.includes(globalRole)) {
+  const assignableRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  if (!assignableRoles.includes(globalRole)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-  }
-
-  if (userId === session.user.id && globalRole !== "ADMIN") {
-    return NextResponse.json(
-      { error: "You cannot change your own role" },
-      { status: 400 }
-    );
   }
 
   const before = await prisma.user.findUnique({
     where: { id: userId },
     select: { globalRole: true },
   });
+
+  if (before?.globalRole === "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Cannot change the Super Admin's role" },
+      { status: 403 }
+    );
+  }
+
+  if (userId === session.user.id) {
+    return NextResponse.json(
+      { error: "You cannot change your own role" },
+      { status: 400 }
+    );
+  }
+
+  const callerRole = session.user.globalRole as GlobalRole;
+  if (callerRole === "ADMIN" && before?.globalRole === "ADMIN") {
+    return NextResponse.json(
+      { error: "Only a Super Admin can change another Admin's role" },
+      { status: 403 }
+    );
+  }
 
   const updated = await prisma.user.update({
     where: { id: userId },

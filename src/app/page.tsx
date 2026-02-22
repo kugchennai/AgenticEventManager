@@ -1,42 +1,25 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { Zap } from "lucide-react";
 import { Button } from "@/components/design-system";
-import { cn } from "@/lib/utils";
 
-const INPUT_CLASS =
-  "w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all";
-
-export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const callbackError = searchParams.get("error");
   const [loading, setLoading] = useState(false);
 
-  const handleCredentialsLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const result = await signIn("credentials", {
-      username,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("Invalid username or password");
-      setLoading(false);
-    } else {
-      window.location.href = "/dashboard";
-    }
-  };
+  const errorMessage =
+    callbackError === "AccessDenied"
+      ? "Your account has not been added yet. Contact an admin to get access."
+      : callbackError
+        ? "Something went wrong. Please try again."
+        : null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
-      {/* Gradient mesh background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -left-1/2 h-full w-full rounded-full bg-accent/8 blur-[120px]" />
         <div className="absolute -bottom-1/2 -right-1/2 h-full w-full rounded-full bg-rose-500/5 blur-[120px]" />
@@ -56,56 +39,20 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-surface border border-border rounded-xl p-6 space-y-5">
-          {/* Credentials form */}
-          <form onSubmit={handleCredentialsLogin} className="space-y-3">
-            {error && (
-              <p className="text-sm text-status-blocked text-center">{error}</p>
-            )}
-            <div>
-              <label className="block text-xs font-medium text-muted mb-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
-                required
-                className={INPUT_CLASS}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-muted mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="admin"
-                required
-                className={INPUT_CLASS}
-              />
-            </div>
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
+          {errorMessage && (
+            <p className="text-sm text-status-blocked bg-status-blocked/10 rounded-lg px-3 py-2.5 text-center">
+              {errorMessage}
+            </p>
+          )}
 
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted">or</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          {/* Google */}
           <Button
-            variant="secondary"
             size="lg"
             className="w-full"
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            disabled={loading}
+            onClick={() => {
+              setLoading(true);
+              signIn("google", { callbackUrl: "/dashboard" });
+            }}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -125,7 +72,7 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {loading ? "Redirecting…" : "Sign in with Google"}
           </Button>
         </div>
 
@@ -134,5 +81,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }
