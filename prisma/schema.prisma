@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GlobalRole {
+  ADMIN
+  EVENT_LEAD
+  VOLUNTEER
+  VIEWER
+}
+
+enum EventRole {
+  LEAD
+  ORGANIZER
+  VOLUNTEER
+  VIEWER
+}
+
+enum EventStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  COMPLETED
+}
+
+enum SpeakerStatus {
+  INVITED
+  CONFIRMED
+  DECLINED
+  CANCELLED
+}
+
+enum VolunteerStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  NO_SHOW
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+// ─── Auth (NextAuth) ──────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Models ──────────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  image         String?
+  globalRole    GlobalRole @default(VIEWER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  eventMembers   EventMember[]
+  createdEvents  Event[]          @relation("EventCreator")
+  ownedSpeakers  EventSpeaker[]   @relation("SpeakerOwner")
+  ownedVolunteers EventVolunteer[] @relation("VolunteerOwner")
+  ownedTasks     SOPTask[]        @relation("TaskOwner")
+  assignedTasks  SOPTask[]        @relation("TaskAssignee")
+  auditLogs      AuditLog[]
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String?     @db.Text
+  date        DateTime
+  venue       String?
+  status      EventStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  createdBy   User             @relation("EventCreator", fields: [createdById], references: [id])
+  members     EventMember[]
+  speakers    EventSpeaker[]
+  volunteers  EventVolunteer[]
+  checklists  SOPChecklist[]
+}
+
+model EventMember {
+  id        String    @id @default(cuid())
+  eventId   String
+  userId    String
+  eventRole EventRole
+  createdAt DateTime  @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+// ─── Speakers ─────────────────────────────────────────────────────
+
+model Speaker {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  bio       String?  @db.Text
+  topic     String?
+  photoUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events EventSpeaker[]
+}
+
+model EventSpeaker {
+  id         String        @id @default(cuid())
+  eventId    String
+  speakerId  String
+  ownerId    String?
+  status     SpeakerStatus @default(INVITED)
+  priority   Priority      @default(MEDIUM)
+  notes      String?       @db.Text
+  followUpBy DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speaker Speaker @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+  owner   User?   @relation("SpeakerOwner", fields: [ownerId], references: [id])
+
+  @@unique([eventId, speakerId])
+}
+
+// ─── Volunteers ───────────────────────────────────────────────────
+
+model Volunteer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  discordId String?
+  role      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events      EventVolunteer[]
+  assignedTasks SOPTask[]      @relation("TaskVolunteerAssignee")
+}
+
+model EventVolunteer {
+  id           String          @id @default(cuid())
+  eventId      String
+  volunteerId  String
+  ownerId      String?
+  assignedRole String?
+  status       VolunteerStatus @default(PENDING)
+  priority     Priority        @default(MEDIUM)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  volunteer Volunteer @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  owner     User?     @relation("VolunteerOwner", fields: [ownerId], references: [id])
+
+  @@unique([eventId, volunteerId])
+}
+
+// ─── SOP Checklists ───────────────────────────────────────────────
+
+model SOPChecklist {
+  id        String   @id @default(cuid())
+  eventId   String
+  title     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tasks SOPTask[]
+}
+
+model SOPTask {
+  id                   String     @id @default(cuid())
+  checklistId          String
+  title                String
+  description          String?    @db.Text
+  status               TaskStatus @default(TODO)
+  priority             Priority   @default(MEDIUM)
+  ownerId              String?
+  assigneeId           String?
+  volunteerAssigneeId  String?
+  deadline             DateTime?
+  completedAt          DateTime?
+  blockedReason        String?
+  sortOrder            Int        @default(0)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  checklist          SOPChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  owner              User?        @relation("TaskOwner", fields: [ownerId], references: [id])
+  assignee           User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  volunteerAssignee  Volunteer?   @relation("TaskVolunteerAssignee", fields: [volunteerAssigneeId], references: [id])
+}
+
+// ─── SOP Templates ────────────────────────────────────────────────
+
+model SOPTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  defaultTasks Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─── Audit Log ────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String
+  action     AuditAction
+  entityType String
+  entityId   String
+  entityName String?
+  changes    Json?
+  createdAt  DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ─── Discord Config ───────────────────────────────────────────────
+
+model DiscordConfig {
+  id              String  @id @default(cuid())
+  botToken        String? @db.Text
+  guildId         String?
+  channelId       String?
+  reminderEnabled Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
