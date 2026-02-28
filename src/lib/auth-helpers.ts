@@ -2,7 +2,7 @@ import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import type { GlobalRole } from "@/generated/prisma/enums";
 import { hasMinimumRole } from "./permissions";
-import { getToken } from "next-auth/jwt";
+import { getToken, decode } from "next-auth/jwt";
 import { prisma } from "./prisma";
 import type { NextRequest } from "next/server";
 
@@ -56,9 +56,10 @@ export async function getTokenFromRequest(req: NextRequest | Request) {
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
     try {
-      const decoded = await getToken({
+      const decoded = await decode({
         token,
         secret: process.env.AUTH_SECRET!,
+        salt: "authjs.session-token",
       });
       return decoded;
     } catch {
