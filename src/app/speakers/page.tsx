@@ -60,6 +60,7 @@ export default function SpeakersPage() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
+    phone: "",
     bio: "",
     topic: "",
   });
@@ -106,7 +107,7 @@ export default function SpeakersPage() {
   const closeModal = () => {
     setModalOpen(false);
     setEditingId(null);
-    setFormData({ name: "", email: "", bio: "", topic: "" });
+    setFormData({ name: "", email: "", phone: "", bio: "", topic: "" });
     setError(null);
   };
 
@@ -127,6 +128,7 @@ export default function SpeakersPage() {
           body: JSON.stringify({
             name: formData.name.trim(),
             email: formData.email.trim() || null,
+            phone: formData.phone.trim() || null,
             bio: formData.bio.trim() || null,
             topic: formData.topic.trim() || null,
           }),
@@ -142,6 +144,7 @@ export default function SpeakersPage() {
           body: JSON.stringify({
             name: formData.name.trim(),
             email: formData.email.trim() || null,
+            phone: formData.phone.trim() || null,
             bio: formData.bio.trim() || null,
             topic: formData.topic.trim() || null,
           }),

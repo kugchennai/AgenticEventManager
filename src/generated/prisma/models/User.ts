@@ -213,6 +213,7 @@ export type UserWhereInput = {
   createdEvents?: Prisma.EventListRelationFilter
   ownedSpeakers?: Prisma.EventSpeakerListRelationFilter
   ownedVolunteers?: Prisma.EventVolunteerListRelationFilter
+  ownedVenuePartners?: Prisma.EventVenuePartnerListRelationFilter
   ownedTasks?: Prisma.SOPTaskListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
@@ -235,6 +236,7 @@ export type UserOrderByWithRelationInput = {
   createdEvents?: Prisma.EventOrderByRelationAggregateInput
   ownedSpeakers?: Prisma.EventSpeakerOrderByRelationAggregateInput
   ownedVolunteers?: Prisma.EventVolunteerOrderByRelationAggregateInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerOrderByRelationAggregateInput
   ownedTasks?: Prisma.SOPTaskOrderByRelationAggregateInput
   assignedTasks?: Prisma.SOPTaskOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
@@ -260,6 +262,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdEvents?: Prisma.EventListRelationFilter
   ownedSpeakers?: Prisma.EventSpeakerListRelationFilter
   ownedVolunteers?: Prisma.EventVolunteerListRelationFilter
+  ownedVenuePartners?: Prisma.EventVenuePartnerListRelationFilter
   ownedTasks?: Prisma.SOPTaskListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
@@ -310,6 +313,7 @@ export type UserCreateInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -332,6 +336,7 @@ export type UserUncheckedCreateInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -354,6 +359,7 @@ export type UserUpdateInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -376,6 +382,7 @@ export type UserUncheckedUpdateInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -584,6 +591,22 @@ export type UserUpdateOneWithoutOwnedVolunteersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOwnedVolunteersInput, Prisma.UserUpdateWithoutOwnedVolunteersInput>, Prisma.UserUncheckedUpdateWithoutOwnedVolunteersInput>
 }
 
+export type UserCreateNestedOneWithoutOwnedVenuePartnersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedCreateWithoutOwnedVenuePartnersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOwnedVenuePartnersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutOwnedVenuePartnersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedCreateWithoutOwnedVenuePartnersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOwnedVenuePartnersInput
+  upsert?: Prisma.UserUpsertWithoutOwnedVenuePartnersInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOwnedVenuePartnersInput, Prisma.UserUpdateWithoutOwnedVenuePartnersInput>, Prisma.UserUncheckedUpdateWithoutOwnedVenuePartnersInput>
+}
+
 export type UserCreateNestedOneWithoutOwnedTasksInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutOwnedTasksInput, Prisma.UserUncheckedCreateWithoutOwnedTasksInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutOwnedTasksInput
@@ -645,6 +668,7 @@ export type UserCreateWithoutAccountsInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -666,6 +690,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -703,6 +728,7 @@ export type UserUpdateWithoutAccountsInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -724,6 +750,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -745,6 +772,7 @@ export type UserCreateWithoutSessionsInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -766,6 +794,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -803,6 +832,7 @@ export type UserUpdateWithoutSessionsInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -824,6 +854,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -845,6 +876,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -866,6 +898,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -903,6 +936,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -924,6 +958,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -945,6 +980,7 @@ export type UserCreateWithoutCreatedEventsInput = {
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -966,6 +1002,7 @@ export type UserUncheckedCreateWithoutCreatedEventsInput = {
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1003,6 +1040,7 @@ export type UserUpdateWithoutCreatedEventsInput = {
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -1024,6 +1062,7 @@ export type UserUncheckedUpdateWithoutCreatedEventsInput = {
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1045,6 +1084,7 @@ export type UserCreateWithoutEventMembersInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -1066,6 +1106,7 @@ export type UserUncheckedCreateWithoutEventMembersInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1103,6 +1144,7 @@ export type UserUpdateWithoutEventMembersInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -1124,6 +1166,7 @@ export type UserUncheckedUpdateWithoutEventMembersInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1145,6 +1188,7 @@ export type UserCreateWithoutOwnedSpeakersInput = {
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -1166,6 +1210,7 @@ export type UserUncheckedCreateWithoutOwnedSpeakersInput = {
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1203,6 +1248,7 @@ export type UserUpdateWithoutOwnedSpeakersInput = {
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -1224,6 +1270,7 @@ export type UserUncheckedUpdateWithoutOwnedSpeakersInput = {
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1246,6 +1293,7 @@ export type UserCreateWithoutVolunteerProfileInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -1267,6 +1315,7 @@ export type UserUncheckedCreateWithoutVolunteerProfileInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1304,6 +1353,7 @@ export type UserUpdateWithoutVolunteerProfileInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -1325,6 +1375,7 @@ export type UserUncheckedUpdateWithoutVolunteerProfileInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1345,6 +1396,7 @@ export type UserCreateWithoutOwnedVolunteersInput = {
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
@@ -1366,6 +1418,7 @@ export type UserUncheckedCreateWithoutOwnedVolunteersInput = {
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1403,6 +1456,7 @@ export type UserUpdateWithoutOwnedVolunteersInput = {
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
@@ -1424,6 +1478,111 @@ export type UserUncheckedUpdateWithoutOwnedVolunteersInput = {
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutOwnedVenuePartnersInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutOwnedVenuePartnersInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutOwnedVenuePartnersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedCreateWithoutOwnedVenuePartnersInput>
+}
+
+export type UserUpsertWithoutOwnedVenuePartnersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedUpdateWithoutOwnedVenuePartnersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedCreateWithoutOwnedVenuePartnersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOwnedVenuePartnersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOwnedVenuePartnersInput, Prisma.UserUncheckedUpdateWithoutOwnedVenuePartnersInput>
+}
+
+export type UserUpdateWithoutOwnedVenuePartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOwnedVenuePartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1446,6 +1605,7 @@ export type UserCreateWithoutOwnedTasksInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
@@ -1467,6 +1627,7 @@ export type UserUncheckedCreateWithoutOwnedTasksInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
@@ -1493,6 +1654,7 @@ export type UserCreateWithoutAssignedTasksInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
@@ -1514,6 +1676,7 @@ export type UserUncheckedCreateWithoutAssignedTasksInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
@@ -1551,6 +1714,7 @@ export type UserUpdateWithoutOwnedTasksInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
@@ -1572,6 +1736,7 @@ export type UserUncheckedUpdateWithoutOwnedTasksInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
@@ -1604,6 +1769,7 @@ export type UserUpdateWithoutAssignedTasksInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
@@ -1625,6 +1791,7 @@ export type UserUncheckedUpdateWithoutAssignedTasksInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
@@ -1646,6 +1813,7 @@ export type UserCreateWithoutAuditLogsInput = {
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
@@ -1667,6 +1835,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
@@ -1704,6 +1873,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
@@ -1725,6 +1895,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVenuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
@@ -1743,6 +1914,7 @@ export type UserCountOutputType = {
   createdEvents: number
   ownedSpeakers: number
   ownedVolunteers: number
+  ownedVenuePartners: number
   ownedTasks: number
   assignedTasks: number
   auditLogs: number
@@ -1756,6 +1928,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   createdEvents?: boolean | UserCountOutputTypeCountCreatedEventsArgs
   ownedSpeakers?: boolean | UserCountOutputTypeCountOwnedSpeakersArgs
   ownedVolunteers?: boolean | UserCountOutputTypeCountOwnedVolunteersArgs
+  ownedVenuePartners?: boolean | UserCountOutputTypeCountOwnedVenuePartnersArgs
   ownedTasks?: boolean | UserCountOutputTypeCountOwnedTasksArgs
   assignedTasks?: boolean | UserCountOutputTypeCountAssignedTasksArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
@@ -1823,6 +1996,13 @@ export type UserCountOutputTypeCountOwnedVolunteersArgs<ExtArgs extends runtime.
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountOwnedVenuePartnersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EventVenuePartnerWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountOwnedTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SOPTaskWhereInput
 }
@@ -1858,6 +2038,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdEvents?: boolean | Prisma.User$createdEventsArgs<ExtArgs>
   ownedSpeakers?: boolean | Prisma.User$ownedSpeakersArgs<ExtArgs>
   ownedVolunteers?: boolean | Prisma.User$ownedVolunteersArgs<ExtArgs>
+  ownedVenuePartners?: boolean | Prisma.User$ownedVenuePartnersArgs<ExtArgs>
   ownedTasks?: boolean | Prisma.User$ownedTasksArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
@@ -1907,6 +2088,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdEvents?: boolean | Prisma.User$createdEventsArgs<ExtArgs>
   ownedSpeakers?: boolean | Prisma.User$ownedSpeakersArgs<ExtArgs>
   ownedVolunteers?: boolean | Prisma.User$ownedVolunteersArgs<ExtArgs>
+  ownedVenuePartners?: boolean | Prisma.User$ownedVenuePartnersArgs<ExtArgs>
   ownedTasks?: boolean | Prisma.User$ownedTasksArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
@@ -1926,6 +2108,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     createdEvents: Prisma.$EventPayload<ExtArgs>[]
     ownedSpeakers: Prisma.$EventSpeakerPayload<ExtArgs>[]
     ownedVolunteers: Prisma.$EventVolunteerPayload<ExtArgs>[]
+    ownedVenuePartners: Prisma.$EventVenuePartnerPayload<ExtArgs>[]
     ownedTasks: Prisma.$SOPTaskPayload<ExtArgs>[]
     assignedTasks: Prisma.$SOPTaskPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
@@ -2341,6 +2524,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   createdEvents<T extends Prisma.User$createdEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ownedSpeakers<T extends Prisma.User$ownedSpeakersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedSpeakersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSpeakerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ownedVolunteers<T extends Prisma.User$ownedVolunteersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedVolunteersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVolunteerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ownedVenuePartners<T extends Prisma.User$ownedVenuePartnersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedVenuePartnersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVenuePartnerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ownedTasks<T extends Prisma.User$ownedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedTasks<T extends Prisma.User$assignedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2935,6 +3119,30 @@ export type User$ownedVolunteersArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.EventVolunteerScalarFieldEnum | Prisma.EventVolunteerScalarFieldEnum[]
+}
+
+/**
+ * User.ownedVenuePartners
+ */
+export type User$ownedVenuePartnersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EventVenuePartner
+   */
+  select?: Prisma.EventVenuePartnerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EventVenuePartner
+   */
+  omit?: Prisma.EventVenuePartnerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EventVenuePartnerInclude<ExtArgs> | null
+  where?: Prisma.EventVenuePartnerWhereInput
+  orderBy?: Prisma.EventVenuePartnerOrderByWithRelationInput | Prisma.EventVenuePartnerOrderByWithRelationInput[]
+  cursor?: Prisma.EventVenuePartnerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EventVenuePartnerScalarFieldEnum | Prisma.EventVenuePartnerScalarFieldEnum[]
 }
 
 /**

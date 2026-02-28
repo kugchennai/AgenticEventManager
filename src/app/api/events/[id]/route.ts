@@ -35,6 +35,12 @@ export async function GET(
           owner: { select: { id: true, name: true, image: true } },
         },
       },
+      venuePartners: {
+        include: {
+          venuePartner: true,
+          owner: { select: { id: true, name: true, image: true } },
+        },
+      },
       checklists: {
         include: {
           tasks: {

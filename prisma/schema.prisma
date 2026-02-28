@@ -63,6 +63,15 @@ enum AuditAction {
   DELETE
 }
 
+enum VenuePartnerStatus {
+  INQUIRY
+  PENDING
+  CONFIRMED
+  CONTRACTED
+  DECLINED
+  CANCELLED
+}
+
 // ─── Auth (NextAuth) ──────────────────────────────────────────────
 
 model Account {
@@ -132,6 +141,7 @@ model User {
   createdEvents  Event[]          @relation("EventCreator")
   ownedSpeakers  EventSpeaker[]   @relation("SpeakerOwner")
   ownedVolunteers EventVolunteer[] @relation("VolunteerOwner")
+  ownedVenuePartners EventVenuePartner[] @relation("VenuePartnerOwner")
   ownedTasks     SOPTask[]        @relation("TaskOwner")
   assignedTasks  SOPTask[]        @relation("TaskAssignee")
   auditLogs      AuditLog[]
@@ -149,11 +159,12 @@ model Event {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  createdBy   User             @relation("EventCreator", fields: [createdById], references: [id])
-  members     EventMember[]
-  speakers    EventSpeaker[]
-  volunteers  EventVolunteer[]
-  checklists  SOPChecklist[]
+  createdBy      User               @relation("EventCreator", fields: [createdById], references: [id])
+  members        EventMember[]
+  speakers       EventSpeaker[]
+  volunteers     EventVolunteer[]
+  venuePartners  EventVenuePartner[]
+  checklists     SOPChecklist[]
 }
 
 model EventMember {
@@ -237,6 +248,45 @@ model EventVolunteer {
   owner     User?     @relation("VolunteerOwner", fields: [ownerId], references: [id])
 
   @@unique([eventId, volunteerId])
+}
+
+// ─── Venue Partners ───────────────────────────────────────────────
+
+model VenuePartner {
+  id          String   @id @default(cuid())
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
+  capacity    Int?
+  notes       String?  @db.Text
+  website     String?
+  photoUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events EventVenuePartner[]
+}
+
+model EventVenuePartner {
+  id               String             @id @default(cuid())
+  eventId          String
+  venuePartnerId   String
+  ownerId          String?
+  status           VenuePartnerStatus @default(INQUIRY)
+  priority         Priority           @default(MEDIUM)
+  cost             Decimal?           @db.Decimal(10, 2)
+  notes            String?            @db.Text
+  confirmationDate DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  venuePartner VenuePartner @relation(fields: [venuePartnerId], references: [id], onDelete: Cascade)
+  owner        User?        @relation("VenuePartnerOwner", fields: [ownerId], references: [id])
+
+  @@unique([eventId, venuePartnerId])
 }
 
 // ─── SOP Checklists ───────────────────────────────────────────────

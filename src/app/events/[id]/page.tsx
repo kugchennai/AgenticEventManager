@@ -7,7 +7,7 @@ import {
 import {
   ArrowLeft, Calendar, MapPin, Mic2, Users, ClipboardCheck,
   Check, Pencil, Trash2, Plus, CalendarDays, UserPlus, X, Search,
-  ChevronDown, ChevronsUpDown, UserCheck,
+  ChevronDown, ChevronsUpDown, UserCheck, Building2, AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
@@ -18,6 +18,7 @@ import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
 type VolunteerOption = { id: string; name: string; email: string | null; role: string | null };
 type MemberOption = { id: string; name: string | null; email: string | null; image: string | null; globalRole: string };
 type SpeakerOption = { id: string; name: string; email: string | null; topic: string | null };
+type VenuePartnerOption = { id: string; name: string; email: string | null; address: string | null; capacity: number | null };
 
 interface EventDetail {
   id: string;
@@ -41,6 +42,16 @@ interface EventDetail {
     priority: string;
     assignedRole: string | null;
     volunteer: { id: string; name: string; email: string | null; userId: string | null };
+    owner: { id: string; name: string | null; image: string | null } | null;
+  }[];
+  venuePartners: {
+    id: string;
+    status: string;
+    priority: string;
+    cost: string | null;
+    notes: string | null;
+    confirmationDate: string | null;
+    venuePartner: { id: string; name: string; email: string | null; address: string | null; capacity: number | null; contactName: string | null; phone: string | null };
     owner: { id: string; name: string | null; image: string | null } | null;
   }[];
   checklists: {
@@ -271,6 +282,256 @@ function SpeakerPicker({
         )}
       </div>
     </Modal>
+  );
+}
+
+function VenuePartnerPicker({
+  open,
+  onClose,
+  venues,
+  linkedIds,
+  onLink,
+}: {
+  open: boolean;
+  onClose: () => void;
+  venues: VenuePartnerOption[];
+  linkedIds: string[];
+  onLink: (id: string) => Promise<void>;
+}) {
+  const [query, setQuery] = useState("");
+  const available = venues.filter(
+    (v) => !linkedIds.includes(v.id) && v.name.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <Modal open={open} onClose={onClose} className="max-w-md max-h-[70vh] flex flex-col">
+      <div className="px-5 py-4 border-b border-border shrink-0">
+        <h2 className="text-lg font-semibold font-[family-name:var(--font-display)] mb-3">
+          Add Venue Partner to Event
+        </h2>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search venue partners..."
+            className={cn(INPUT_CLASS, "pl-9")}
+            autoFocus
+          />
+        </div>
+      </div>
+      <div className="overflow-y-auto flex-1 py-1">
+        {available.length === 0 ? (
+          <p className="px-5 py-8 text-center text-sm text-muted">
+            {venues.length === 0
+              ? "No venue partners in directory yet. Add some first."
+              : query
+                ? "No matching venue partners found."
+                : "All venue partners are already linked."}
+          </p>
+        ) : (
+          available.map((v) => (
+            <button
+              key={v.id}
+              onClick={async () => {
+                await onLink(v.id);
+                onClose();
+              }}
+              className="flex items-center gap-3 w-full px-5 py-3 text-left hover:bg-surface-hover transition-colors cursor-pointer"
+            >
+              <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                <Building2 className="h-4 w-4 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{v.name}</p>
+                <p className="text-xs text-muted truncate">
+                  {v.address ?? v.email ?? "—"}
+                  {v.capacity ? ` · Cap: ${v.capacity}` : ""}
+                </p>
+              </div>
+              <Plus className="h-4 w-4 text-muted shrink-0" />
+            </button>
+          ))
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+const VENUE_STATUSES = ["INQUIRY", "PENDING", "CONFIRMED", "CONTRACTED", "DECLINED", "CANCELLED"] as const;
+
+type VenuePartnerItem = EventDetail["venuePartners"][number];
+
+function VenuePartnerList({
+  venuePartners,
+  canEdit,
+  venueStatusUpdating,
+  onStatusChange,
+  onUnlink,
+}: {
+  venuePartners: VenuePartnerItem[];
+  canEdit: boolean;
+  venueStatusUpdating: string | null;
+  onStatusChange: (linkId: string, status: string) => void;
+  onUnlink: (venuePartnerId: string) => void;
+}) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggle = (id: string) =>
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  return (
+    <div className="space-y-3">
+      {venuePartners.map((evp) => {
+        const isConfirmed = evp.status === "CONFIRMED";
+        const isOpen = !!expanded[evp.id];
+
+        return (
+          <div
+            key={evp.id}
+            className={cn(
+              "bg-surface border rounded-xl overflow-hidden transition-colors",
+              isConfirmed
+                ? "border-status-done/40 ring-1 ring-status-done/20"
+                : "border-border"
+            )}
+          >
+            <div className="flex items-center gap-4 px-5 py-4 group">
+              <button
+                onClick={() => toggle(evp.id)}
+                className={cn(
+                  "h-10 w-10 rounded-lg flex items-center justify-center shrink-0 cursor-pointer transition-colors",
+                  isConfirmed ? "bg-status-done/15 hover:bg-status-done/25" : "bg-accent/10 hover:bg-accent/20"
+                )}
+                title={isOpen ? "Collapse details" : "Expand details"}
+              >
+                {isConfirmed ? (
+                  <Check className="h-5 w-5 text-status-done" />
+                ) : (
+                  <Building2 className="h-5 w-5 text-accent" />
+                )}
+              </button>
+              <div
+                className="flex-1 min-w-0 cursor-pointer"
+                onClick={() => toggle(evp.id)}
+              >
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{evp.venuePartner.name}</p>
+                  {isConfirmed && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-status-done">
+                      Confirmed Venue
+                    </span>
+                  )}
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 text-muted transition-transform duration-200",
+                      isOpen && "rotate-180"
+                    )}
+                  />
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
+                  {evp.venuePartner.address && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {evp.venuePartner.address}
+                    </span>
+                  )}
+                  {evp.venuePartner.capacity && (
+                    <span>Cap: {evp.venuePartner.capacity}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {canEdit ? (
+                  <select
+                    value={evp.status}
+                    onChange={(e) => onStatusChange(evp.id, e.target.value)}
+                    disabled={venueStatusUpdating === evp.id}
+                    className="bg-background border border-border rounded-lg px-2 py-1 text-xs outline-none focus:border-accent cursor-pointer"
+                  >
+                    {VENUE_STATUSES.map((s) => (
+                      <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <StatusBadge type="venue" status={evp.status} />
+                )}
+
+                <PriorityBadge priority={evp.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"} />
+
+                {canEdit && (
+                  <button
+                    onClick={() => onUnlink(evp.venuePartner.id)}
+                    className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Remove venue partner"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Expandable details panel */}
+            {isOpen && (
+              <div className="px-5 py-3 border-t border-border bg-surface-hover/30 animate-fade-in">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                  {evp.venuePartner.contactName && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Contact Person</p>
+                      <p className="text-foreground">{evp.venuePartner.contactName}</p>
+                    </div>
+                  )}
+                  {evp.venuePartner.email && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Email</p>
+                      <p className="text-foreground">{evp.venuePartner.email}</p>
+                    </div>
+                  )}
+                  {evp.venuePartner.phone && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Phone</p>
+                      <p className="text-foreground">{evp.venuePartner.phone}</p>
+                    </div>
+                  )}
+                  {evp.venuePartner.address && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Address</p>
+                      <p className="text-foreground">{evp.venuePartner.address}</p>
+                    </div>
+                  )}
+                  {evp.venuePartner.capacity && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Capacity</p>
+                      <p className="text-foreground">{evp.venuePartner.capacity}</p>
+                    </div>
+                  )}
+                  {evp.cost && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Cost</p>
+                      <p className="text-foreground">${evp.cost}</p>
+                    </div>
+                  )}
+                  {evp.confirmationDate && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Confirmation Date</p>
+                      <p className="text-foreground">{new Date(evp.confirmationDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {evp.notes && (
+                    <div className="col-span-2">
+                      <p className="text-[11px] uppercase tracking-wide text-muted font-medium">Notes</p>
+                      <p className="text-foreground">{evp.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -646,12 +907,13 @@ function ChecklistTab({
   );
 }
 
-type Tab = "overview" | "speakers" | "volunteers" | "checklist";
+type Tab = "overview" | "speakers" | "volunteers" | "venues" | "checklist";
 
 const TABS: { id: Tab; label: string; icon: typeof Calendar }[] = [
   { id: "overview", label: "Overview", icon: Calendar },
   { id: "speakers", label: "Speakers", icon: Mic2 },
   { id: "volunteers", label: "Volunteers", icon: Users },
+  { id: "venues", label: "Venue Partners", icon: Building2 },
   { id: "checklist", label: "SOP Checklist", icon: ClipboardCheck },
 ];
 
@@ -691,6 +953,26 @@ export default function EventDetailPage() {
     taskId: string,
     data: Record<string, unknown>
   ) => {
+    // SOP venue confirmation validation
+    if (data.status === "DONE" && event) {
+      const task = event.checklists
+        .flatMap((c) => c.tasks)
+        .find((t) => t.id === taskId);
+
+      if (task) {
+        const titleLower = task.title.toLowerCase();
+        const isVenueTask = titleLower.includes("venue") && titleLower.includes("confirm");
+
+        if (isVenueTask) {
+          const hasConfirmedVenue = event.venuePartners.some((vp) => vp.status === "CONFIRMED");
+          if (!hasConfirmedVenue) {
+            setSopBlockModal(true);
+            return;
+          }
+        }
+      }
+    }
+
     const res = await fetch(`/api/checklists/${checklistId}/tasks/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -702,9 +984,14 @@ export default function EventDetailPage() {
   // --- Volunteer & Speaker linking ---
   const [volPickerOpen, setVolPickerOpen] = useState(false);
   const [spkPickerOpen, setSpkPickerOpen] = useState(false);
+  const [venuePickerOpen, setVenuePickerOpen] = useState(false);
   const [allVolunteers, setAllVolunteers] = useState<VolunteerOption[]>([]);
   const [allMembers, setAllMembers] = useState<MemberOption[]>([]);
   const [allSpeakers, setAllSpeakers] = useState<SpeakerOption[]>([]);
+  const [allVenuePartners, setAllVenuePartners] = useState<VenuePartnerOption[]>([]);
+  const [venueConfirmModal, setVenueConfirmModal] = useState<{ linkId: string; existingName: string } | null>(null);
+  const [venueStatusUpdating, setVenueStatusUpdating] = useState<string | null>(null);
+  const [sopBlockModal, setSopBlockModal] = useState(false);
 
   const loadVolunteersAndMembers = useCallback(async () => {
     const [volRes, memRes] = await Promise.all([
@@ -718,6 +1005,11 @@ export default function EventDetailPage() {
   const loadSpeakers = useCallback(async () => {
     const res = await fetch("/api/speakers");
     if (res.ok) setAllSpeakers(await res.json());
+  }, []);
+
+  const loadVenuePartners = useCallback(async () => {
+    const res = await fetch("/api/venues");
+    if (res.ok) setAllVenuePartners(await res.json());
   }, []);
 
   const linkVolunteer = async (volunteerId: string) => {
@@ -759,6 +1051,53 @@ export default function EventDetailPage() {
       method: "DELETE",
     });
     fetchEvent();
+  };
+
+  const linkVenuePartner = async (venuePartnerId: string) => {
+    await fetch(`/api/events/${id}/venues`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ venuePartnerId }),
+    });
+    fetchEvent();
+  };
+
+  const unlinkVenuePartner = async (venuePartnerId: string) => {
+    if (!confirm("Removing this venue partner will reset any venue confirmation SOP task. Continue?")) return;
+    await fetch(`/api/events/${id}/venues?venuePartnerId=${venuePartnerId}`, {
+      method: "DELETE",
+    });
+    fetchEvent();
+  };
+
+  const updateVenueLink = async (linkId: string, data: Record<string, unknown>, force = false) => {
+    const url = `/api/events/${id}/venues/${linkId}${force ? "?force=true" : ""}`;
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (res.status === 409) {
+      const conflict = await res.json();
+      if (conflict.conflict) {
+        setVenueConfirmModal({
+          linkId,
+          existingName: conflict.existingVenue.venuePartner.name,
+        });
+        return;
+      }
+    }
+
+    if (res.ok) fetchEvent();
+  };
+
+  const confirmVenueSwitch = async () => {
+    if (!venueConfirmModal) return;
+    setVenueStatusUpdating(venueConfirmModal.linkId);
+    await updateVenueLink(venueConfirmModal.linkId, { status: "CONFIRMED" }, true);
+    setVenueConfirmModal(null);
+    setVenueStatusUpdating(null);
   };
 
   const convertToMember = async (volunteerId: string) => {
@@ -965,6 +1304,7 @@ export default function EventDetailPage() {
           const count =
             tab.id === "speakers" ? event.speakers.length :
             tab.id === "volunteers" ? event.volunteers.length :
+            tab.id === "venues" ? event.venuePartners.length :
             tab.id === "checklist" ? allTasks.length : undefined;
 
           return (
@@ -1013,6 +1353,7 @@ export default function EventDetailPage() {
 
           <StatCard label="Speakers" value={event.speakers.length} icon={Mic2} />
           <StatCard label="Volunteers" value={event.volunteers.length} icon={Users} />
+          <StatCard label="Venue Partners" value={event.venuePartners.length} icon={Building2} />
           <StatCard
             label="Lead"
             value={event.createdBy.name ?? "Unknown"}
@@ -1161,6 +1502,103 @@ export default function EventDetailPage() {
           />
         </div>
       )}
+
+      {activeTab === "venues" && (
+        <div>
+          {canEdit && (
+            <div className="flex justify-end mb-4">
+              <Button
+                size="sm"
+                onClick={() => {
+                  loadVenuePartners();
+                  setVenuePickerOpen(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" /> Add Venue Partner
+              </Button>
+            </div>
+          )}
+
+          {event.venuePartners.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="No venue partners assigned"
+              description={canEdit ? "Click 'Add Venue Partner' to link venue partners from your directory." : "No venue partners have been assigned to this event yet."}
+            />
+          ) : (
+            <VenuePartnerList
+              venuePartners={event.venuePartners}
+              canEdit={canEdit}
+              venueStatusUpdating={venueStatusUpdating}
+              onStatusChange={(linkId, status) => {
+                setVenueStatusUpdating(linkId);
+                updateVenueLink(linkId, { status }).finally(() =>
+                  setVenueStatusUpdating(null)
+                );
+              }}
+              onUnlink={unlinkVenuePartner}
+            />
+          )}
+
+          <VenuePartnerPicker
+            open={venuePickerOpen}
+            onClose={() => setVenuePickerOpen(false)}
+            venues={allVenuePartners}
+            linkedIds={event.venuePartners.map((v) => v.venuePartner.id)}
+            onLink={linkVenuePartner}
+          />
+
+          {/* Venue confirmation switch warning modal */}
+          <Modal open={!!venueConfirmModal} onClose={() => setVenueConfirmModal(null)} className="p-6 max-w-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-full bg-status-blocked/15 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-status-blocked" />
+              </div>
+              <h2 className="text-lg font-semibold font-[family-name:var(--font-display)]">
+                Switch Confirmed Venue?
+              </h2>
+            </div>
+            <p className="text-sm text-muted mb-4">
+              This event already has a confirmed venue (<strong>{venueConfirmModal?.existingName}</strong>).
+              Confirming this venue will reset the previous one to Pending.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setVenueConfirmModal(null)}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={confirmVenueSwitch}>
+                Confirm Switch
+              </Button>
+            </div>
+          </Modal>
+        </div>
+      )}
+
+      {/* SOP Venue Confirmation Block Modal */}
+      <Modal open={sopBlockModal} onClose={() => setSopBlockModal(false)} className="p-6 max-w-sm">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 rounded-full bg-status-blocked/15 flex items-center justify-center shrink-0">
+            <AlertTriangle className="h-5 w-5 text-status-blocked" />
+          </div>
+          <h2 className="text-lg font-semibold font-[family-name:var(--font-display)]">
+            Venue Not Confirmed
+          </h2>
+        </div>
+        <p className="text-sm text-muted mb-2">
+          Please confirm a venue partner before marking this task as complete.
+        </p>
+        <p className="text-xs text-muted mb-4">
+          Go to the &quot;Venue Partners&quot; tab and set a venue partner status to &quot;Confirmed&quot;.
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setSopBlockModal(false)}>
+            Close
+          </Button>
+          <Button size="sm" onClick={() => { setSopBlockModal(false); setActiveTab("venues"); }}>
+            Go to Venue Partners
+          </Button>
+        </div>
+      </Modal>
 
       {activeTab === "checklist" && (
         <ChecklistTab

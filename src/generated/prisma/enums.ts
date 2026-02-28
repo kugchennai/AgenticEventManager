@@ -87,3 +87,15 @@ export const AuditAction = {
 } as const
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
+export const VenuePartnerStatus = {
+  INQUIRY: 'INQUIRY',
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CONTRACTED: 'CONTRACTED',
+  DECLINED: 'DECLINED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type VenuePartnerStatus = (typeof VenuePartnerStatus)[keyof typeof VenuePartnerStatus]

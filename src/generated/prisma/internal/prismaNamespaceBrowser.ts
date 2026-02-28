@@ -62,6 +62,8 @@ export const ModelName = {
   EventSpeaker: 'EventSpeaker',
   Volunteer: 'Volunteer',
   EventVolunteer: 'EventVolunteer',
+  VenuePartner: 'VenuePartner',
+  EventVenuePartner: 'EventVenuePartner',
   SOPChecklist: 'SOPChecklist',
   SOPTask: 'SOPTask',
   SOPTemplate: 'SOPTemplate',
@@ -231,6 +233,41 @@ export const EventVolunteerScalarFieldEnum = {
 } as const
 
 export type EventVolunteerScalarFieldEnum = (typeof EventVolunteerScalarFieldEnum)[keyof typeof EventVolunteerScalarFieldEnum]
+
+
+export const VenuePartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  contactName: 'contactName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  capacity: 'capacity',
+  notes: 'notes',
+  website: 'website',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VenuePartnerScalarFieldEnum = (typeof VenuePartnerScalarFieldEnum)[keyof typeof VenuePartnerScalarFieldEnum]
+
+
+export const EventVenuePartnerScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  venuePartnerId: 'venuePartnerId',
+  ownerId: 'ownerId',
+  status: 'status',
+  priority: 'priority',
+  cost: 'cost',
+  notes: 'notes',
+  confirmationDate: 'confirmationDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventVenuePartnerScalarFieldEnum = (typeof EventVenuePartnerScalarFieldEnum)[keyof typeof EventVenuePartnerScalarFieldEnum]
 
 
 export const SOPChecklistScalarFieldEnum = {
