@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
-export async function middleware(req: NextRequest) {
-  // Check if user has valid JWT token (from cookie or Authorization header)
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET!,
-  });
-
-  // If no valid token, redirect to unauthorized page
-  if (!token && req.nextUrl.pathname !== "/") {
-    return NextResponse.redirect(new URL("/unauthorized", req.url));
+export default auth((req) => {
+  // If no valid session and not on the login page, redirect to unauthorized
+  if (!req.auth && req.nextUrl.pathname !== "/") {
+    return NextResponse.redirect(new URL("/unauthorized", req.nextUrl.origin));
   }
-}
+});
 
 export const config = {
   matcher: [
