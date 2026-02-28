@@ -20,6 +20,7 @@ type Speaker = {
   id: string;
   name: string;
   email: string | null;
+  phone: string | null;
   bio: string | null;
   topic: string | null;
   photoUrl: string | null;
@@ -30,6 +31,7 @@ type Speaker = {
 type FormData = {
   name: string;
   email: string;
+  phone: string;
   bio: string;
   topic: string;
 };
@@ -83,7 +85,7 @@ export default function SpeakersPage() {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ name: "", email: "", bio: "", topic: "" });
+    setFormData({ name: "", email: "", phone: "", bio: "", topic: "" });
     setError(null);
     setModalOpen(true);
   };
@@ -93,6 +95,7 @@ export default function SpeakersPage() {
     setFormData({
       name: speaker.name,
       email: speaker.email ?? "",
+      phone: speaker.phone ?? "",
       bio: speaker.bio ?? "",
       topic: speaker.topic ?? "",
     });
@@ -244,6 +247,9 @@ export default function SpeakersPage() {
                   {speaker.email && (
                     <p className="text-sm text-muted truncate">{speaker.email}</p>
                   )}
+                  {speaker.phone && (
+                    <p className="text-sm text-muted truncate">{speaker.phone}</p>
+                  )}
                   {speaker.topic && (
                     <p className="text-sm text-muted mt-0.5 truncate">
                       {speaker.topic}
@@ -315,6 +321,19 @@ export default function SpeakersPage() {
                 setFormData((prev) => ({ ...prev, email: e.target.value }))
               }
               placeholder="speaker@example.com"
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Phone</label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              placeholder="+1 (555) 123-4567"
               className={INPUT_CLASS}
             />
           </div>

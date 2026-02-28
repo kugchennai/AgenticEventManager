@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, email, bio, topic, photoUrl } = body;
+  const { name, email, phone, bio, topic, photoUrl } = body;
 
   if (!name?.trim()) {
     return NextResponse.json(
@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
     data: {
       name: name.trim(),
       email: email?.trim() || null,
+      phone: phone?.trim() || null,
       bio: bio?.trim() || null,
       topic: topic?.trim() || null,
       photoUrl: photoUrl?.trim() || null,
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
     entityType: "Speaker",
     entityId: speaker.id,
     entityName: speaker.name,
-    changes: { name: speaker.name, email: speaker.email, topic: speaker.topic },
+    changes: { name: speaker.name, email: speaker.email, phone: speaker.phone, topic: speaker.topic },
   });
 
   return NextResponse.json(speaker, { status: 201 });

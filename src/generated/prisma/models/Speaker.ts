@@ -28,6 +28,7 @@ export type SpeakerMinAggregateOutputType = {
   id: string | null
   name: string | null
   email: string | null
+  phone: string | null
   bio: string | null
   topic: string | null
   photoUrl: string | null
@@ -39,6 +40,7 @@ export type SpeakerMaxAggregateOutputType = {
   id: string | null
   name: string | null
   email: string | null
+  phone: string | null
   bio: string | null
   topic: string | null
   photoUrl: string | null
@@ -50,6 +52,7 @@ export type SpeakerCountAggregateOutputType = {
   id: number
   name: number
   email: number
+  phone: number
   bio: number
   topic: number
   photoUrl: number
@@ -63,6 +66,7 @@ export type SpeakerMinAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  phone?: true
   bio?: true
   topic?: true
   photoUrl?: true
@@ -74,6 +78,7 @@ export type SpeakerMaxAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  phone?: true
   bio?: true
   topic?: true
   photoUrl?: true
@@ -85,6 +90,7 @@ export type SpeakerCountAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  phone?: true
   bio?: true
   topic?: true
   photoUrl?: true
@@ -169,6 +175,7 @@ export type SpeakerGroupByOutputType = {
   id: string
   name: string
   email: string | null
+  phone: string | null
   bio: string | null
   topic: string | null
   photoUrl: string | null
@@ -201,6 +208,7 @@ export type SpeakerWhereInput = {
   id?: Prisma.StringFilter<"Speaker"> | string
   name?: Prisma.StringFilter<"Speaker"> | string
   email?: Prisma.StringNullableFilter<"Speaker"> | string | null
+  phone?: Prisma.StringNullableFilter<"Speaker"> | string | null
   bio?: Prisma.StringNullableFilter<"Speaker"> | string | null
   topic?: Prisma.StringNullableFilter<"Speaker"> | string | null
   photoUrl?: Prisma.StringNullableFilter<"Speaker"> | string | null
@@ -213,6 +221,7 @@ export type SpeakerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   topic?: Prisma.SortOrderInput | Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -228,6 +237,7 @@ export type SpeakerWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SpeakerWhereInput | Prisma.SpeakerWhereInput[]
   name?: Prisma.StringFilter<"Speaker"> | string
   email?: Prisma.StringNullableFilter<"Speaker"> | string | null
+  phone?: Prisma.StringNullableFilter<"Speaker"> | string | null
   bio?: Prisma.StringNullableFilter<"Speaker"> | string | null
   topic?: Prisma.StringNullableFilter<"Speaker"> | string | null
   photoUrl?: Prisma.StringNullableFilter<"Speaker"> | string | null
@@ -240,6 +250,7 @@ export type SpeakerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   topic?: Prisma.SortOrderInput | Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -257,6 +268,7 @@ export type SpeakerScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Speaker"> | string
   name?: Prisma.StringWithAggregatesFilter<"Speaker"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"Speaker"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Speaker"> | string | null
   bio?: Prisma.StringNullableWithAggregatesFilter<"Speaker"> | string | null
   topic?: Prisma.StringNullableWithAggregatesFilter<"Speaker"> | string | null
   photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Speaker"> | string | null
@@ -268,6 +280,7 @@ export type SpeakerCreateInput = {
   id?: string
   name: string
   email?: string | null
+  phone?: string | null
   bio?: string | null
   topic?: string | null
   photoUrl?: string | null
@@ -280,6 +293,7 @@ export type SpeakerUncheckedCreateInput = {
   id?: string
   name: string
   email?: string | null
+  phone?: string | null
   bio?: string | null
   topic?: string | null
   photoUrl?: string | null
@@ -292,6 +306,7 @@ export type SpeakerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -304,6 +319,7 @@ export type SpeakerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -316,6 +332,7 @@ export type SpeakerCreateManyInput = {
   id?: string
   name: string
   email?: string | null
+  phone?: string | null
   bio?: string | null
   topic?: string | null
   photoUrl?: string | null
@@ -327,6 +344,7 @@ export type SpeakerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -338,6 +356,7 @@ export type SpeakerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -349,6 +368,7 @@ export type SpeakerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
@@ -360,6 +380,7 @@ export type SpeakerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
@@ -371,6 +392,7 @@ export type SpeakerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
@@ -401,6 +423,7 @@ export type SpeakerCreateWithoutEventsInput = {
   id?: string
   name: string
   email?: string | null
+  phone?: string | null
   bio?: string | null
   topic?: string | null
   photoUrl?: string | null
@@ -412,6 +435,7 @@ export type SpeakerUncheckedCreateWithoutEventsInput = {
   id?: string
   name: string
   email?: string | null
+  phone?: string | null
   bio?: string | null
   topic?: string | null
   photoUrl?: string | null
@@ -439,6 +463,7 @@ export type SpeakerUpdateWithoutEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -450,6 +475,7 @@ export type SpeakerUncheckedUpdateWithoutEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -492,6 +518,7 @@ export type SpeakerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   name?: boolean
   email?: boolean
+  phone?: boolean
   bio?: boolean
   topic?: boolean
   photoUrl?: boolean
@@ -505,6 +532,7 @@ export type SpeakerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   email?: boolean
+  phone?: boolean
   bio?: boolean
   topic?: boolean
   photoUrl?: boolean
@@ -516,6 +544,7 @@ export type SpeakerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   email?: boolean
+  phone?: boolean
   bio?: boolean
   topic?: boolean
   photoUrl?: boolean
@@ -527,6 +556,7 @@ export type SpeakerSelectScalar = {
   id?: boolean
   name?: boolean
   email?: boolean
+  phone?: boolean
   bio?: boolean
   topic?: boolean
   photoUrl?: boolean
@@ -534,7 +564,7 @@ export type SpeakerSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SpeakerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "bio" | "topic" | "photoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["speaker"]>
+export type SpeakerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "bio" | "topic" | "photoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["speaker"]>
 export type SpeakerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.Speaker$eventsArgs<ExtArgs>
   _count?: boolean | Prisma.SpeakerCountOutputTypeDefaultArgs<ExtArgs>
@@ -551,6 +581,7 @@ export type $SpeakerPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     name: string
     email: string | null
+    phone: string | null
     bio: string | null
     topic: string | null
     photoUrl: string | null
@@ -983,6 +1014,7 @@ export interface SpeakerFieldRefs {
   readonly id: Prisma.FieldRef<"Speaker", 'String'>
   readonly name: Prisma.FieldRef<"Speaker", 'String'>
   readonly email: Prisma.FieldRef<"Speaker", 'String'>
+  readonly phone: Prisma.FieldRef<"Speaker", 'String'>
   readonly bio: Prisma.FieldRef<"Speaker", 'String'>
   readonly topic: Prisma.FieldRef<"Speaker", 'String'>
   readonly photoUrl: Prisma.FieldRef<"Speaker", 'String'>

@@ -52,7 +52,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { name, email, bio, topic, photoUrl } = body;
+  const { name, email, phone, bio, topic, photoUrl } = body;
 
   const before = await prisma.speaker.findUnique({ where: { id } });
   if (!before) {
@@ -64,6 +64,7 @@ export async function PATCH(
     data: {
       ...(name !== undefined && { name: name?.trim() ?? before.name }),
       ...(email !== undefined && { email: email?.trim() || null }),
+      ...(phone !== undefined && { phone: phone?.trim() || null }),
       ...(bio !== undefined && { bio: bio?.trim() || null }),
       ...(topic !== undefined && { topic: topic?.trim() || null }),
       ...(photoUrl !== undefined && { photoUrl: photoUrl?.trim() || null }),
@@ -78,6 +79,7 @@ export async function PATCH(
     {
       name: before.name,
       email: before.email,
+      phone: before.phone,
       bio: before.bio,
       topic: before.topic,
       photoUrl: before.photoUrl,
@@ -85,6 +87,7 @@ export async function PATCH(
     {
       name: speaker.name,
       email: speaker.email,
+      phone: speaker.phone,
       bio: speaker.bio,
       topic: speaker.topic,
       photoUrl: speaker.photoUrl,

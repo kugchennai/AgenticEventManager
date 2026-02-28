@@ -1734,6 +1734,7 @@ export const SpeakerScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
+  phone: 'phone',
   bio: 'bio',
   topic: 'topic',
   photoUrl: 'photoUrl',
