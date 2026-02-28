@@ -167,9 +167,9 @@ export async function POST(req: NextRequest) {
     changes: { title, date, venue },
   });
 
-  // Fire-and-forget: send event creation notification if status is SCHEDULED
+  // Send event creation notification if status is SCHEDULED
   if (event.status === "SCHEDULED" || body.status === "SCHEDULED") {
-    sendEventCreatedEmail(event.id);
+    await sendEventCreatedEmail(event.id);
   }
 
   return NextResponse.json(event, { status: 201 });

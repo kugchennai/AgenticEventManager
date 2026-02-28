@@ -107,9 +107,9 @@ export async function POST(req: NextRequest) {
     changes: { name: volunteer.name, email: volunteer.email, discordId: volunteer.discordId, role: volunteer.role },
   });
 
-  // Fire-and-forget welcome email
+  // Send welcome email (awaited for serverless compatibility)
   if (volunteer.email) {
-    sendVolunteerWelcomeEmail(
+    await sendVolunteerWelcomeEmail(
       volunteer.name,
       volunteer.email,
       volunteer.role,

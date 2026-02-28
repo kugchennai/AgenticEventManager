@@ -175,11 +175,11 @@ export async function PATCH(
     });
   }
 
-  // Fire-and-forget: send task assigned email when assignee changes
+  // Send task assigned email when assignee changes (awaited for serverless compatibility)
   const assigneeChanged = before.assigneeId !== task.assigneeId && task.assigneeId;
   const volunteerAssigneeChanged = before.volunteerAssigneeId !== task.volunteerAssigneeId && task.volunteerAssigneeId;
   if (assigneeChanged || volunteerAssigneeChanged) {
-    sendTaskAssignedEmail(taskId, session.user.name ?? undefined);
+    await sendTaskAssignedEmail(taskId, session.user.name ?? undefined);
   }
 
   return NextResponse.json(task);

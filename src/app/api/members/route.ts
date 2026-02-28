@@ -162,8 +162,8 @@ export async function POST(req: NextRequest) {
       changes: { action: "reactivated", globalRole: role },
     });
 
-    // Fire-and-forget: send member invitation email
-    sendMemberInvitationEmail(
+    // Send member invitation email (awaited for serverless compatibility)
+    await sendMemberInvitationEmail(
       normalizedEmail,
       reactivated.name ?? normalizedEmail,
       role,
@@ -224,8 +224,8 @@ export async function POST(req: NextRequest) {
     changes: { globalRole: role },
   });
 
-  // Fire-and-forget: send member invitation email
-  sendMemberInvitationEmail(
+  // Send member invitation email (awaited for serverless compatibility)
+  await sendMemberInvitationEmail(
     normalizedEmail,
     user.name ?? normalizedEmail,
     role,

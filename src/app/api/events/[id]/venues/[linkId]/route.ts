@@ -245,9 +245,9 @@ export async function PATCH(
     });
   }
 
-  // Fire-and-forget: send venue confirmed email to event lead
+  // Send venue confirmed email to event lead
   if (status === "CONFIRMED" && before.status !== "CONFIRMED") {
-    sendVenueConfirmedEmail(linkId, eventId);
+    await sendVenueConfirmedEmail(linkId, eventId);
   }
 
   return NextResponse.json(updated);

@@ -99,17 +99,17 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Email notifications (fire-and-forget, per-task)
+  // Email notifications (awaited for serverless compatibility)
   if (isEmailConfigured()) {
     for (const t of tasks) {
       const deadline = t.deadline!;
       if (deadline < now) {
         const overdueDays = Math.ceil((now.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
-        sendTaskOverdueEmail(t.id, overdueDays, overdueDays >= 3);
+        await sendTaskOverdueEmail(t.id, overdueDays, overdueDays >= 3);
         summary.emailsSent++;
       } else if (deadline <= threeDaysFromNow) {
         const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        sendTaskDueSoonEmail(t.id, daysRemaining);
+        await sendTaskDueSoonEmail(t.id, daysRemaining);
         summary.emailsSent++;
       }
     }

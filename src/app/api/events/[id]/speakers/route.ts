@@ -54,8 +54,8 @@ export async function POST(
     changes: { eventId, speakerId },
   });
 
-  // Fire-and-forget: send speaker invitation email
-  sendSpeakerInvitationEmail(link.id);
+  // Send speaker invitation email
+  await sendSpeakerInvitationEmail(link.id);
 
   return NextResponse.json(link, { status: 201 });
 }

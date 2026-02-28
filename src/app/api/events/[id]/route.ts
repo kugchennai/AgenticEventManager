@@ -119,9 +119,9 @@ export async function PATCH(
     });
   }
 
-  // Fire-and-forget: notify team when event becomes SCHEDULED
+  // Notify team when event becomes SCHEDULED
   if (status === "SCHEDULED" && before.status !== "SCHEDULED") {
-    sendEventCreatedEmail(id);
+    await sendEventCreatedEmail(id);
   }
 
   return NextResponse.json(event);
