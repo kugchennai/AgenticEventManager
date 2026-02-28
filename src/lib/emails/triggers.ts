@@ -25,9 +25,11 @@ import { WeeklyDigestEmail } from "./templates/weekly-digest";
 // ─── Helpers ──────────────────────────────────────────────────────
 
 function getAppUrl(): string {
-  return process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.NEXTAUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  );
 }
 
 function formatDate(date: Date | string): string {
