@@ -47,12 +47,13 @@ const ROLES = [
   },
   {
     key: "EVENT_LEAD",
-    label: "Event Lead",
+    label: "Member",
     level: 2,
     icon: Shield,
     color: "text-accent",
     bg: "bg-accent/10",
-    description: "Can create and manage events, speakers, volunteers, and venues",
+    description: "Core team member — can create and manage events, speakers, volunteers, and venues. Displayed as \"Member\" in the UI.",
+    alias: "EVENT_LEAD",
   },
   {
     key: "ADMIN",
@@ -375,6 +376,11 @@ export default function PermissionsPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm">{role.label}</span>
+                      {"alias" in role && role.alias && (
+                        <span className="text-[10px] font-mono text-muted/60 bg-background px-1.5 py-0.5 rounded">
+                          {role.alias}
+                        </span>
+                      )}
                       <span className="text-[10px] font-mono text-muted bg-background px-1.5 py-0.5 rounded">
                         Level {role.level}
                       </span>
