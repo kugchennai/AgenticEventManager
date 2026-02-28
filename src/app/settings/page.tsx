@@ -3,7 +3,7 @@
 import { PageHeader, Button } from "@/components/design-system";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle } from "lucide-react";
+import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/lib/app-settings-context";
@@ -456,6 +456,15 @@ export default function SettingsPage() {
           <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
             <h3 className="font-semibold mb-1">Members</h3>
             <p className="text-sm text-muted">User roles and permissions</p>
+          </div>
+        </Link>
+        <Link href="/settings/permissions">
+          <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold">Permissions & Access</h3>
+              <Shield className="h-4 w-4 text-accent" />
+            </div>
+            <p className="text-sm text-muted">View the full permission matrix for all roles</p>
           </div>
         </Link>
         {isAdmin && (
