@@ -17,6 +17,7 @@ import {
   Building2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useAppSettings } from "@/lib/app-settings-context";
 
 type NavItem = { label: string; href: string; icon: LucideIcon; minRole?: string };
 
@@ -54,6 +55,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const userRole = session?.user?.globalRole;
+  const { meetupName } = useAppSettings();
 
   const isActive = (href: string) => {
     if (href === "/dashboard" || href === "/settings") return pathname === href;
@@ -80,7 +82,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
         {!collapsed && (
           <span className="font-semibold font-[family-name:var(--font-display)] text-sm truncate">
-            Meetup Manager
+            {meetupName}
           </span>
         )}
       </div>

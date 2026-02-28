@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
@@ -56,18 +56,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Prevent adding someone who is already a member
+  // Prevent adding someone who is already a member (including soft-deleted)
   if (email && typeof email === "string" && email.trim()) {
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingMember = await prisma.user.findUnique({
+    const existingMember = await prismaUnfiltered.user.findUnique({
       where: { email: normalizedEmail },
     });
 
     if (existingMember) {
+      const label = existingMember.deletedAt ? "a deactivated member" : `existing member "${existingMember.name ?? existingMember.email}"`;
       return NextResponse.json(
         {
-          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
+          error: `This email belongs to ${label}. Members cannot be added as volunteers directly.`,
         },
         { status: 409 }
       );

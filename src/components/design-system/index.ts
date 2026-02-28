@@ -9,3 +9,4 @@ export { PageHeader } from "./page-header";
 export { Skeleton, CardSkeleton, TableRowSkeleton } from "./skeleton";
 export { Button } from "./button";
 export { Modal } from "./modal";
+export { DateTimePicker } from "./date-time-picker";

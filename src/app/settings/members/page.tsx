@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader, Button, EmptyState, OwnerAvatar, Modal, EventContributions } from "@/components/design-system";
-import { Users, Shield, ChevronDown, Plus, Mail, Trash2, AlertTriangle } from "lucide-react";
+import { Users, Shield, ChevronDown, Plus, Mail, Trash2, AlertTriangle, Pencil } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
@@ -178,7 +178,7 @@ function AddMemberModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !name.trim()) return;
 
     setSaving(true);
     setError(null);
@@ -229,12 +229,13 @@ function AddMemberModal({
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">Name</label>
+          <label className="block text-sm font-medium mb-1.5">Name *</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Full name (optional)"
+            placeholder="Full name"
+            required
             className={INPUT_CLASS}
           />
         </div>
@@ -433,6 +434,94 @@ function RemoveMemberModal({
   );
 }
 
+function EditMemberModal({
+  open,
+  onClose,
+  member,
+  onUpdated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  member: Member | null;
+  onUpdated: (updated: Member) => void;
+}) {
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open && member) {
+      setName(member.name ?? "");
+      setError(null);
+    }
+  }, [open, member]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!member || !name.trim()) return;
+
+    setSaving(true);
+    setError(null);
+
+    const res = await fetch("/api/members", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: member.id, name: name.trim() }),
+    });
+
+    if (res.ok) {
+      const updated = await res.json();
+      onUpdated({ ...member, ...updated });
+      onClose();
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? "Failed to update member");
+    }
+    setSaving(false);
+  };
+
+  if (!member) return null;
+
+  return (
+    <Modal open={open} onClose={onClose} className="p-6">
+      <h2 className="text-lg font-semibold font-[family-name:var(--font-display)] mb-4">
+        Edit Member
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Name *</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Full name"
+            required
+            autoFocus
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5 text-muted">Email</label>
+          <p className="text-sm text-muted">{member.email ?? "—"}</p>
+        </div>
+        {error && (
+          <p className="text-sm text-status-blocked bg-status-blocked/10 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={saving || !name.trim()}>
+            {saving ? "Saving…" : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function MembersPage() {
   const { data: session } = useSession();
   const myRole = session?.user?.globalRole ?? "VIEWER";
@@ -444,6 +533,7 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null);
+  const [editTarget, setEditTarget] = useState<Member | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
@@ -558,14 +648,23 @@ export default function MembersPage() {
             <div
               key={member.id}
               className={cn(
-                "grid gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors",
+                "group grid gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors",
                 isSuperAdmin
                   ? "grid-cols-[auto_1fr_1fr_auto_auto_auto_auto]"
                   : "grid-cols-[auto_1fr_1fr_auto_auto_auto]"
               )}
             >
               <OwnerAvatar name={member.name} image={member.image} size="md" />
-              <span className="text-sm font-medium truncate">{member.name ?? "—"}</span>
+              <span className="text-sm font-medium truncate flex items-center gap-1.5">
+                {member.name ?? "—"}
+                <button
+                  onClick={() => setEditTarget(member)}
+                  className="p-1 rounded-md text-muted hover:text-accent hover:bg-accent/10 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                  title="Edit name"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              </span>
               <span className="text-sm text-muted truncate">{member.email ?? "—"}</span>
               <RoleDropdown
                 currentRole={member.globalRole}
@@ -626,6 +725,18 @@ export default function MembersPage() {
         onRemoved={(id) => {
           setMembers((prev) => prev.filter((m) => m.id !== id));
           setToast({ message: "Member removed successfully", type: "success" });
+        }}
+      />
+
+      <EditMemberModal
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        member={editTarget}
+        onUpdated={(updated) => {
+          setMembers((prev) =>
+            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m))
+          );
+          setToast({ message: "Member updated successfully", type: "success" });
         }}
       />
     </div>

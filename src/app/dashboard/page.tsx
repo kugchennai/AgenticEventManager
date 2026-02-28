@@ -226,7 +226,9 @@ export default function DashboardPage() {
               <>
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-accent mb-1">Next Event</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-accent mb-1">
+                      {new Date(nextEvent.date).toDateString() === new Date().toDateString() ? "Today's Event" : "Next Event"}
+                    </p>
                     <h2 className="text-xl font-semibold font-[family-name:var(--font-display)] tracking-tight">
                       {nextEvent.title}
                     </h2>

@@ -6,7 +6,7 @@ import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 // Public settings anyone authenticated can read
-const PUBLIC_KEYS = ["volunteer_promotion_threshold"];
+const PUBLIC_KEYS = ["volunteer_promotion_threshold", "meetup_name", "min_volunteer_tasks"];
 
 export async function GET(req: Request) {
   const session = await getAuthSession(req);

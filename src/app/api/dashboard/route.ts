@@ -91,7 +91,7 @@ export async function GET(req: Request) {
     prisma.event.findFirst({
       where: {
         ...eventScope,
-        date: { gt: now },
+        date: { gte: startOfDay },
         status: { not: "COMPLETED" },
       },
       orderBy: { date: "asc" },

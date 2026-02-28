@@ -19,7 +19,7 @@ interface Event {
   _count: { speakers: number; volunteers: number; checklists: number };
 }
 
-type Filter = "upcoming" | "past" | "all";
+type Filter = "today" | "upcoming" | "past" | "all";
 
 function isUpcoming(dateStr: string) {
   const eventDate = new Date(dateStr);
@@ -118,7 +118,7 @@ export default function EventsPage() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>("upcoming");
+  const [filter, setFilter] = useState<Filter | null>(null);
 
   useEffect(() => {
     fetch("/api/events")
@@ -128,21 +128,33 @@ export default function EventsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const { upcoming, past } = useMemo(() => {
+  const { today: todayEvents, upcoming, past } = useMemo(() => {
+    const td: Event[] = [];
     const up: Event[] = [];
     const pa: Event[] = [];
     for (const e of events) {
-      if (isUpcoming(e.date)) up.push(e);
+      if (isToday(e.date)) td.push(e);
+      else if (isUpcoming(e.date)) up.push(e);
       else pa.push(e);
     }
+    td.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     up.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     pa.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    return { upcoming: up, past: pa };
+    return { today: td, upcoming: up, past: pa };
   }, [events]);
 
-  const filtered = filter === "upcoming" ? upcoming : filter === "past" ? past : events;
+  const hasTodayEvents = todayEvents.length > 0;
+
+  // Auto-select the default filter once events load
+  const activeFilter = filter ?? (hasTodayEvents ? "today" : "upcoming");
+
+  const filtered =
+    activeFilter === "today" ? todayEvents :
+    activeFilter === "upcoming" ? upcoming :
+    activeFilter === "past" ? past : events;
 
   const FILTERS: { id: Filter; label: string; count: number }[] = [
+    ...(hasTodayEvents ? [{ id: "today" as Filter, label: "Today", count: todayEvents.length }] : []),
     { id: "upcoming", label: "Upcoming", count: upcoming.length },
     { id: "past", label: "Past", count: past.length },
     { id: "all", label: "All", count: events.length },
@@ -173,7 +185,7 @@ export default function EventsPage() {
               onClick={() => setFilter(f.id)}
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                filter === f.id
+                activeFilter === f.id
                   ? "bg-accent/15 text-accent"
                   : "text-muted hover:text-foreground hover:bg-surface-hover"
               )}
@@ -216,11 +228,17 @@ export default function EventsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Calendar}
-          title={filter === "upcoming" ? "No upcoming events" : "No past events"}
+          title={
+            activeFilter === "today" ? "No events today" :
+            activeFilter === "upcoming" ? "No upcoming events" :
+            "No past events"
+          }
           description={
-            filter === "upcoming"
-              ? "All your events have already ended. Create a new one!"
-              : "No events have ended yet."
+            activeFilter === "today"
+              ? "There are no events scheduled for today."
+              : activeFilter === "upcoming"
+                ? "All your events have already ended. Create a new one!"
+                : "No events have ended yet."
           }
         />
       ) : (

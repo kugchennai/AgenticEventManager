@@ -1,7 +1,7 @@
 "use client";
 
-import { PageHeader, Button } from "@/components/design-system";
-import { ArrowLeft, Calendar, MapPin, FileText, ClipboardCheck } from "lucide-react";
+import { PageHeader, Button, DateTimePicker } from "@/components/design-system";
+import { ArrowLeft, MapPin, FileText, ClipboardCheck, Link2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -34,6 +34,7 @@ export default function CreateEventPage() {
     description: "",
     date: "",
     venue: "",
+    pageLink: "",
     templateId: "",
   });
 
@@ -112,14 +113,12 @@ export default function CreateEventPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
-                <Calendar className="h-3 w-3" /> Date & Time *
+                Date & Time *
               </label>
-              <input
-                type="datetime-local"
+              <DateTimePicker
                 required
                 value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+                onChange={(date) => setForm({ ...form, date })}
               />
             </div>
             <div>
@@ -136,31 +135,67 @@ export default function CreateEventPage() {
             </div>
           </div>
 
+          {/* Event Page Link */}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
+              <Link2 className="h-3 w-3" /> Event Page Link
+            </label>
+            <input
+              type="url"
+              value={form.pageLink}
+              onChange={(e) => setForm({ ...form, pageLink: e.target.value })}
+              placeholder="https://lu.ma/your-event"
+              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+            />
+            <p className="mt-1 text-[11px] text-muted">
+              Optional — add a link to lu.ma, meetup.com, or your event page
+            </p>
+          </div>
+
           {/* SOP Template */}
-          {templates.length > 0 && (
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
-                <ClipboardCheck className="h-3 w-3" /> SOP Template
-              </label>
-              <select
-                value={form.templateId}
-                onChange={(e) => setForm({ ...form, templateId: e.target.value })}
-                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm focus:border-accent outline-none transition-all cursor-pointer"
-              >
-                <option value="">No template</option>
-                {templates.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-              <p className="mt-1 text-[11px] text-muted">
-                Pre-fill the SOP checklist from a template
-              </p>
-            </div>
-          )}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
+              <ClipboardCheck className="h-3 w-3" /> SOP Template *
+            </label>
+            {templates.length > 0 ? (
+              <>
+                <select
+                  required
+                  value={form.templateId}
+                  onChange={(e) => setForm({ ...form, templateId: e.target.value })}
+                  className={cn(
+                    "w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:border-accent outline-none transition-all cursor-pointer",
+                    !form.templateId ? "border-border" : "border-border"
+                  )}
+                >
+                  <option value="" disabled>Select a template</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-muted">
+                  Pre-fill the SOP checklist from a template
+                </p>
+              </>
+            ) : (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3">
+                <p className="text-sm text-red-400">
+                  No SOP templates found. You must create an SOP template before creating an event.
+                </p>
+                <Link
+                  href="/settings/templates"
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs font-medium text-accent hover:underline"
+                >
+                  <FileText className="h-3 w-3" />
+                  Create an SOP Template
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || templates.length === 0}>
             {submitting ? "Creating..." : "Create Event"}
           </Button>
           <Link href="/events">

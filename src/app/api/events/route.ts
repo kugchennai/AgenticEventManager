@@ -49,10 +49,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, description, date, venue, templateId } = body;
+  const { title, description, date, venue, pageLink, templateId } = body;
 
   if (!title || !date) {
     return NextResponse.json({ error: "Title and date are required" }, { status: 400 });
+  }
+
+  if (!templateId) {
+    return NextResponse.json({ error: "SOP template is required. Please create one in Settings > Templates first." }, { status: 400 });
   }
 
   const event = await prisma.event.create({
@@ -61,6 +65,7 @@ export async function POST(req: NextRequest) {
       description,
       date: new Date(date),
       venue,
+      pageLink: pageLink || null,
       createdById: session.user.id,
       members: {
         create: {
@@ -85,6 +90,7 @@ export async function POST(req: NextRequest) {
         relativeDays?: number;
         priority?: string;
         section?: string;
+        subcategory?: string;
       }>;
 
       const eventDate = new Date(date);
@@ -96,24 +102,45 @@ export async function POST(req: NextRequest) {
       };
       const sectionOrder = ["PRE_EVENT", "ON_DAY", "POST_EVENT"];
 
-      const grouped: Record<string, typeof tasks> = { PRE_EVENT: [], ON_DAY: [], POST_EVENT: [] };
+      // Group tasks by section + subcategory for granular checklists
+      type GroupKey = string;
+      const grouped: Map<GroupKey, { section: string; subcategory: string; tasks: typeof tasks }> = new Map();
+      const groupOrder: GroupKey[] = [];
+
       for (const task of tasks) {
         const sec = task.section && sectionOrder.includes(task.section)
           ? task.section
           : (task.relativeDays ?? 0) > 0 ? "PRE_EVENT" : (task.relativeDays ?? 0) === 0 ? "ON_DAY" : "POST_EVENT";
-        grouped[sec].push(task);
+        const sub = task.subcategory?.trim() || sectionLabels[sec];
+        const key = `${sec}::${sub}`;
+
+        if (!grouped.has(key)) {
+          grouped.set(key, { section: sec, subcategory: sub, tasks: [] });
+          groupOrder.push(key);
+        }
+        grouped.get(key)!.tasks.push(task);
       }
 
-      for (let i = 0; i < sectionOrder.length; i++) {
-        const sec = sectionOrder[i];
-        const sectionTasks = grouped[sec];
+      // Sort groups: by section order first, then by insertion order within section
+      groupOrder.sort((a, b) => {
+        const secA = sectionOrder.indexOf(a.split("::")[0]);
+        const secB = sectionOrder.indexOf(b.split("::")[0]);
+        return secA - secB;
+      });
+
+      let sortIdx = 0;
+      for (const key of groupOrder) {
+        const group = grouped.get(key)!;
+        const sectionTasks = group.tasks;
         if (sectionTasks.length === 0) continue;
+
+        const checklistTitle = `${sectionLabels[group.section]}: ${group.subcategory}`;
 
         await prisma.sOPChecklist.create({
           data: {
             eventId: event.id,
-            title: sectionLabels[sec],
-            sortOrder: i,
+            title: checklistTitle,
+            sortOrder: sortIdx++,
             tasks: {
               create: sectionTasks.map((task, index) => ({
                 title: task.title,
