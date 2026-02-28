@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendEventCreatedEmail } from "@/lib/emails/triggers";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 export async function GET(req: Request) {
@@ -165,6 +166,11 @@ export async function POST(req: NextRequest) {
     entityName: title,
     changes: { title, date, venue },
   });
+
+  // Fire-and-forget: send event creation notification if status is SCHEDULED
+  if (event.status === "SCHEDULED" || body.status === "SCHEDULED") {
+    sendEventCreatedEmail(event.id);
+  }
 
   return NextResponse.json(event, { status: 201 });
 }

@@ -15,7 +15,7 @@ A full-stack app for organizing community meetups. Manage events, speakers, volu
 | Icons | Lucide React |
 | Testing | Playwright (E2E) |
 | Deployment | Vercel (with Cron Jobs) |
-| Notifications | Discord Bot API |
+| Notifications | Discord Bot API + Email (SMTP/Gmail) |
 
 ## Getting Started
 
@@ -40,6 +40,11 @@ cp .env.example .env
 # - SUPER_ADMIN_EMAIL (your email for initial super admin)
 # - DISCORD_BOT_TOKEN (optional, for Discord notifications)
 # - CRON_SECRET (optional, for scheduled reminders)
+# - SMTP_HOST (smtp.gmail.com for Gmail)
+# - SMTP_PORT (587 for Gmail TLS)
+# - SMTP_USER (your Gmail address)
+# - SMTP_PASS (Gmail App Password — see Email section below)
+# - SMTP_FROM ("Your App Name <your-email@gmail.com>")
 
 # Generate Prisma client
 npx prisma generate
@@ -151,6 +156,64 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Scheduled reminders** — Vercel Cron job runs daily at 09:00 UTC, finds approaching and overdue tasks, sends Discord notifications if reminders are enabled
 - **Graceful degradation** — all notification functions silently skip if no bot token is configured
 
+### Email Notifications (SMTP / Gmail)
+
+11 automated email workflows powered by **Nodemailer** + **React Email** (JSX-based templates with branded layout).
+
+> **📧 Full documentation:** [docs/email-flows.md](docs/email-flows.md)
+
+| # | Workflow | Trigger | Recipients |
+|---|---------|---------|------------|
+| 1 | **Member Invitation** | Admin invites a new member | Invited email |
+| 2 | **Volunteer Welcome** | Volunteer added with email | Volunteer's email |
+| 3 | **Volunteer Promotion** | Volunteer promoted to Member | Volunteer's email |
+| 4 | **Event Created** | Event status → SCHEDULED | Event Lead + linked members |
+| 5 | **Event Reminder** | 2 days before event (cron) | Event team + confirmed speakers |
+| 6 | **Task Assigned** | Task assigned / reassigned | Assigned user |
+| 7 | **Task Due Soon** | Task deadline within 3 days (cron) | Assigned user |
+| 8 | **Task Overdue** | Task past deadline (cron) | Assigned user (CC: Event Lead if 3+ days overdue) |
+| 9 | **Speaker Invitation** | Speaker added to event | Speaker's email |
+| 10 | **Venue Confirmed** | Venue status → CONFIRMED | Event Lead |
+| 11 | **Weekly Digest** | Every Monday 09:00 UTC (cron) | All active members |
+
+**Key features:**
+- **Gmail App Password** — uses SMTP with Gmail's app-specific passwords (no OAuth complexity)
+- **Branded HTML templates** — JSX-based email templates with amber/gold accent, responsive design, inline CSS (via `@react-email/components`)
+- **ICS calendar attachments** — event reminder emails include a downloadable `.ics` file
+- **EmailLog tracking** — every email sent is logged to the database with status (`PENDING` → `SENT` / `FAILED`), recipient, subject, and template name
+- **Fire-and-forget** — email sends never block API responses; failures are logged but don't affect the user-facing operation
+- **Graceful degradation** — all email functions silently skip if SMTP is not configured
+- **Test endpoint** — `POST /api/email/test` sends a test email to verify SMTP connectivity (Super Admin only)
+- **Email log API** — `GET /api/email/log` returns paginated email logs with filtering by template and status (Admin+)
+- **Cron jobs** — daily event reminders, daily task deadline/overdue checks, weekly digest
+
+#### Gmail SMTP Setup
+
+1. **Enable 2-Step Verification** on your Google Account: [myaccount.google.com/security](https://myaccount.google.com/security)
+2. **Generate an App Password**: [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+   - Select app: "Mail"
+   - Select device: "Other" → name it "Meetup Manager"
+   - Copy the 16-character password
+3. **Add to `.env`**:
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=xxxx-xxxx-xxxx-xxxx
+   SMTP_FROM="Meetup Manager <your-email@gmail.com>"
+   ```
+4. **Verify**: Sign in as Super Admin → call `POST /api/email/test` to send a test email
+
+#### Environment Variables (Email)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SMTP_HOST` | Yes | — | SMTP server hostname (`smtp.gmail.com`) |
+| `SMTP_PORT` | No | `587` | SMTP port (587 for TLS, 465 for SSL) |
+| `SMTP_USER` | Yes | — | SMTP username (Gmail address) |
+| `SMTP_PASS` | Yes | — | SMTP password (Gmail App Password) |
+| `SMTP_FROM` | No | `SMTP_USER` | Sender display name and email (`"App Name <email>"`) |
+
 ### Authentication & Authorization
 
 - **Google OAuth** (web) via NextAuth v5 with JWT-based sessions
@@ -243,6 +306,7 @@ SOPTemplate (standalone, JSON defaultTasks)
 AuditLog (standalone, tracks all changes)
 AppSetting (key-value config store)
 DiscordConfig (bot settings)
+EmailLog (tracks all sent emails)
 RefreshToken ──< User
 ```
 
@@ -266,7 +330,8 @@ src/
 │   │   ├── audit-log/    # Paginated audit logs
 │   │   ├── settings/     # App settings CRUD
 │   │   ├── discord/      # Discord config + test
-│   │   └── cron/         # Scheduled reminder jobs
+│   │   ├── email/        # Email test + log endpoints
+│   │   └── cron/         # Scheduled reminder + email jobs
 │   ├── dashboard/        # Dashboard page
 │   ├── events/           # Event list + detail + new event pages
 │   ├── speakers/         # Speaker directory page
@@ -287,8 +352,14 @@ src/
 │   ├── permissions.ts    # Role hierarchy + access checks
 │   ├── audit.ts          # Audit logging + diff utility
 │   ├── discord.ts        # Discord bot message helpers
+│   ├── email.ts          # Core SMTP email service (Nodemailer)
 │   ├── prisma.ts         # Prisma client (with soft-delete middleware)
-│   └── utils.ts          # Shared utilities
+│   ├── utils.ts          # Shared utilities
+│   └── emails/           # Email notification system
+│       ├── components/   # Shared email layout (React Email)
+│       ├── templates/    # 10 branded email templates
+│       ├── triggers.ts   # High-level email trigger functions
+│       └── ics.ts        # ICS calendar file generator
 ├── generated/prisma/     # Generated Prisma client
 └── types/                # TypeScript type extensions
 ```

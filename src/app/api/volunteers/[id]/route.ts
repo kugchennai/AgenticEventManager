@@ -81,11 +81,10 @@ export async function PATCH(
       where: { email: normalizedEmail },
     });
 
-    if (existingMember) {
-      const label = existingMember.deletedAt ? "a deactivated member" : `existing member "${existingMember.name ?? existingMember.email}"`;
+    if (existingMember && !existingMember.deletedAt) {
       return NextResponse.json(
         {
-          error: `This email belongs to ${label}. Members cannot be added as volunteers directly.`,
+          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
         },
         { status: 409 }
       );

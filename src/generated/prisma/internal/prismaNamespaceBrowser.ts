@@ -69,7 +69,8 @@ export const ModelName = {
   SOPTemplate: 'SOPTemplate',
   AuditLog: 'AuditLog',
   AppSetting: 'AppSetting',
-  DiscordConfig: 'DiscordConfig'
+  DiscordConfig: 'DiscordConfig',
+  EmailLog: 'EmailLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -351,6 +352,20 @@ export const DiscordConfigScalarFieldEnum = {
 } as const
 
 export type DiscordConfigScalarFieldEnum = (typeof DiscordConfigScalarFieldEnum)[keyof typeof DiscordConfigScalarFieldEnum]
+
+
+export const EmailLogScalarFieldEnum = {
+  id: 'id',
+  to: 'to',
+  subject: 'subject',
+  template: 'template',
+  status: 'status',
+  error: 'error',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailLogScalarFieldEnum = (typeof EmailLogScalarFieldEnum)[keyof typeof EmailLogScalarFieldEnum]
 
 
 export const SortOrder = {

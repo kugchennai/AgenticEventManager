@@ -3,6 +3,7 @@ import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendVolunteerWelcomeEmail } from "@/lib/emails/triggers";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 export async function GET(req: Request) {
@@ -64,11 +65,10 @@ export async function POST(req: NextRequest) {
       where: { email: normalizedEmail },
     });
 
-    if (existingMember) {
-      const label = existingMember.deletedAt ? "a deactivated member" : `existing member "${existingMember.name ?? existingMember.email}"`;
+    if (existingMember && !existingMember.deletedAt) {
       return NextResponse.json(
         {
-          error: `This email belongs to ${label}. Members cannot be added as volunteers directly.`,
+          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
         },
         { status: 409 }
       );
@@ -106,6 +106,16 @@ export async function POST(req: NextRequest) {
     entityName: volunteer.name,
     changes: { name: volunteer.name, email: volunteer.email, discordId: volunteer.discordId, role: volunteer.role },
   });
+
+  // Fire-and-forget welcome email
+  if (volunteer.email) {
+    sendVolunteerWelcomeEmail(
+      volunteer.name,
+      volunteer.email,
+      volunteer.role,
+      session.user.name ?? "Team Admin"
+    );
+  }
 
   return NextResponse.json(volunteer, { status: 201 });
 }

@@ -98,3 +98,12 @@ export const VenuePartnerStatus = {
 } as const
 
 export type VenuePartnerStatus = (typeof VenuePartnerStatus)[keyof typeof VenuePartnerStatus]
+
+
+export const EmailStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED'
+} as const
+
+export type EmailStatus = (typeof EmailStatus)[keyof typeof EmailStatus]

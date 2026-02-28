@@ -3,6 +3,7 @@ import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendVolunteerPromotionEmail } from "@/lib/emails/triggers";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 export async function POST(
@@ -93,6 +94,9 @@ export async function POST(
       changes: { action: "promoted_to_member", memberEmail: normalizedEmail },
     });
 
+    // Fire-and-forget: send volunteer promotion email
+    sendVolunteerPromotionEmail(volunteer.name, normalizedEmail);
+
     return NextResponse.json({
       user: { ...existingUser, globalRole: "EVENT_LEAD" },
       linked: true,
@@ -126,6 +130,9 @@ export async function POST(
     entityName: user.name ?? user.email ?? undefined,
     changes: { convertedFromVolunteer: volunteer.name, globalRole: "EVENT_LEAD" },
   });
+
+  // Fire-and-forget: send volunteer promotion email
+  sendVolunteerPromotionEmail(volunteer.name, normalizedEmail);
 
   return NextResponse.json({
     user,

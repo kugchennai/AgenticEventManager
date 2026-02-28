@@ -539,7 +539,7 @@ export default function MembersPage() {
   useEffect(() => {
     fetch("/api/members")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: Member[]) => setMembers(data.filter((m) => m.globalRole !== "VOLUNTEER")))
+      .then((data: Member[]) => setMembers(data))
       .catch(() => setMembers([]))
       .finally(() => setLoading(false));
   }, []);

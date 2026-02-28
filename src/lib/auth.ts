@@ -26,6 +26,13 @@ function validateEnv() {
       "⚠️  CRON_SECRET is not set. Cron endpoints will not be accessible."
     );
   }
+
+  // Warn if SMTP is not configured
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn(
+      "⚠️  SMTP is not configured. Email notifications will be disabled. Set SMTP_HOST, SMTP_USER, SMTP_PASS in .env"
+    );
+  }
 }
 
 // Run validation on module load

@@ -3,7 +3,7 @@
 import { PageHeader, Button } from "@/components/design-system";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { Users, Save, Check, Type, ClipboardCheck } from "lucide-react";
+import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/lib/app-settings-context";
@@ -303,6 +303,136 @@ function MinVolunteerTasksCard() {
   );
 }
 
+function TestEmailCard() {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [smtpStatus, setSmtpStatus] = useState<{
+    configured: boolean;
+    connected: boolean;
+    error?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/email/test")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setSmtpStatus(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSend = async () => {
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setResult({ success: false, message: "Please enter an email address" });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setResult({ success: false, message: "Invalid email address format" });
+      return;
+    }
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/email/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResult({ success: true, message: `Test email sent to ${data.sentTo}` });
+        setEmail("");
+      } else {
+        setResult({ success: false, message: data.error ?? "Failed to send" });
+      }
+    } catch {
+      setResult({ success: false, message: "Network error — could not reach server" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const smtpOk = smtpStatus?.configured && smtpStatus?.connected;
+
+  return (
+    <div className="bg-surface border border-border rounded-xl p-6">
+      <div className="flex items-start gap-3 mb-4">
+        <div className="p-2 rounded-lg bg-accent/10 text-accent">
+          <Mail className="h-5 w-5" />
+        </div>
+        <div>
+          <h3 className="font-semibold mb-1">Test Email</h3>
+          <p className="text-sm text-muted">
+            Send a test email to verify your SMTP configuration is working.
+            Enter any member&apos;s email address below.
+          </p>
+        </div>
+      </div>
+      {smtpStatus && !smtpOk && (
+        <div className="flex items-center gap-2 mb-4 text-sm text-status-blocked bg-status-blocked/10 rounded-lg px-3 py-2">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <span>
+            {!smtpStatus.configured
+              ? "SMTP is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS in your .env file."
+              : `SMTP connection failed: ${smtpStatus.error}`}
+          </span>
+        </div>
+      )}
+      {smtpStatus && smtpOk && (
+        <div className="flex items-center gap-2 mb-4 text-sm text-status-done bg-status-done/10 rounded-lg px-3 py-2">
+          <Check className="h-4 w-4 flex-shrink-0" />
+          <span>SMTP connected and ready</span>
+        </div>
+      )}
+      <div className="flex items-end gap-3">
+        <div className="flex-1 max-w-[360px]">
+          <label className="block text-sm font-medium mb-1.5">
+            Recipient Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setResult(null);
+            }}
+            placeholder="member@example.com"
+            className={INPUT_CLASS}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !sending) handleSend();
+            }}
+          />
+        </div>
+        <Button
+          size="md"
+          onClick={handleSend}
+          disabled={sending || (smtpStatus !== null && !smtpOk)}
+        >
+          {sending ? (
+            "Sending…"
+          ) : (
+            <>
+              <Send className="h-4 w-4" /> Send Test
+            </>
+          )}
+        </Button>
+      </div>
+      {result && (
+        <p
+          className={cn(
+            "mt-2 text-sm",
+            result.success ? "text-status-done" : "text-status-blocked"
+          )}
+        >
+          {result.message}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { data: session } = useSession();
   const role = session?.user?.globalRole;
@@ -339,6 +469,7 @@ export default function SettingsPage() {
         {isSuperAdmin && <MeetupNameCard />}
         {isSuperAdmin && <VolunteerThresholdCard />}
         {isSuperAdmin && <MinVolunteerTasksCard />}
+        {isAdmin && <TestEmailCard />}
       </div>
     </div>
   );
