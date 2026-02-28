@@ -70,6 +70,13 @@ const styles = {
     lineHeight: "1.3",
     margin: "0 0 16px 0",
   } as React.CSSProperties,
+  h2: {
+    color: colors.text,
+    fontSize: "20px",
+    fontWeight: "600",
+    lineHeight: "1.3",
+    margin: "0 0 12px 0",
+  } as React.CSSProperties,
   paragraph: {
     color: colors.text,
     fontSize: "15px",
