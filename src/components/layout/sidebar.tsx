@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Zap,
   Building2,
+  Shield,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAppSettings } from "@/lib/app-settings-context";
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const SETTINGS_ITEMS: NavItem[] = [
   { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, minRole: "EVENT_LEAD" },
+  { label: "Permissions", href: "/settings/permissions", icon: Shield },
   { label: "Settings", href: "/settings", icon: Settings, minRole: "ADMIN" },
 ];
 
