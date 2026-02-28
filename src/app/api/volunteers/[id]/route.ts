@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit, diffChanges } from "@/lib/audit";
@@ -73,18 +73,19 @@ export async function PATCH(
     return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
   }
 
-  // If email is being changed, validate it doesn't belong to a member
+  // If email is being changed, validate it doesn't belong to a member (including soft-deleted)
   if (updateData.email && updateData.email !== before.email) {
     const normalizedEmail = updateData.email.trim().toLowerCase();
 
-    const existingMember = await prisma.user.findUnique({
+    const existingMember = await prismaUnfiltered.user.findUnique({
       where: { email: normalizedEmail },
     });
 
     if (existingMember) {
+      const label = existingMember.deletedAt ? "a deactivated member" : `existing member "${existingMember.name ?? existingMember.email}"`;
       return NextResponse.json(
         {
-          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
+          error: `This email belongs to ${label}. Members cannot be added as volunteers directly.`,
         },
         { status: 409 }
       );

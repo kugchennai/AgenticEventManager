@@ -7,13 +7,14 @@ import {
 import {
   ArrowLeft, Calendar, MapPin, Mic2, Users, ClipboardCheck,
   Check, Pencil, Trash2, Plus, CalendarDays, UserPlus, X, Search,
-  ChevronDown, ChevronsUpDown, UserCheck, Building2, AlertTriangle,
+  ChevronDown, ChevronsUpDown, Building2, AlertTriangle, RefreshCw, ExternalLink, Link2,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
+import { useAppSettings } from "@/lib/app-settings-context";
 
 type VolunteerOption = { id: string; name: string; email: string | null; role: string | null };
 type MemberOption = { id: string; name: string | null; email: string | null; image: string | null; globalRole: string };
@@ -26,6 +27,7 @@ interface EventDetail {
   description: string | null;
   date: string;
   venue: string | null;
+  pageLink: string | null;
   status: string;
   createdBy: { id: string; name: string | null; image: string | null };
   members: { eventRole: string; user: { id: string; name: string | null; image: string | null } }[];
@@ -134,7 +136,7 @@ function VolunteerPicker({
               tab === "directory" ? "bg-accent/15 text-accent" : "text-muted hover:text-foreground hover:bg-surface-hover"
             )}
           >
-            From Directory
+            From Volunteers
           </button>
         </div>
         <div className="relative">
@@ -783,6 +785,16 @@ const CHECKLIST_COLORS: Record<string, { accent: string; bg: string; border: str
   "Post-Event": { accent: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20", dot: "bg-emerald-400" },
 };
 
+function parseChecklistSection(title: string): { section: string; subcategory: string } | null {
+  const match = title.match(/^(Pre-Event|On-Day|Post-Event):\s*(.+)$/);
+  if (match) return { section: match[1], subcategory: match[2] };
+  // Legacy support: titles without subcategory
+  if (title in CHECKLIST_COLORS) return { section: title, subcategory: "" };
+  return null;
+}
+
+type TemplateOption = { id: string; name: string; description: string | null };
+
 function ChecklistTab({
   checklists,
   eventVolunteers,
@@ -790,6 +802,9 @@ function ChecklistTab({
   readOnly,
   volunteerMode,
   currentVolunteerId,
+  isAdmin,
+  eventId,
+  onTemplateChanged,
 }: {
   checklists: EventDetail["checklists"];
   eventVolunteers: EventVolunteerItem[];
@@ -797,9 +812,56 @@ function ChecklistTab({
   readOnly?: boolean;
   volunteerMode?: boolean;
   currentVolunteerId?: string | null;
+  isAdmin?: boolean;
+  eventId: string;
+  onTemplateChanged?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const allCollapsed = checklists.length > 0 && checklists.every((c) => collapsed[c.id]);
+
+  // Template change state
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [templates, setTemplates] = useState<TemplateOption[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [changingTemplate, setChangingTemplate] = useState(false);
+
+  const openTemplatePicker = async () => {
+    setTemplatePickerOpen(true);
+    setLoadingTemplates(true);
+    try {
+      const res = await fetch("/api/templates");
+      if (res.ok) setTemplates(await res.json());
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const handleSelectTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setTemplatePickerOpen(false);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmChange = async () => {
+    if (!selectedTemplateId) return;
+    setChangingTemplate(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/change-template`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId: selectedTemplateId }),
+      });
+      if (res.ok) {
+        onTemplateChanged?.();
+      }
+    } finally {
+      setChangingTemplate(false);
+      setConfirmOpen(false);
+      setSelectedTemplateId(null);
+    }
+  };
 
   const toggleAll = () => {
     const next: Record<string, boolean> = {};
@@ -820,9 +882,60 @@ function ChecklistTab({
     );
   }
 
+  // Group checklists by section (Pre-Event, On-Day, Post-Event)
+  const sectionOrder = ["Pre-Event", "On-Day", "Post-Event"];
+  const sectionGroups: { section: string; checklists: EventDetail["checklists"] }[] = [];
+  const ungrouped: EventDetail["checklists"] = [];
+
+  // Build section groups maintaining order
+  const sectionMap = new Map<string, EventDetail["checklists"]>();
+  for (const cl of checklists) {
+    const parsed = parseChecklistSection(cl.title);
+    if (parsed) {
+      const sec = parsed.section;
+      if (!sectionMap.has(sec)) sectionMap.set(sec, []);
+      sectionMap.get(sec)!.push(cl);
+    } else {
+      // Legacy or manually created checklists
+      ungrouped.push(cl);
+    }
+  }
+
+  for (const sec of sectionOrder) {
+    if (sectionMap.has(sec)) {
+      sectionGroups.push({ section: sec, checklists: sectionMap.get(sec)! });
+    }
+  }
+
+  const hasSubcategories = sectionGroups.length > 0;
+
+  const selectedTemplateName = templates.find((t) => t.id === selectedTemplateId)?.name;
+
   return (
     <div>
-      <div className="flex justify-end mb-3">
+      <div className="flex items-center justify-between mb-3">
+        <div className="relative group">
+          <button
+            onClick={isAdmin ? openTemplatePicker : undefined}
+            disabled={!isAdmin}
+            className={cn(
+              "inline-flex items-center gap-1.5 text-xs rounded-lg px-3 py-1.5 border transition-colors",
+              isAdmin
+                ? "text-muted hover:text-foreground hover:border-accent/40 border-border cursor-pointer"
+                : "text-muted/40 border-border/50 cursor-not-allowed"
+            )}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Change SOP Template
+          </button>
+          {!isAdmin && (
+            <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block z-10 w-52">
+              <div className="bg-surface border border-border rounded-lg px-3 py-2 text-[11px] text-muted shadow-lg">
+                Only admins can change the SOP template.
+              </div>
+            </div>
+          )}
+        </div>
         <button
           onClick={toggleAll}
           className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors cursor-pointer"
@@ -832,76 +945,341 @@ function ChecklistTab({
         </button>
       </div>
 
-      <div className="space-y-4">
-        {checklists.map((checklist) => {
-          const colors = CHECKLIST_COLORS[checklist.title];
-          const isCollapsed = !!collapsed[checklist.id];
-          const done = checklist.tasks.filter((t) => t.status === "DONE").length;
-          const total = checklist.tasks.length;
-          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-          return (
-            <div
-              key={checklist.id}
-              className="bg-surface border border-border rounded-xl"
-            >
+      {/* Template Picker Modal */}
+      <Modal open={templatePickerOpen} onClose={() => setTemplatePickerOpen(false)} className="p-6 max-w-md">
+        <h2 className="text-lg font-semibold font-[family-name:var(--font-display)] mb-1">Change SOP Template</h2>
+        <p className="text-sm text-muted mb-4">
+          Select a new template to apply to this event.
+        </p>
+        {loadingTemplates ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-14 rounded-lg animate-shimmer" />
+            ))}
+          </div>
+        ) : templates.length === 0 ? (
+          <p className="text-sm text-muted text-center py-6">No templates available.</p>
+        ) : (
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {templates.map((t) => (
               <button
-                onClick={() => toggle(checklist.id)}
-                className="w-full px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-hover/50 transition-colors"
+                key={t.id}
+                onClick={() => handleSelectTemplate(t.id)}
+                className="w-full text-left px-4 py-3 rounded-lg border border-border hover:border-accent/40 hover:bg-surface-hover/50 transition-colors cursor-pointer"
               >
-                {colors && (
-                  <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", colors.dot)} />
+                <div className="text-sm font-medium">{t.name}</div>
+                {t.description && (
+                  <div className="text-xs text-muted mt-0.5 line-clamp-1">{t.description}</div>
                 )}
-                <h4
-                  className={cn(
-                    "text-sm font-semibold font-[family-name:var(--font-display)]",
-                    colors?.accent ?? "text-foreground"
-                  )}
-                >
-                  {checklist.title}
-                </h4>
-
-                <div className="flex items-center gap-2 ml-auto">
-                  <div className="w-16 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all duration-500",
-                        colors ? colors.dot : "bg-accent"
-                      )}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
-                    {done}/{total}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-muted transition-transform duration-200",
-                      isCollapsed && "-rotate-90"
-                    )}
-                  />
-                </div>
               </button>
+            ))}
+          </div>
+        )}
+        <div className="flex justify-end mt-4">
+          <Button variant="secondary" size="sm" onClick={() => setTemplatePickerOpen(false)}>
+            Cancel
+          </Button>
+        </div>
+      </Modal>
 
-              {!isCollapsed && (
-                <div className={cn("border-t", colors?.border ?? "border-border")}>
-                  {checklist.tasks.map((task) => (
-                    <TaskRow
-                      key={task.id}
-                      task={task}
-                      checklistId={checklist.id}
-                      eventVolunteers={eventVolunteers}
-                      onUpdate={onUpdateTask}
-                      readOnly={readOnly}
-                      volunteerMode={volunteerMode}
-                      currentVolunteerId={currentVolunteerId}
-                    />
-                  ))}
+      {/* Confirmation Warning Modal */}
+      <Modal open={confirmOpen} onClose={() => { setConfirmOpen(false); setSelectedTemplateId(null); }} className="p-6 max-w-md">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-9 w-9 rounded-full bg-status-error/10 flex items-center justify-center">
+            <AlertTriangle className="h-5 w-5 text-status-error" />
+          </div>
+          <h2 className="text-lg font-semibold font-[family-name:var(--font-display)]">
+            Reset All Checklist Progress?
+          </h2>
+        </div>
+        <div className="space-y-2 mb-5">
+          <p className="text-sm text-muted">
+            Changing the SOP template to <span className="font-medium text-foreground">&quot;{selectedTemplateName}&quot;</span> will:
+          </p>
+          <ul className="text-sm text-muted space-y-1.5 ml-4">
+            <li className="flex items-start gap-2">
+              <span className="text-status-error mt-0.5">•</span>
+              <span>Delete <strong className="text-foreground">all existing checklists</strong> and their tasks</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-status-error mt-0.5">•</span>
+              <span>Remove all task assignments, deadlines, and progress</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-status-error mt-0.5">•</span>
+              <span>Create fresh checklists from the selected template</span>
+            </li>
+          </ul>
+          <p className="text-sm font-medium text-status-error">
+            This action cannot be undone.
+          </p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={() => { setConfirmOpen(false); setSelectedTemplateId(null); }}>
+            Cancel
+          </Button>
+          <Button variant="danger" size="sm" disabled={changingTemplate} onClick={handleConfirmChange}>
+            {changingTemplate ? "Applying..." : "Yes, Reset & Apply"}
+          </Button>
+        </div>
+      </Modal>
+
+      <div className="space-y-6">
+        {hasSubcategories ? (
+          <>
+            {sectionGroups.map(({ section, checklists: sectionChecklists }) => {
+              const sectionColors = CHECKLIST_COLORS[section];
+              const sectionDone = sectionChecklists.reduce((sum, c) => sum + c.tasks.filter((t) => t.status === "DONE").length, 0);
+              const sectionTotal = sectionChecklists.reduce((sum, c) => sum + c.tasks.length, 0);
+              const sectionPct = sectionTotal > 0 ? Math.round((sectionDone / sectionTotal) * 100) : 0;
+
+              return (
+                <div key={section}>
+                  {/* Section header */}
+                  <div className="flex items-center gap-3 mb-3">
+                    {sectionColors && (
+                      <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", sectionColors.dot)} />
+                    )}
+                    <h3 className={cn(
+                      "text-base font-bold font-[family-name:var(--font-display)]",
+                      sectionColors?.accent ?? "text-foreground"
+                    )}>
+                      {section}
+                    </h3>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <div className="w-20 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            sectionColors ? sectionColors.dot : "bg-accent"
+                          )}
+                          style={{ width: `${sectionPct}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
+                        {sectionDone}/{sectionTotal}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Subcategory checklists */}
+                  <div className="space-y-3 pl-0 sm:pl-5">
+                    {sectionChecklists.map((checklist) => {
+                      const parsed = parseChecklistSection(checklist.title);
+                      const subcategoryLabel = parsed?.subcategory || checklist.title;
+                      const isCollapsed = !!collapsed[checklist.id];
+                      const done = checklist.tasks.filter((t) => t.status === "DONE").length;
+                      const total = checklist.tasks.length;
+                      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                      return (
+                        <div
+                          key={checklist.id}
+                          className="bg-surface border border-border rounded-xl"
+                        >
+                          <button
+                            onClick={() => toggle(checklist.id)}
+                            className="w-full px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-hover/50 transition-colors"
+                          >
+                            <h4 className="text-sm font-semibold font-[family-name:var(--font-display)] text-foreground">
+                              {subcategoryLabel}
+                            </h4>
+
+                            <div className="flex items-center gap-2 ml-auto">
+                              <div className="w-16 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
+                                <div
+                                  className={cn(
+                                    "h-full rounded-full transition-all duration-500",
+                                    sectionColors ? sectionColors.dot : "bg-accent"
+                                  )}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
+                                {done}/{total}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "h-4 w-4 text-muted transition-transform duration-200",
+                                  isCollapsed && "-rotate-90"
+                                )}
+                              />
+                            </div>
+                          </button>
+
+                          {!isCollapsed && (
+                            <div className={cn("border-t", sectionColors?.border ?? "border-border")}>
+                              {checklist.tasks.map((task) => (
+                                <TaskRow
+                                  key={task.id}
+                                  task={task}
+                                  checklistId={checklist.id}
+                                  eventVolunteers={eventVolunteers}
+                                  onUpdate={onUpdateTask}
+                                  readOnly={readOnly}
+                                  volunteerMode={volunteerMode}
+                                  currentVolunteerId={currentVolunteerId}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+
+            {/* Ungrouped / legacy checklists */}
+            {ungrouped.length > 0 && (
+              <div className="space-y-4">
+                {ungrouped.map((checklist) => {
+                  const colors = CHECKLIST_COLORS[checklist.title];
+                  const isCollapsed = !!collapsed[checklist.id];
+                  const done = checklist.tasks.filter((t) => t.status === "DONE").length;
+                  const total = checklist.tasks.length;
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                  return (
+                    <div
+                      key={checklist.id}
+                      className="bg-surface border border-border rounded-xl"
+                    >
+                      <button
+                        onClick={() => toggle(checklist.id)}
+                        className="w-full px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-hover/50 transition-colors"
+                      >
+                        {colors && (
+                          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", colors.dot)} />
+                        )}
+                        <h4
+                          className={cn(
+                            "text-sm font-semibold font-[family-name:var(--font-display)]",
+                            colors?.accent ?? "text-foreground"
+                          )}
+                        >
+                          {checklist.title}
+                        </h4>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                          <div className="w-16 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
+                            <div
+                              className={cn(
+                                "h-full rounded-full transition-all duration-500",
+                                colors ? colors.dot : "bg-accent"
+                              )}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
+                            {done}/{total}
+                          </span>
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 text-muted transition-transform duration-200",
+                              isCollapsed && "-rotate-90"
+                            )}
+                          />
+                        </div>
+                      </button>
+
+                      {!isCollapsed && (
+                        <div className={cn("border-t", colors?.border ?? "border-border")}>
+                          {checklist.tasks.map((task) => (
+                            <TaskRow
+                              key={task.id}
+                              task={task}
+                              checklistId={checklist.id}
+                              eventVolunteers={eventVolunteers}
+                              onUpdate={onUpdateTask}
+                              readOnly={readOnly}
+                              volunteerMode={volunteerMode}
+                              currentVolunteerId={currentVolunteerId}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          /* Legacy layout: flat checklists without section grouping */
+          <div className="space-y-4">
+            {checklists.map((checklist) => {
+              const colors = CHECKLIST_COLORS[checklist.title];
+              const isCollapsed = !!collapsed[checklist.id];
+              const done = checklist.tasks.filter((t) => t.status === "DONE").length;
+              const total = checklist.tasks.length;
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+              return (
+                <div
+                  key={checklist.id}
+                  className="bg-surface border border-border rounded-xl"
+                >
+                  <button
+                    onClick={() => toggle(checklist.id)}
+                    className="w-full px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-hover/50 transition-colors"
+                  >
+                    {colors && (
+                      <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", colors.dot)} />
+                    )}
+                    <h4
+                      className={cn(
+                        "text-sm font-semibold font-[family-name:var(--font-display)]",
+                        colors?.accent ?? "text-foreground"
+                      )}
+                    >
+                      {checklist.title}
+                    </h4>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                      <div className="w-16 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            colors ? colors.dot : "bg-accent"
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
+                        {done}/{total}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 text-muted transition-transform duration-200",
+                          isCollapsed && "-rotate-90"
+                        )}
+                      />
+                    </div>
+                  </button>
+
+                  {!isCollapsed && (
+                    <div className={cn("border-t", colors?.border ?? "border-border")}>
+                      {checklist.tasks.map((task) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          checklistId={checklist.id}
+                          eventVolunteers={eventVolunteers}
+                          onUpdate={onUpdateTask}
+                          readOnly={readOnly}
+                          volunteerMode={volunteerMode}
+                          currentVolunteerId={currentVolunteerId}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -925,6 +1303,7 @@ export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data: session } = useSession();
+  const { minVolunteerTasks } = useAppSettings();
   const userRole = session?.user?.globalRole ?? "VIEWER";
   const canEdit = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
   const isAdmin = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.ADMIN;
@@ -934,7 +1313,6 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [converting, setConverting] = useState<string | null>(null);
 
   const fetchEvent = useCallback(() => {
     fetch(`/api/events/${id}`)
@@ -1100,14 +1478,6 @@ export default function EventDetailPage() {
     setVenueStatusUpdating(null);
   };
 
-  const convertToMember = async (volunteerId: string) => {
-    if (!confirm("Convert this volunteer to a member? They will be able to sign in to the app.")) return;
-    setConverting(volunteerId);
-    const res = await fetch(`/api/volunteers/${volunteerId}/convert`, { method: "POST" });
-    setConverting(null);
-    if (res.ok) fetchEvent();
-  };
-
   // --- Edit event ---
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -1115,6 +1485,7 @@ export default function EventDetailPage() {
     date: "",
     venue: "",
     description: "",
+    pageLink: "",
   });
   const [editSaving, setEditSaving] = useState(false);
 
@@ -1147,6 +1518,18 @@ export default function EventDetailPage() {
   const doneTasks = allTasks.filter((t) => t.status === "DONE").length;
   const progress = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
 
+  const MIN_VOLUNTEER_TASKS = minVolunteerTasks;
+  const volunteerTaskCounts = new Map<string, { completed: number; total: number }>();
+  for (const task of allTasks) {
+    if (task.volunteerAssignee) {
+      const vid = task.volunteerAssignee.id;
+      const entry = volunteerTaskCounts.get(vid) ?? { completed: 0, total: 0 };
+      entry.total += 1;
+      if (task.status === "DONE") entry.completed += 1;
+      volunteerTaskCounts.set(vid, entry);
+    }
+  }
+
   const linkedMemberIds = event.volunteers
     .map((ev) => ev.volunteer.userId)
     .filter((uid): uid is string => uid != null);
@@ -1168,6 +1551,7 @@ export default function EventDetailPage() {
       date: event.date.slice(0, 10),
       venue: event.venue ?? "",
       description: event.description ?? "",
+      pageLink: event.pageLink ?? "",
     });
     setEditOpen(true);
   };
@@ -1184,6 +1568,7 @@ export default function EventDetailPage() {
         date: editForm.date,
         venue: editForm.venue.trim() || null,
         description: editForm.description.trim() || null,
+        pageLink: editForm.pageLink.trim() || null,
       }),
     });
     setEditSaving(false);
@@ -1229,6 +1614,17 @@ export default function EventDetailPage() {
                 <MapPin className="h-3.5 w-3.5" />
                 {event.venue}
               </span>
+            )}
+            {event.pageLink && (
+              <a
+                href={event.pageLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-accent hover:underline"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Event Page
+              </a>
             )}
           </div>
         </div>
@@ -1285,6 +1681,18 @@ export default function EventDetailPage() {
               placeholder="Event description"
               rows={3}
               className={cn(INPUT_CLASS, "min-h-[80px] resize-y")}
+            />
+          </div>
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-medium mb-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Event Page Link
+            </label>
+            <input
+              type="url"
+              value={editForm.pageLink}
+              onChange={(e) => setEditForm((f) => ({ ...f, pageLink: e.target.value }))}
+              placeholder="https://lu.ma/your-event"
+              className={INPUT_CLASS}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -1465,17 +1873,28 @@ export default function EventDetailPage() {
                     </div>
                     <p className="text-xs text-muted">{ev.assignedRole ?? "No role assigned"}</p>
                   </div>
-                  <StatusBadge type="volunteer" status={ev.status} />
-                  {isAdmin && !ev.volunteer.userId && ev.volunteer.email && (
-                    <button
-                      onClick={() => convertToMember(ev.volunteer.id)}
-                      disabled={converting === ev.volunteer.id}
-                      className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-accent/10 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                      title="Convert to member"
-                    >
-                      <UserCheck className="h-3.5 w-3.5" />
-                    </button>
-                  )}
+                  {(() => {
+                    const counts = volunteerTaskCounts.get(ev.volunteer.id) ?? { completed: 0, total: 0 };
+                    const isEligible = counts.completed >= MIN_VOLUNTEER_TASKS;
+                    return (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border font-medium px-2.5 py-0.5 text-[11px]",
+                          isEligible
+                            ? "bg-status-done/15 text-status-done border-status-done/20"
+                            : "bg-status-pending/15 text-status-pending border-status-pending/20"
+                        )}
+                        title={`${counts.completed} of ${MIN_VOLUNTEER_TASKS} required tasks completed (${counts.total} assigned)`}
+                      >
+                        {isEligible ? (
+                          <Check className="h-3 w-3 shrink-0" />
+                        ) : (
+                          <ClipboardCheck className="h-3 w-3 shrink-0" />
+                        )}
+                        {counts.completed} / {MIN_VOLUNTEER_TASKS} tasks
+                      </span>
+                    );
+                  })()}
                   {canEdit && (
                     <button
                       onClick={() => unlinkVolunteer(ev.volunteer.id)}
@@ -1608,6 +2027,9 @@ export default function EventDetailPage() {
           readOnly={isReadOnly}
           volunteerMode={isVolunteer}
           currentVolunteerId={myVolunteerId}
+          isAdmin={isAdmin}
+          eventId={id}
+          onTemplateChanged={fetchEvent}
         />
       )}
     </div>

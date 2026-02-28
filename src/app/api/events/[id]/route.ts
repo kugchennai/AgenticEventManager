@@ -80,7 +80,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, description, date, venue, status } = body;
+  const { title, description, date, venue, pageLink, status } = body;
 
   const before = await prisma.event.findUnique({ where: { id } });
   if (!before) {
@@ -94,6 +94,7 @@ export async function PATCH(
       ...(description !== undefined && { description }),
       ...(date !== undefined && { date: new Date(date) }),
       ...(venue !== undefined && { venue }),
+      ...(pageLink !== undefined && { pageLink: pageLink || null }),
       ...(status !== undefined && { status }),
     },
     include: {
@@ -102,8 +103,8 @@ export async function PATCH(
   });
 
   const changes = diffChanges(
-    { title: before.title, description: before.description, date: before.date, venue: before.venue, status: before.status },
-    { title: event.title, description: event.description, date: event.date, venue: event.venue, status: event.status }
+    { title: before.title, description: before.description, date: before.date, venue: before.venue, pageLink: before.pageLink, status: before.status },
+    { title: event.title, description: event.description, date: event.date, venue: event.venue, pageLink: event.pageLink, status: event.status }
   );
 
   if (Object.keys(changes).length > 0) {

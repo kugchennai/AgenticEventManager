@@ -87,6 +87,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
 
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
 
   // Use unfiltered client to also find soft-deleted users for reactivation
@@ -112,6 +116,20 @@ export async function POST(req: NextRequest) {
 
   // Reactivate soft-deleted user
   if (existing?.deletedAt) {
+    // Check if this email now belongs to a volunteer — use convert flow instead
+    const existingVolunteer = await prisma.volunteer.findFirst({
+      where: { email: normalizedEmail },
+    });
+
+    if (existingVolunteer) {
+      return NextResponse.json(
+        {
+          error: `This email belongs to volunteer "${existingVolunteer.name}". Use the "Promote to Member" action on the Volunteers page instead of reactivating directly.`,
+        },
+        { status: 409 }
+      );
+    }
+
     const callerRole = session.user.globalRole as GlobalRole;
     const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
     if (callerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
@@ -211,57 +229,83 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { userId, globalRole } = body;
+  const { userId, globalRole, name } = body;
 
-  if (!userId || !globalRole) {
-    return NextResponse.json({ error: "Missing userId or globalRole" }, { status: 400 });
-  }
-
-  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
-  const patchCallerRole = session.user.globalRole as GlobalRole;
-  if (patchCallerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
-
-  if (!assignableRoles.includes(globalRole)) {
-    return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-  }
-
-  if (globalRole === "ADMIN" && patchCallerRole !== "SUPER_ADMIN") {
-    return NextResponse.json(
-      { error: "Only Super Admin can assign the Admin role" },
-      { status: 403 }
-    );
+  if (!userId) {
+    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
 
   const before = await prisma.user.findUnique({
     where: { id: userId },
-    select: { globalRole: true },
+    select: { name: true, globalRole: true },
   });
 
-  if (before?.globalRole === "SUPER_ADMIN") {
-    return NextResponse.json(
-      { error: "Cannot change the Super Admin's role" },
-      { status: 403 }
-    );
+  if (!before) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (userId === session.user.id) {
-    return NextResponse.json(
-      { error: "You cannot change your own role" },
-      { status: 400 }
-    );
+  const data: Record<string, unknown> = {};
+  const changes: Record<string, unknown> = {};
+
+  // Handle name update
+  if (name !== undefined) {
+    if (typeof name !== "string" || !name.trim()) {
+      return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
+    }
+    data.name = name.trim();
+    changes.name = { from: before.name, to: name.trim() };
   }
 
-  const callerRole = session.user.globalRole as GlobalRole;
-  if (callerRole === "ADMIN" && before?.globalRole === "ADMIN") {
-    return NextResponse.json(
-      { error: "Only a Super Admin can change another Admin's role" },
-      { status: 403 }
-    );
+  // Handle role update
+  if (globalRole !== undefined) {
+    if (before.globalRole === "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Cannot change the Super Admin's role" },
+        { status: 403 }
+      );
+    }
+
+    if (userId === session.user.id) {
+      return NextResponse.json(
+        { error: "You cannot change your own role" },
+        { status: 400 }
+      );
+    }
+
+    const callerRole = session.user.globalRole as GlobalRole;
+    if (callerRole === "ADMIN" && before.globalRole === "ADMIN") {
+      return NextResponse.json(
+        { error: "Only a Super Admin can change another Admin's role" },
+        { status: 403 }
+      );
+    }
+
+    const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
+    const patchCallerRole = session.user.globalRole as GlobalRole;
+    if (patchCallerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
+
+    if (!assignableRoles.includes(globalRole)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
+    if (globalRole === "ADMIN" && patchCallerRole !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Only Super Admin can assign the Admin role" },
+        { status: 403 }
+      );
+    }
+
+    data.globalRole = globalRole;
+    changes.globalRole = { from: before.globalRole, to: globalRole };
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: { globalRole },
+    data,
     select: {
       id: true,
       name: true,
@@ -277,7 +321,7 @@ export async function PATCH(req: NextRequest) {
     entityType: "User",
     entityId: userId,
     entityName: updated.name ?? updated.email ?? undefined,
-    changes: { globalRole: { from: before?.globalRole, to: globalRole } },
+    changes,
   });
 
   return NextResponse.json(updated);

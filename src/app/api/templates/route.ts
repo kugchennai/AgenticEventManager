@@ -10,6 +10,7 @@ type DefaultTask = {
   relativeDays: number;
   priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   section: "PRE_EVENT" | "ON_DAY" | "POST_EVENT";
+  subcategory?: string;
 };
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
@@ -39,11 +40,15 @@ function validateDefaultTasks(tasks: unknown): DefaultTask[] {
       const section = SECTIONS.includes(obj.section as (typeof SECTIONS)[number])
         ? (obj.section as DefaultTask["section"])
         : inferSection((t as DefaultTask).relativeDays);
+      const subcategory = typeof (obj.subcategory) === "string" && (obj.subcategory as string).trim()
+        ? (obj.subcategory as string).trim()
+        : undefined;
       return {
         title: (t as DefaultTask).title.trim(),
         relativeDays: (t as DefaultTask).relativeDays,
         priority: (t as DefaultTask).priority,
         section,
+        ...(subcategory ? { subcategory } : {}),
       };
     });
 }

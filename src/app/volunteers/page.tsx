@@ -295,24 +295,27 @@ export default function VolunteersPage() {
               <span className="text-sm text-muted truncate">{volunteer.email ?? "—"}</span>
               <span className="text-sm text-muted truncate">{volunteer.discordId ?? "—"}</span>
               <span className="text-sm text-muted truncate">{volunteer.role ?? "—"}</span>
-              <EventContributions
-                events={volunteer.events ?? []}
-                statusType="volunteer"
-              />
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                <EventContributions
+                  events={volunteer.events ?? []}
+                  statusType="volunteer"
+                />
                 {canConvert && !volunteer.userId && volunteer.email && (volunteer.eventsCount ?? 0) >= promotionThreshold && (
                   <button
                     onClick={() => convertToMember(volunteer)}
                     disabled={converting === volunteer.id}
                     className={cn(
-                      "p-2 rounded-lg text-accent hover:text-accent/80 hover:bg-accent/10 transition-colors",
+                      "inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent px-2.5 py-1 text-xs font-medium hover:bg-accent/20 transition-colors cursor-pointer",
                       converting === volunteer.id && "opacity-50 pointer-events-none"
                     )}
-                    title={`Eligible — Convert to member (${volunteer.eventsCount}/${promotionThreshold} events)`}
+                    title={`Eligible — Promote to member (${volunteer.eventsCount}/${promotionThreshold} events)`}
                   >
-                    <UserPlus className="h-4 w-4" />
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Promote
                   </button>
                 )}
+              </div>
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setModalVolunteer(volunteer)}
                   className={cn(
