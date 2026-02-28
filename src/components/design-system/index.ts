@@ -1,5 +1,6 @@
 export { PriorityBadge } from "./priority-badge";
 export { StatusBadge } from "./status-badge";
+export { EventContributions } from "./event-contributions";
 export { OwnerAvatar, AvatarStack } from "./owner-avatar";
 export { BentoGrid, BentoCard } from "./bento-grid";
 export { StatCard } from "./stat-card";

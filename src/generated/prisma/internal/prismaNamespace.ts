@@ -395,10 +395,13 @@ export const ModelName = {
   EventSpeaker: 'EventSpeaker',
   Volunteer: 'Volunteer',
   EventVolunteer: 'EventVolunteer',
+  VenuePartner: 'VenuePartner',
+  EventVenuePartner: 'EventVenuePartner',
   SOPChecklist: 'SOPChecklist',
   SOPTask: 'SOPTask',
   SOPTemplate: 'SOPTemplate',
   AuditLog: 'AuditLog',
+  AppSetting: 'AppSetting',
   DiscordConfig: 'DiscordConfig'
 } as const
 
@@ -415,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "refreshToken" | "user" | "event" | "eventMember" | "speaker" | "eventSpeaker" | "volunteer" | "eventVolunteer" | "sOPChecklist" | "sOPTask" | "sOPTemplate" | "auditLog" | "discordConfig"
+    modelProps: "account" | "session" | "verificationToken" | "refreshToken" | "user" | "event" | "eventMember" | "speaker" | "eventSpeaker" | "volunteer" | "eventVolunteer" | "venuePartner" | "eventVenuePartner" | "sOPChecklist" | "sOPTask" | "sOPTemplate" | "auditLog" | "appSetting" | "discordConfig"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1233,6 +1236,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VenuePartner: {
+      payload: Prisma.$VenuePartnerPayload<ExtArgs>
+      fields: Prisma.VenuePartnerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VenuePartnerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VenuePartnerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        findFirst: {
+          args: Prisma.VenuePartnerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VenuePartnerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        findMany: {
+          args: Prisma.VenuePartnerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>[]
+        }
+        create: {
+          args: Prisma.VenuePartnerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        createMany: {
+          args: Prisma.VenuePartnerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VenuePartnerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>[]
+        }
+        delete: {
+          args: Prisma.VenuePartnerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        update: {
+          args: Prisma.VenuePartnerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        deleteMany: {
+          args: Prisma.VenuePartnerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VenuePartnerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VenuePartnerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>[]
+        }
+        upsert: {
+          args: Prisma.VenuePartnerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePartnerPayload>
+        }
+        aggregate: {
+          args: Prisma.VenuePartnerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVenuePartner>
+        }
+        groupBy: {
+          args: Prisma.VenuePartnerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VenuePartnerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VenuePartnerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VenuePartnerCountAggregateOutputType> | number
+        }
+      }
+    }
+    EventVenuePartner: {
+      payload: Prisma.$EventVenuePartnerPayload<ExtArgs>
+      fields: Prisma.EventVenuePartnerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventVenuePartnerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventVenuePartnerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        findFirst: {
+          args: Prisma.EventVenuePartnerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventVenuePartnerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        findMany: {
+          args: Prisma.EventVenuePartnerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>[]
+        }
+        create: {
+          args: Prisma.EventVenuePartnerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        createMany: {
+          args: Prisma.EventVenuePartnerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventVenuePartnerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>[]
+        }
+        delete: {
+          args: Prisma.EventVenuePartnerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        update: {
+          args: Prisma.EventVenuePartnerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventVenuePartnerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventVenuePartnerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventVenuePartnerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventVenuePartnerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVenuePartnerPayload>
+        }
+        aggregate: {
+          args: Prisma.EventVenuePartnerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventVenuePartner>
+        }
+        groupBy: {
+          args: Prisma.EventVenuePartnerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventVenuePartnerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventVenuePartnerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventVenuePartnerCountAggregateOutputType> | number
+        }
+      }
+    }
     SOPChecklist: {
       payload: Prisma.$SOPChecklistPayload<ExtArgs>
       fields: Prisma.SOPChecklistFieldRefs
@@ -1529,6 +1680,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AppSetting: {
+      payload: Prisma.$AppSettingPayload<ExtArgs>
+      fields: Prisma.AppSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AppSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AppSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.AppSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AppSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        findMany: {
+          args: Prisma.AppSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        create: {
+          args: Prisma.AppSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        createMany: {
+          args: Prisma.AppSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AppSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.AppSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        update: {
+          args: Prisma.AppSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.AppSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AppSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AppSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.AppSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.AppSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAppSetting>
+        }
+        groupBy: {
+          args: Prisma.AppSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AppSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingCountAggregateOutputType> | number
+        }
+      }
+    }
     DiscordConfig: {
       payload: Prisma.$DiscordConfigPayload<ExtArgs>
       fields: Prisma.DiscordConfigFieldRefs
@@ -1698,7 +1923,8 @@ export const UserScalarFieldEnum = {
   image: 'image',
   globalRole: 'globalRole',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1790,6 +2016,41 @@ export const EventVolunteerScalarFieldEnum = {
 export type EventVolunteerScalarFieldEnum = (typeof EventVolunteerScalarFieldEnum)[keyof typeof EventVolunteerScalarFieldEnum]
 
 
+export const VenuePartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  contactName: 'contactName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  capacity: 'capacity',
+  notes: 'notes',
+  website: 'website',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VenuePartnerScalarFieldEnum = (typeof VenuePartnerScalarFieldEnum)[keyof typeof VenuePartnerScalarFieldEnum]
+
+
+export const EventVenuePartnerScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  venuePartnerId: 'venuePartnerId',
+  ownerId: 'ownerId',
+  status: 'status',
+  priority: 'priority',
+  cost: 'cost',
+  notes: 'notes',
+  confirmationDate: 'confirmationDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventVenuePartnerScalarFieldEnum = (typeof EventVenuePartnerScalarFieldEnum)[keyof typeof EventVenuePartnerScalarFieldEnum]
+
+
 export const SOPChecklistScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -1846,6 +2107,15 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AppSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
 
 
 export const DiscordConfigScalarFieldEnum = {
@@ -2042,6 +2312,34 @@ export type ListEnumVolunteerStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'VenuePartnerStatus'
+ */
+export type EnumVenuePartnerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VenuePartnerStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'VenuePartnerStatus[]'
+ */
+export type ListEnumVenuePartnerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VenuePartnerStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaskStatus'
  */
 export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
@@ -2209,10 +2507,13 @@ export type GlobalOmitConfig = {
   eventSpeaker?: Prisma.EventSpeakerOmit
   volunteer?: Prisma.VolunteerOmit
   eventVolunteer?: Prisma.EventVolunteerOmit
+  venuePartner?: Prisma.VenuePartnerOmit
+  eventVenuePartner?: Prisma.EventVenuePartnerOmit
   sOPChecklist?: Prisma.SOPChecklistOmit
   sOPTask?: Prisma.SOPTaskOmit
   sOPTemplate?: Prisma.SOPTemplateOmit
   auditLog?: Prisma.AuditLogOmit
+  appSetting?: Prisma.AppSettingOmit
   discordConfig?: Prisma.DiscordConfigOmit
 }
 

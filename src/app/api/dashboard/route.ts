@@ -70,11 +70,19 @@ export async function GET(req: Request) {
   const eventScope =
     assignedEventIds !== null ? { id: { in: assignedEventIds } } : {};
 
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+
   const [
     nextEventRaw,
     myTasks,
     overdueTasks,
     totalEvents,
+    upcomingEvents,
+    pastEvents,
+    todayEvents,
     confirmedSpeakersCount,
     totalVolunteers,
     tasksCompletedThisWeek,
@@ -143,14 +151,28 @@ export async function GET(req: Request) {
         : undefined
     ),
 
-    prisma.eventSpeaker.count({
+    prisma.event.count({
       where: {
-        status: "CONFIRMED",
-        ...(assignedEventIds !== null
-          ? { eventId: { in: assignedEventIds } }
-          : {}),
+        ...eventScope,
+        date: { gt: endOfDay },
       },
     }),
+
+    prisma.event.count({
+      where: {
+        ...eventScope,
+        date: { lt: startOfDay },
+      },
+    }),
+
+    prisma.event.count({
+      where: {
+        ...eventScope,
+        date: { gte: startOfDay, lte: endOfDay },
+      },
+    }),
+
+    prisma.speaker.count(),
 
     prisma.volunteer.count(
       assignedEventIds !== null
@@ -231,6 +253,9 @@ export async function GET(req: Request) {
     overdueTasks: overdueTasksFormatted,
     stats: {
       totalEvents,
+      upcomingEvents,
+      pastEvents,
+      todayEvents,
       totalSpeakers: confirmedSpeakersCount,
       totalVolunteers,
       tasksCompletedThisWeek,

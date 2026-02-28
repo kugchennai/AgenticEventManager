@@ -1,7 +1,7 @@
 "use client";
 
-import { PageHeader, EmptyState, Button, Modal } from "@/components/design-system";
-import { Users, Plus, Pencil, Trash2, X } from "lucide-react";
+import { PageHeader, EmptyState, Button, Modal, EventContributions } from "@/components/design-system";
+import { Users, Plus, Pencil, Trash2, X, UserPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,14 @@ interface Volunteer {
   email: string | null;
   discordId: string | null;
   role: string | null;
+  userId: string | null;
   createdAt: string;
   updatedAt: string;
   eventsCount?: number;
+  events?: Array<{
+    status: string;
+    event: { id: string; title: string; date: string };
+  }>;
 }
 
 const inputClassName =
@@ -165,6 +170,9 @@ export default function VolunteersPage() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVolunteer, setModalVolunteer] = useState<Volunteer | null | "add">(null);
+  const [promotionThreshold, setPromotionThreshold] = useState(5);
+  const [converting, setConverting] = useState<string | null>(null);
+  const canConvert = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.ADMIN;
 
   const fetchVolunteers = async () => {
     try {
@@ -189,6 +197,35 @@ export default function VolunteersPage() {
     const res = await fetch(`/api/volunteers/${id}`, { method: "DELETE" });
     if (res.ok) {
       setVolunteers((prev) => prev.filter((v) => v.id !== id));
+    }
+  };
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: Record<string, string>) => {
+        if (data.volunteer_promotion_threshold) {
+          setPromotionThreshold(parseInt(data.volunteer_promotion_threshold, 10));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const convertToMember = async (volunteer: Volunteer) => {
+    if (!confirm(`Convert "${volunteer.name}" to a member? This will create a member account for them.`)) return;
+    setConverting(volunteer.id);
+    try {
+      const res = await fetch(`/api/volunteers/${volunteer.id}/convert`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Failed to convert volunteer");
+        return;
+      }
+      await fetchVolunteers();
+    } catch {
+      alert("Failed to convert volunteer");
+    } finally {
+      setConverting(null);
     }
   };
 
@@ -258,10 +295,24 @@ export default function VolunteersPage() {
               <span className="text-sm text-muted truncate">{volunteer.email ?? "—"}</span>
               <span className="text-sm text-muted truncate">{volunteer.discordId ?? "—"}</span>
               <span className="text-sm text-muted truncate">{volunteer.role ?? "—"}</span>
-              <span className="text-sm text-muted tabular-nums">
-                {volunteer.eventsCount ?? 0}
-              </span>
+              <EventContributions
+                events={volunteer.events ?? []}
+                statusType="volunteer"
+              />
               <div className="flex items-center gap-1">
+                {canConvert && !volunteer.userId && volunteer.email && (volunteer.eventsCount ?? 0) >= promotionThreshold && (
+                  <button
+                    onClick={() => convertToMember(volunteer)}
+                    disabled={converting === volunteer.id}
+                    className={cn(
+                      "p-2 rounded-lg text-accent hover:text-accent/80 hover:bg-accent/10 transition-colors",
+                      converting === volunteer.id && "opacity-50 pointer-events-none"
+                    )}
+                    title={`Eligible — Convert to member (${volunteer.eventsCount}/${promotionThreshold} events)`}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </button>
+                )}
                 <button
                   onClick={() => setModalVolunteer(volunteer)}
                   className={cn(

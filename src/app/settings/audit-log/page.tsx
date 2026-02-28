@@ -75,9 +75,8 @@ export default function AuditLogPage() {
     if (!isAdmin) router.replace("/dashboard");
   }, [status, isAdmin, router]);
 
-  if (status === "loading" || !isAdmin) return null;
-
   useEffect(() => {
+    if (!isAdmin) return;
     const params = new URLSearchParams();
     if (entityFilter) params.set("entityType", entityFilter);
 
@@ -86,7 +85,9 @@ export default function AuditLogPage() {
       .then((data) => setLogs(data.logs))
       .catch(() => setLogs([]))
       .finally(() => setLoading(false));
-  }, [entityFilter]);
+  }, [entityFilter, isAdmin]);
+
+  if (status === "loading" || !isAdmin) return null;
 
   const entityTypes = [
     { value: "Event", label: "Event" },

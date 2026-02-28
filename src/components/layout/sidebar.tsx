@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Building2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Speakers", href: "/speakers", icon: Mic2, minRole: "EVENT_LEAD" },
+  { label: "Venue Partners", href: "/venues", icon: Building2, minRole: "EVENT_LEAD" },
   { label: "Volunteers", href: "/volunteers", icon: Users, minRole: "EVENT_LEAD" },
 ];
 

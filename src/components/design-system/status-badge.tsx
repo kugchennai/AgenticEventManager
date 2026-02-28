@@ -41,6 +41,14 @@ const VOLUNTEER_STATUS: Record<string, StatusConfig> = {
   NO_SHOW: { label: "No Show", icon: UserX, className: "bg-status-blocked/15 text-status-blocked border-status-blocked/20" },
 };
 
+const VENUE_PARTNER_STATUS: Record<string, StatusConfig> = {
+  INQUIRY: { label: "Inquiry", icon: Send, className: "bg-status-pending/15 text-status-pending border-status-pending/20" },
+  PENDING: { label: "Pending", icon: Clock, className: "bg-status-progress/15 text-status-progress border-status-progress/20" },
+  CONFIRMED: { label: "Confirmed", icon: Check, className: "bg-status-done/15 text-status-done border-status-done/20" },
+  DECLINED: { label: "Declined", icon: X, className: "bg-status-blocked/15 text-status-blocked border-status-blocked/20" },
+  CANCELLED: { label: "Cancelled", icon: UserX, className: "bg-status-pending/15 text-status-pending border-status-pending/20" },
+};
+
 const EVENT_STATUS: Record<string, StatusConfig> = {
   DRAFT: { label: "Draft", icon: Circle, className: "bg-status-pending/15 text-status-pending border-status-pending/20" },
   SCHEDULED: { label: "Scheduled", icon: Clock, className: "bg-status-progress/15 text-status-progress border-status-progress/20" },
@@ -48,13 +56,14 @@ const EVENT_STATUS: Record<string, StatusConfig> = {
   COMPLETED: { label: "Completed", icon: Check, className: "bg-status-done/15 text-status-done border-status-done/20" },
 };
 
-type StatusType = "task" | "speaker" | "volunteer" | "event";
+type StatusType = "task" | "speaker" | "volunteer" | "event" | "venue";
 
 const STATUS_MAPS: Record<StatusType, Record<string, StatusConfig>> = {
   task: TASK_STATUS,
   speaker: SPEAKER_STATUS,
   volunteer: VOLUNTEER_STATUS,
   event: EVENT_STATUS,
+  venue: VENUE_PARTNER_STATUS,
 };
 
 export function StatusBadge({

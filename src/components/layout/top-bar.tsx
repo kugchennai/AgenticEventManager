@@ -19,8 +19,18 @@ export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
+  // Sync from localStorage after hydration to avoid mismatch
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") {
+      setTheme(saved);
+    }
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   useEffect(() => {

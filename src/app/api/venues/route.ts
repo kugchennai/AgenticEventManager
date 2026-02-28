@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const userId = session.user.id;
   const isVolunteer = userRole === "VOLUNTEER";
 
-  // For volunteers, scope speakers to their assigned events
+  // For volunteers, scope venue partners to their assigned events
   let assignedEventIds: string[] | null = null;
   if (isVolunteer) {
     const [volunteerLinks, memberLinks] = await Promise.all([
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     ];
   }
 
-  const speakerWhere =
+  const venueWhere =
     assignedEventIds !== null
       ? { events: { some: { eventId: { in: assignedEventIds } } } }
       : {};
@@ -46,38 +46,34 @@ export async function GET(req: Request) {
       ? { where: { eventId: { in: assignedEventIds } } }
       : {};
 
-  const speakers = await prisma.speaker.findMany({
-    where: speakerWhere,
+  const venues = await prisma.venuePartner.findMany({
+    where: venueWhere,
     include: {
       events: {
         ...eventFilter,
-        select: {
-          status: true,
-          event: {
-            select: { id: true, title: true, date: true },
-          },
-        },
+        select: { status: true },
       },
     },
     orderBy: { name: "asc" },
   });
 
-  const speakersWithStatusCounts = speakers.map((speaker) => {
-    const statusCounts = speaker.events.reduce(
-      (acc, es) => {
-        acc[es.status] = (acc[es.status] ?? 0) + 1;
+  const venuesWithStatusCounts = venues.map((venue) => {
+    const statusCounts = venue.events.reduce(
+      (acc, ev) => {
+        acc[ev.status] = (acc[ev.status] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>
     );
+    const { events, ...rest } = venue;
     return {
-      ...speaker,
-      eventCount: speaker.events.length,
+      ...rest,
+      eventCount: events.length,
       statusCounts,
     };
   });
 
-  return NextResponse.json(speakersWithStatusCounts);
+  return NextResponse.json(venuesWithStatusCounts);
 }
 
 export async function POST(req: NextRequest) {
@@ -94,22 +90,34 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, email, phone, bio, topic, photoUrl } = body;
+  const { name, contactName, email, phone, address, capacity, notes, website, photoUrl } = body;
 
   if (!name?.trim()) {
-    return NextResponse.json(
-      { error: "Name is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+  if (!address?.trim()) {
+    return NextResponse.json({ error: "Address is required" }, { status: 400 });
+  }
+  if (!contactName?.trim()) {
+    return NextResponse.json({ error: "Contact person is required" }, { status: 400 });
+  }
+  if (!email?.trim()) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
+  }
+  if (capacity === undefined || capacity === null || capacity === "") {
+    return NextResponse.json({ error: "Capacity is required" }, { status: 400 });
   }
 
-  const speaker = await prisma.speaker.create({
+  const venue = await prisma.venuePartner.create({
     data: {
       name: name.trim(),
-      email: email?.trim() || null,
+      contactName: contactName.trim(),
+      email: email.trim(),
       phone: phone?.trim() || null,
-      bio: bio?.trim() || null,
-      topic: topic?.trim() || null,
+      address: address.trim(),
+      capacity: Number(capacity),
+      notes: notes?.trim() || null,
+      website: website?.trim() || null,
       photoUrl: photoUrl?.trim() || null,
     },
   });
@@ -117,11 +125,11 @@ export async function POST(req: NextRequest) {
   await logAudit({
     userId: session.user.id,
     action: "CREATE",
-    entityType: "Speaker",
-    entityId: speaker.id,
-    entityName: speaker.name,
-    changes: { name: speaker.name, email: speaker.email, phone: speaker.phone, topic: speaker.topic },
+    entityType: "VenuePartner",
+    entityId: venue.id,
+    entityName: venue.name,
+    changes: { name: venue.name, address: venue.address, contactName: venue.contactName, email: venue.email, capacity: venue.capacity },
   });
 
-  return NextResponse.json(speaker, { status: 201 });
+  return NextResponse.json(venue, { status: 201 });
 }

@@ -218,6 +218,7 @@ export type EventWhereInput = {
   members?: Prisma.EventMemberListRelationFilter
   speakers?: Prisma.EventSpeakerListRelationFilter
   volunteers?: Prisma.EventVolunteerListRelationFilter
+  venuePartners?: Prisma.EventVenuePartnerListRelationFilter
   checklists?: Prisma.SOPChecklistListRelationFilter
 }
 
@@ -235,6 +236,7 @@ export type EventOrderByWithRelationInput = {
   members?: Prisma.EventMemberOrderByRelationAggregateInput
   speakers?: Prisma.EventSpeakerOrderByRelationAggregateInput
   volunteers?: Prisma.EventVolunteerOrderByRelationAggregateInput
+  venuePartners?: Prisma.EventVenuePartnerOrderByRelationAggregateInput
   checklists?: Prisma.SOPChecklistOrderByRelationAggregateInput
 }
 
@@ -255,6 +257,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   members?: Prisma.EventMemberListRelationFilter
   speakers?: Prisma.EventSpeakerListRelationFilter
   volunteers?: Prisma.EventVolunteerListRelationFilter
+  venuePartners?: Prisma.EventVenuePartnerListRelationFilter
   checklists?: Prisma.SOPChecklistListRelationFilter
 }, "id">
 
@@ -301,6 +304,7 @@ export type EventCreateInput = {
   members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
 }
 
@@ -317,6 +321,7 @@ export type EventUncheckedCreateInput = {
   members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
 }
 
@@ -333,6 +338,7 @@ export type EventUpdateInput = {
   members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
 }
 
@@ -349,6 +355,7 @@ export type EventUncheckedUpdateInput = {
   members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -526,6 +533,20 @@ export type EventUpdateOneRequiredWithoutVolunteersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutVolunteersInput, Prisma.EventUpdateWithoutVolunteersInput>, Prisma.EventUncheckedUpdateWithoutVolunteersInput>
 }
 
+export type EventCreateNestedOneWithoutVenuePartnersInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutVenuePartnersInput, Prisma.EventUncheckedCreateWithoutVenuePartnersInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutVenuePartnersInput
+  connect?: Prisma.EventWhereUniqueInput
+}
+
+export type EventUpdateOneRequiredWithoutVenuePartnersNestedInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutVenuePartnersInput, Prisma.EventUncheckedCreateWithoutVenuePartnersInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutVenuePartnersInput
+  upsert?: Prisma.EventUpsertWithoutVenuePartnersInput
+  connect?: Prisma.EventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutVenuePartnersInput, Prisma.EventUpdateWithoutVenuePartnersInput>, Prisma.EventUncheckedUpdateWithoutVenuePartnersInput>
+}
+
 export type EventCreateNestedOneWithoutChecklistsInput = {
   create?: Prisma.XOR<Prisma.EventCreateWithoutChecklistsInput, Prisma.EventUncheckedCreateWithoutChecklistsInput>
   connectOrCreate?: Prisma.EventCreateOrConnectWithoutChecklistsInput
@@ -552,6 +573,7 @@ export type EventCreateWithoutCreatedByInput = {
   members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
 }
 
@@ -567,6 +589,7 @@ export type EventUncheckedCreateWithoutCreatedByInput = {
   members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
 }
 
@@ -623,6 +646,7 @@ export type EventCreateWithoutMembersInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutCreatedEventsInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
 }
 
@@ -638,6 +662,7 @@ export type EventUncheckedCreateWithoutMembersInput = {
   updatedAt?: Date | string
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
 }
 
@@ -669,6 +694,7 @@ export type EventUpdateWithoutMembersInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedEventsNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
 }
 
@@ -684,6 +710,7 @@ export type EventUncheckedUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -699,6 +726,7 @@ export type EventCreateWithoutSpeakersInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutCreatedEventsInput
   members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
 }
 
@@ -714,6 +742,7 @@ export type EventUncheckedCreateWithoutSpeakersInput = {
   updatedAt?: Date | string
   members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
 }
 
@@ -745,6 +774,7 @@ export type EventUpdateWithoutSpeakersInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedEventsNestedInput
   members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
 }
 
@@ -760,6 +790,7 @@ export type EventUncheckedUpdateWithoutSpeakersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -775,6 +806,7 @@ export type EventCreateWithoutVolunteersInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutCreatedEventsInput
   members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
 }
 
@@ -790,6 +822,7 @@ export type EventUncheckedCreateWithoutVolunteersInput = {
   updatedAt?: Date | string
   members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
   checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
 }
 
@@ -821,6 +854,7 @@ export type EventUpdateWithoutVolunteersInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedEventsNestedInput
   members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
 }
 
@@ -836,6 +870,87 @@ export type EventUncheckedUpdateWithoutVolunteersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
+  checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventCreateWithoutVenuePartnersInput = {
+  id?: string
+  title: string
+  description?: string | null
+  date: Date | string
+  venue?: string | null
+  status?: $Enums.EventStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy: Prisma.UserCreateNestedOneWithoutCreatedEventsInput
+  members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
+  speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
+  volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  checklists?: Prisma.SOPChecklistCreateNestedManyWithoutEventInput
+}
+
+export type EventUncheckedCreateWithoutVenuePartnersInput = {
+  id?: string
+  title: string
+  description?: string | null
+  date: Date | string
+  venue?: string | null
+  status?: $Enums.EventStatus
+  createdById: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
+  speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
+  volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  checklists?: Prisma.SOPChecklistUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventCreateOrConnectWithoutVenuePartnersInput = {
+  where: Prisma.EventWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventCreateWithoutVenuePartnersInput, Prisma.EventUncheckedCreateWithoutVenuePartnersInput>
+}
+
+export type EventUpsertWithoutVenuePartnersInput = {
+  update: Prisma.XOR<Prisma.EventUpdateWithoutVenuePartnersInput, Prisma.EventUncheckedUpdateWithoutVenuePartnersInput>
+  create: Prisma.XOR<Prisma.EventCreateWithoutVenuePartnersInput, Prisma.EventUncheckedCreateWithoutVenuePartnersInput>
+  where?: Prisma.EventWhereInput
+}
+
+export type EventUpdateToOneWithWhereWithoutVenuePartnersInput = {
+  where?: Prisma.EventWhereInput
+  data: Prisma.XOR<Prisma.EventUpdateWithoutVenuePartnersInput, Prisma.EventUncheckedUpdateWithoutVenuePartnersInput>
+}
+
+export type EventUpdateWithoutVenuePartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedEventsNestedInput
+  members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
+  speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
+  volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
+}
+
+export type EventUncheckedUpdateWithoutVenuePartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
+  speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
+  volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -852,6 +967,7 @@ export type EventCreateWithoutChecklistsInput = {
   members?: Prisma.EventMemberCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutChecklistsInput = {
@@ -867,6 +983,7 @@ export type EventUncheckedCreateWithoutChecklistsInput = {
   members?: Prisma.EventMemberUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   volunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutEventInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutChecklistsInput = {
@@ -898,6 +1015,7 @@ export type EventUpdateWithoutChecklistsInput = {
   members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutChecklistsInput = {
@@ -913,6 +1031,7 @@ export type EventUncheckedUpdateWithoutChecklistsInput = {
   members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateManyCreatedByInput = {
@@ -938,6 +1057,7 @@ export type EventUpdateWithoutCreatedByInput = {
   members?: Prisma.EventMemberUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUpdateManyWithoutEventNestedInput
 }
 
@@ -953,6 +1073,7 @@ export type EventUncheckedUpdateWithoutCreatedByInput = {
   members?: Prisma.EventMemberUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   volunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutEventNestedInput
+  venuePartners?: Prisma.EventVenuePartnerUncheckedUpdateManyWithoutEventNestedInput
   checklists?: Prisma.SOPChecklistUncheckedUpdateManyWithoutEventNestedInput
 }
 
@@ -976,6 +1097,7 @@ export type EventCountOutputType = {
   members: number
   speakers: number
   volunteers: number
+  venuePartners: number
   checklists: number
 }
 
@@ -983,6 +1105,7 @@ export type EventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   members?: boolean | EventCountOutputTypeCountMembersArgs
   speakers?: boolean | EventCountOutputTypeCountSpeakersArgs
   volunteers?: boolean | EventCountOutputTypeCountVolunteersArgs
+  venuePartners?: boolean | EventCountOutputTypeCountVenuePartnersArgs
   checklists?: boolean | EventCountOutputTypeCountChecklistsArgs
 }
 
@@ -1020,6 +1143,13 @@ export type EventCountOutputTypeCountVolunteersArgs<ExtArgs extends runtime.Type
 /**
  * EventCountOutputType without action
  */
+export type EventCountOutputTypeCountVenuePartnersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EventVenuePartnerWhereInput
+}
+
+/**
+ * EventCountOutputType without action
+ */
 export type EventCountOutputTypeCountChecklistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SOPChecklistWhereInput
 }
@@ -1039,6 +1169,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   members?: boolean | Prisma.Event$membersArgs<ExtArgs>
   speakers?: boolean | Prisma.Event$speakersArgs<ExtArgs>
   volunteers?: boolean | Prisma.Event$volunteersArgs<ExtArgs>
+  venuePartners?: boolean | Prisma.Event$venuePartnersArgs<ExtArgs>
   checklists?: boolean | Prisma.Event$checklistsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
@@ -1087,6 +1218,7 @@ export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   members?: boolean | Prisma.Event$membersArgs<ExtArgs>
   speakers?: boolean | Prisma.Event$speakersArgs<ExtArgs>
   volunteers?: boolean | Prisma.Event$volunteersArgs<ExtArgs>
+  venuePartners?: boolean | Prisma.Event$venuePartnersArgs<ExtArgs>
   checklists?: boolean | Prisma.Event$checklistsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1104,6 +1236,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     members: Prisma.$EventMemberPayload<ExtArgs>[]
     speakers: Prisma.$EventSpeakerPayload<ExtArgs>[]
     volunteers: Prisma.$EventVolunteerPayload<ExtArgs>[]
+    venuePartners: Prisma.$EventVenuePartnerPayload<ExtArgs>[]
     checklists: Prisma.$SOPChecklistPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1514,6 +1647,7 @@ export interface Prisma__EventClient<T, Null = never, ExtArgs extends runtime.Ty
   members<T extends Prisma.Event$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   speakers<T extends Prisma.Event$speakersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$speakersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSpeakerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   volunteers<T extends Prisma.Event$volunteersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$volunteersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVolunteerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  venuePartners<T extends Prisma.Event$venuePartnersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$venuePartnersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVenuePartnerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   checklists<T extends Prisma.Event$checklistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$checklistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPChecklistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2018,6 +2152,30 @@ export type Event$volunteersArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.EventVolunteerScalarFieldEnum | Prisma.EventVolunteerScalarFieldEnum[]
+}
+
+/**
+ * Event.venuePartners
+ */
+export type Event$venuePartnersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EventVenuePartner
+   */
+  select?: Prisma.EventVenuePartnerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EventVenuePartner
+   */
+  omit?: Prisma.EventVenuePartnerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EventVenuePartnerInclude<ExtArgs> | null
+  where?: Prisma.EventVenuePartnerWhereInput
+  orderBy?: Prisma.EventVenuePartnerOrderByWithRelationInput | Prisma.EventVenuePartnerOrderByWithRelationInput[]
+  cursor?: Prisma.EventVenuePartnerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EventVenuePartnerScalarFieldEnum | Prisma.EventVenuePartnerScalarFieldEnum[]
 }
 
 /**

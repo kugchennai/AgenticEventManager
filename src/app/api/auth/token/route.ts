@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { SignJWT } from "jose";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import crypto from "crypto";
 
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
@@ -28,11 +28,19 @@ export async function POST(req: Request) {
     const normalizedEmail = email.toLowerCase();
     const isSuperAdmin = normalizedEmail === SUPER_ADMIN_EMAIL;
 
-    // Check if user is allowed to sign in
-    const existingUser = await prisma.user.findUnique({
+    // Check if user is allowed to sign in (use unfiltered to detect soft-deleted)
+    const existingUser = await prismaUnfiltered.user.findUnique({
       where: { email: normalizedEmail },
-      select: { id: true, globalRole: true },
+      select: { id: true, globalRole: true, deletedAt: true },
     });
+
+    // Block soft-deleted users
+    if (existingUser?.deletedAt) {
+      return NextResponse.json(
+        { error: "This account has been deactivated. Contact your admin." },
+        { status: 401 }
+      );
+    }
 
     // Check for unlinked volunteer
     const unlinkedVolunteer = await prisma.volunteer.findFirst({
@@ -48,8 +56,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create or update user
-    const user = await prisma.user.upsert({
+    // Create or update user (use unfiltered to prevent middleware from hiding the record during upsert)
+    const user = await prismaUnfiltered.user.upsert({
       where: { email: normalizedEmail },
       update: {
         name: name ?? undefined,

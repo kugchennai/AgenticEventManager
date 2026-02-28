@@ -73,6 +73,16 @@ export type Volunteer = Prisma.VolunteerModel
  */
 export type EventVolunteer = Prisma.EventVolunteerModel
 /**
+ * Model VenuePartner
+ * 
+ */
+export type VenuePartner = Prisma.VenuePartnerModel
+/**
+ * Model EventVenuePartner
+ * 
+ */
+export type EventVenuePartner = Prisma.EventVenuePartnerModel
+/**
  * Model SOPChecklist
  * 
  */
@@ -92,6 +102,11 @@ export type SOPTemplate = Prisma.SOPTemplateModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model AppSetting
+ * 
+ */
+export type AppSetting = Prisma.AppSettingModel
 /**
  * Model DiscordConfig
  * 

@@ -62,10 +62,13 @@ export const ModelName = {
   EventSpeaker: 'EventSpeaker',
   Volunteer: 'Volunteer',
   EventVolunteer: 'EventVolunteer',
+  VenuePartner: 'VenuePartner',
+  EventVenuePartner: 'EventVenuePartner',
   SOPChecklist: 'SOPChecklist',
   SOPTask: 'SOPTask',
   SOPTemplate: 'SOPTemplate',
   AuditLog: 'AuditLog',
+  AppSetting: 'AppSetting',
   DiscordConfig: 'DiscordConfig'
 } as const
 
@@ -141,7 +144,8 @@ export const UserScalarFieldEnum = {
   image: 'image',
   globalRole: 'globalRole',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -233,6 +237,41 @@ export const EventVolunteerScalarFieldEnum = {
 export type EventVolunteerScalarFieldEnum = (typeof EventVolunteerScalarFieldEnum)[keyof typeof EventVolunteerScalarFieldEnum]
 
 
+export const VenuePartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  contactName: 'contactName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  capacity: 'capacity',
+  notes: 'notes',
+  website: 'website',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VenuePartnerScalarFieldEnum = (typeof VenuePartnerScalarFieldEnum)[keyof typeof VenuePartnerScalarFieldEnum]
+
+
+export const EventVenuePartnerScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  venuePartnerId: 'venuePartnerId',
+  ownerId: 'ownerId',
+  status: 'status',
+  priority: 'priority',
+  cost: 'cost',
+  notes: 'notes',
+  confirmationDate: 'confirmationDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventVenuePartnerScalarFieldEnum = (typeof EventVenuePartnerScalarFieldEnum)[keyof typeof EventVenuePartnerScalarFieldEnum]
+
+
 export const SOPChecklistScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -289,6 +328,15 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AppSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
 
 
 export const DiscordConfigScalarFieldEnum = {
