@@ -34,6 +34,7 @@ export async function POST(req: Request) {
             email: true,
             image: true,
             globalRole: true,
+            deletedAt: true,
           },
         },
       },
@@ -42,6 +43,15 @@ export async function POST(req: Request) {
     if (!tokenRecord) {
       return NextResponse.json(
         { error: "Invalid refresh token" },
+        { status: 401 }
+      );
+    }
+
+    // Block soft-deleted users from refreshing tokens
+    if (tokenRecord.user.deletedAt) {
+      await prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
+      return NextResponse.json(
+        { error: "This account has been deactivated." },
         { status: 401 }
       );
     }

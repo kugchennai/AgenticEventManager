@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { prisma } from "./prisma";
+import { prisma, prismaUnfiltered } from "./prisma";
 
 // Validate required environment variables
 function validateEnv() {
@@ -48,10 +48,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (email === SUPER_ADMIN_EMAIL) return true;
 
-      const existing = await prisma.user.findUnique({
+      // Use unfiltered client to detect soft-deleted users
+      const existing = await prismaUnfiltered.user.findUnique({
         where: { email },
-        select: { id: true, globalRole: true },
+        select: { id: true, globalRole: true, deletedAt: true },
       });
+
+      // Block sign-in for soft-deleted users
+      if (existing?.deletedAt) {
+        return false;
+      }
 
       if (existing) {
         return true;
@@ -74,13 +80,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         try {
           if (isSignIn) {
+            // Block soft-deleted users from getting a valid JWT
+            const existingUser = await prismaUnfiltered.user.findUnique({
+              where: { email },
+              select: { id: true, deletedAt: true },
+            });
+            if (existingUser?.deletedAt) {
+              return token; // Return minimal token — signIn callback already rejected
+            }
+
             // Check if a volunteer record exists with this email and no user linked yet
             const unlinkedVolunteer = await prisma.volunteer.findFirst({
               where: { email, userId: null },
               select: { id: true },
             });
 
-            const dbUser = await prisma.user.upsert({
+            const dbUser = await prismaUnfiltered.user.upsert({
               where: { email },
               update: {
                 name: user?.name ?? undefined,

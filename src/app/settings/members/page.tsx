@@ -1,11 +1,17 @@
 "use client";
 
 import { PageHeader, Button, EmptyState, OwnerAvatar, Modal, EventContributions } from "@/components/design-system";
-import { Users, Shield, ChevronDown, Plus, Mail } from "lucide-react";
+import { Users, Shield, ChevronDown, Plus, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+
+interface AdminOption {
+  id: string;
+  name: string | null;
+  email: string | null;
+}
 
 interface Member {
   id: string;
@@ -20,6 +26,7 @@ interface Member {
     event: { id: string; title: string; date: string };
   }>;
   eventsCount?: number;
+  ownershipCount?: number;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -263,6 +270,169 @@ function AddMemberModal({
   );
 }
 
+function RemoveMemberModal({
+  open,
+  onClose,
+  member,
+  onRemoved,
+}: {
+  open: boolean;
+  onClose: () => void;
+  member: Member | null;
+  onRemoved: (id: string) => void;
+}) {
+  const [admins, setAdmins] = useState<AdminOption[]>([]);
+  const [reassignToUserId, setReassignToUserId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+
+  const hasOwnership = (member?.ownershipCount ?? 0) > 0;
+
+  useEffect(() => {
+    if (!open || !member || !hasOwnership) return;
+    setLoadingAdmins(true);
+    fetch("/api/members/list")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: AdminOption[]) => {
+        setAdmins(data.filter((a) => a.id !== member.id));
+      })
+      .catch(() => setAdmins([]))
+      .finally(() => setLoadingAdmins(false));
+  }, [open, member, hasOwnership]);
+
+  useEffect(() => {
+    if (!open) {
+      setReassignToUserId("");
+      setError(null);
+    }
+  }, [open]);
+
+  const handleRemove = async () => {
+    if (!member) return;
+    if (hasOwnership && !reassignToUserId) return;
+
+    setSaving(true);
+    setError(null);
+
+    const res = await fetch("/api/members", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: member.id,
+        ...(reassignToUserId ? { reassignToUserId } : {}),
+      }),
+    });
+
+    if (res.ok) {
+      onRemoved(member.id);
+      onClose();
+    } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? "Failed to remove member");
+    }
+    setSaving(false);
+  };
+
+  if (!member) return null;
+
+  return (
+    <Modal open={open} onClose={onClose} className="p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="h-10 w-10 rounded-full bg-status-blocked/15 flex items-center justify-center">
+          <AlertTriangle className="h-5 w-5 text-status-blocked" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold font-[family-name:var(--font-display)]">
+            Remove Member
+          </h2>
+          <p className="text-sm text-muted">This action can be undone by re-adding the member.</p>
+        </div>
+      </div>
+
+      <div className="bg-surface-hover rounded-lg px-4 py-3 mb-4">
+        <div className="flex items-center gap-3">
+          <OwnerAvatar name={member.name} image={member.image} size="md" />
+          <div>
+            <p className="text-sm font-medium">{member.name ?? "Unnamed"}</p>
+            <p className="text-xs text-muted">{member.email ?? "—"}</p>
+          </div>
+          <span
+            className={cn(
+              "ml-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium border border-border",
+              ROLE_COLORS[member.globalRole]
+            )}
+          >
+            <Shield className="h-3 w-3" />
+            {ROLE_LABELS[member.globalRole] ?? member.globalRole}
+          </span>
+        </div>
+      </div>
+
+      {hasOwnership && (
+        <div className="space-y-3 mb-4">
+          <div className="flex items-start gap-2 text-sm text-status-progress bg-status-progress/10 rounded-lg px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>
+              This member owns <strong>{member.ownershipCount}</strong> event{(member.ownershipCount ?? 0) !== 1 ? "s" : ""} / task{(member.ownershipCount ?? 0) !== 1 ? "s" : ""}.
+              All ownership will be reassigned to the selected admin.
+            </span>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              Reassign responsibilities to *
+            </label>
+            {loadingAdmins ? (
+              <div className="h-10 rounded-lg animate-shimmer" />
+            ) : (
+              <select
+                value={reassignToUserId}
+                onChange={(e) => setReassignToUserId(e.target.value)}
+                className={INPUT_CLASS}
+                required
+              >
+                <option value="">Select an admin…</option>
+                {admins.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name ?? a.email ?? "Unnamed"}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!hasOwnership && (
+        <p className="text-sm text-muted mb-4">
+          Are you sure you want to remove <strong>{member.name ?? member.email ?? "this member"}</strong>?
+          They will lose access to the platform and all their active sessions will be invalidated.
+        </p>
+      )}
+
+      {error && (
+        <p className="text-sm text-status-blocked bg-status-blocked/10 rounded-lg px-3 py-2 mb-4">
+          {error}
+        </p>
+      )}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="secondary" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          onClick={handleRemove}
+          disabled={saving || (hasOwnership && !reassignToUserId)}
+          className="!bg-status-blocked/15 !text-status-blocked hover:!bg-status-blocked/25 !border-status-blocked/20"
+        >
+          {saving ? "Removing…" : "Remove Member"}
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
 export default function MembersPage() {
   const { data: session } = useSession();
   const myRole = session?.user?.globalRole ?? "VIEWER";
@@ -273,6 +443,7 @@ export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<Member | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
@@ -364,18 +535,34 @@ export default function MembersPage() {
         />
       ) : (
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
-          <div className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-border text-[10px] font-semibold uppercase tracking-widest text-muted">
+          <div className={cn(
+            "grid gap-4 px-5 py-3 border-b border-border text-[10px] font-semibold uppercase tracking-widest text-muted",
+            isSuperAdmin
+              ? "grid-cols-[auto_1fr_1fr_auto_auto_auto_auto]"
+              : "grid-cols-[auto_1fr_1fr_auto_auto_auto]"
+          )}>
             <span />
             <span>Name</span>
             <span>Email</span>
             <span>Role</span>
             <span>Events</span>
             <span>Joined</span>
+            {isSuperAdmin && <span />}
           </div>
-          {members.map((member) => (
+          {members.map((member) => {
+            const canRemove =
+              isSuperAdmin &&
+              member.globalRole !== "SUPER_ADMIN" &&
+              member.id !== session?.user?.id;
+            return (
             <div
               key={member.id}
-              className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
+              className={cn(
+                "grid gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors",
+                isSuperAdmin
+                  ? "grid-cols-[auto_1fr_1fr_auto_auto_auto_auto]"
+                  : "grid-cols-[auto_1fr_1fr_auto_auto_auto]"
+              )}
             >
               <OwnerAvatar name={member.name} image={member.image} size="md" />
               <span className="text-sm font-medium truncate">{member.name ?? "—"}</span>
@@ -404,8 +591,24 @@ export default function MembersPage() {
                   year: "numeric",
                 })}
               </span>
+              {isSuperAdmin && (
+                <div className="flex justify-end">
+                  {canRemove ? (
+                    <button
+                      onClick={() => setRemoveTarget(member)}
+                      className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-all cursor-pointer"
+                      title="Remove member"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  ) : (
+                    <span className="w-[26px]" />
+                  )}
+                </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -414,6 +617,16 @@ export default function MembersPage() {
         onClose={() => setAddOpen(false)}
         onAdded={(member) => setMembers((prev) => [member, ...prev])}
         assignableRoles={assignableRoles}
+      />
+
+      <RemoveMemberModal
+        open={!!removeTarget}
+        onClose={() => setRemoveTarget(null)}
+        member={removeTarget}
+        onRemoved={(id) => {
+          setMembers((prev) => prev.filter((m) => m.id !== id));
+          setToast({ message: "Member removed successfully", type: "success" });
+        }}
       />
     </div>
   );

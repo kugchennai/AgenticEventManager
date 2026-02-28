@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
@@ -58,18 +58,27 @@ export async function POST(
 
   const normalizedEmail = volunteer.email.trim().toLowerCase();
 
-  const existingUser = await prisma.user.findUnique({
+  // Use unfiltered client to detect soft-deleted users for reactivation
+  const existingUser = await prismaUnfiltered.user.findUnique({
     where: { email: normalizedEmail },
   });
 
   if (existingUser) {
-    // Upgrade role to Member (EVENT_LEAD) if currently lower
-    const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
-    if ((ROLE_LEVEL[existingUser.globalRole] ?? 0) < ROLE_LEVEL.EVENT_LEAD) {
-      await prisma.user.update({
+    // Reactivate soft-deleted user if needed
+    if (existingUser.deletedAt) {
+      await prismaUnfiltered.user.update({
         where: { id: existingUser.id },
-        data: { globalRole: "EVENT_LEAD" },
+        data: { deletedAt: null, globalRole: "EVENT_LEAD" },
       });
+    } else {
+      // Upgrade role to Member (EVENT_LEAD) if currently lower
+      const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+      if ((ROLE_LEVEL[existingUser.globalRole] ?? 0) < ROLE_LEVEL.EVENT_LEAD) {
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { globalRole: "EVENT_LEAD" },
+        });
+      }
     }
 
     // Remove volunteer from directory
