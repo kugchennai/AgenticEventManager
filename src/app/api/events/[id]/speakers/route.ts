@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendSpeakerInvitationEmail } from "@/lib/emails/triggers";
 
 export async function POST(
   req: NextRequest,
@@ -52,6 +53,9 @@ export async function POST(
     entityName: link.speaker.name,
     changes: { eventId, speakerId },
   });
+
+  // Fire-and-forget: send speaker invitation email
+  sendSpeakerInvitationEmail(link.id);
 
   return NextResponse.json(link, { status: 201 });
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit, diffChanges } from "@/lib/audit";
+import { sendEventCreatedEmail } from "@/lib/emails/triggers";
 
 export async function GET(
   req: NextRequest,
@@ -116,6 +117,11 @@ export async function PATCH(
       entityName: event.title,
       changes,
     });
+  }
+
+  // Fire-and-forget: notify team when event becomes SCHEDULED
+  if (status === "SCHEDULED" && before.status !== "SCHEDULED") {
+    sendEventCreatedEmail(id);
   }
 
   return NextResponse.json(event);

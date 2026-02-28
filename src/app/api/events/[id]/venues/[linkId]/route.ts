@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit, diffChanges } from "@/lib/audit";
+import { sendVenueConfirmedEmail } from "@/lib/emails/triggers";
 import type { VenuePartnerStatus, Priority } from "@/generated/prisma/enums";
 
 /**
@@ -242,6 +243,11 @@ export async function PATCH(
       entityName: before.venuePartner.name,
       changes,
     });
+  }
+
+  // Fire-and-forget: send venue confirmed email to event lead
+  if (status === "CONFIRMED" && before.status !== "CONFIRMED") {
+    sendVenueConfirmedEmail(linkId, eventId);
   }
 
   return NextResponse.json(updated);

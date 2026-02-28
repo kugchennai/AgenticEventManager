@@ -3,6 +3,7 @@ import { prisma, prismaUnfiltered } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendMemberInvitationEmail } from "@/lib/emails/triggers";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 export async function GET(req: Request) {
@@ -161,6 +162,14 @@ export async function POST(req: NextRequest) {
       changes: { action: "reactivated", globalRole: role },
     });
 
+    // Fire-and-forget: send member invitation email
+    sendMemberInvitationEmail(
+      normalizedEmail,
+      reactivated.name ?? normalizedEmail,
+      role,
+      session.user.name ?? "Admin"
+    );
+
     return NextResponse.json(reactivated, { status: 201 });
   }
 
@@ -214,6 +223,14 @@ export async function POST(req: NextRequest) {
     entityName: user.name ?? user.email ?? undefined,
     changes: { globalRole: role },
   });
+
+  // Fire-and-forget: send member invitation email
+  sendMemberInvitationEmail(
+    normalizedEmail,
+    user.name ?? normalizedEmail,
+    role,
+    session.user.name ?? "Admin"
+  );
 
   return NextResponse.json(user, { status: 201 });
 }

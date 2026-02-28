@@ -112,3 +112,8 @@ export type AppSetting = Prisma.AppSettingModel
  * 
  */
 export type DiscordConfig = Prisma.DiscordConfigModel
+/**
+ * Model EmailLog
+ * 
+ */
+export type EmailLog = Prisma.EmailLogModel

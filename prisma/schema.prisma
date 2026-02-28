@@ -375,3 +375,26 @@ model DiscordConfig {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ─── Email Log ────────────────────────────────────────────────────
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model EmailLog {
+  id        String      @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  status    EmailStatus @default(PENDING)
+  error     String?     @db.Text
+  sentAt    DateTime?
+  createdAt DateTime    @default(now())
+
+  @@index([template])
+  @@index([status])
+  @@index([createdAt])
+}

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit, diffChanges } from "@/lib/audit";
+import { sendTaskAssignedEmail } from "@/lib/emails/triggers";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
 const STATUSES = ["TODO", "IN_PROGRESS", "BLOCKED", "DONE"] as const;
@@ -172,6 +173,13 @@ export async function PATCH(
       entityName: task.title,
       changes,
     });
+  }
+
+  // Fire-and-forget: send task assigned email when assignee changes
+  const assigneeChanged = before.assigneeId !== task.assigneeId && task.assigneeId;
+  const volunteerAssigneeChanged = before.volunteerAssigneeId !== task.volunteerAssigneeId && task.volunteerAssigneeId;
+  if (assigneeChanged || volunteerAssigneeChanged) {
+    sendTaskAssignedEmail(taskId, session.user.name ?? undefined);
   }
 
   return NextResponse.json(task);

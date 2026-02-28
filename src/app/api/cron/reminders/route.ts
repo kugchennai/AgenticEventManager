@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { notifyDeadlineApproaching, notifyOverdueTasks } from "@/lib/discord";
+import { isEmailConfigured } from "@/lib/email";
+import { sendTaskDueSoonEmail, sendTaskOverdueEmail } from "@/lib/emails/triggers";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -70,11 +72,13 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  const summary: { approachingSent: boolean; overdueSent: boolean } = {
+  const summary: { approachingSent: boolean; overdueSent: boolean; emailsSent: number } = {
     approachingSent: false,
     overdueSent: false,
+    emailsSent: 0,
   };
 
+  // Discord notifications
   if (config?.reminderEnabled && config.channelId) {
     const token = config.botToken ?? process.env.DISCORD_BOT_TOKEN;
     if (token?.trim()) {
@@ -91,6 +95,22 @@ export async function GET(req: NextRequest) {
           config.channelId,
           config.botToken
         );
+      }
+    }
+  }
+
+  // Email notifications (fire-and-forget, per-task)
+  if (isEmailConfigured()) {
+    for (const t of tasks) {
+      const deadline = t.deadline!;
+      if (deadline < now) {
+        const overdueDays = Math.ceil((now.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
+        sendTaskOverdueEmail(t.id, overdueDays, overdueDays >= 3);
+        summary.emailsSent++;
+      } else if (deadline <= threeDaysFromNow) {
+        const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        sendTaskDueSoonEmail(t.id, daysRemaining);
+        summary.emailsSent++;
       }
     }
   }
