@@ -37,6 +37,10 @@
 /* ─── Dark Mode (Default) ──────────────────────────────────────── */
 
 :root {
+  --font-display: "Segoe UI", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
   --bg: hsl(220 12% 8%);
   --fg: hsl(40 20% 92%);
   --surface: hsl(220 12% 11%);

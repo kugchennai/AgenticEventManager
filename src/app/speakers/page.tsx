@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   PageHeader,
   Button,
@@ -35,7 +37,20 @@ type FormData = {
 const INPUT_CLASS =
   "w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all";
 
+const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+
 export default function SpeakersPage() {
+  const { data: session, status } = useSession();
+  const nav = useRouter();
+  const userRole = session?.user?.globalRole ?? "";
+  const hasAccess = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.VOLUNTEER;
+  const canManage = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!hasAccess) nav.replace("/dashboard");
+  }, [status, hasAccess, nav]);
+
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -162,12 +177,14 @@ export default function SpeakersPage() {
     <div className="animate-fade-in">
       <PageHeader
         title="Speakers"
-        description="Manage your speaker directory"
+        description={canManage ? "Manage your speaker directory" : "Speakers from your assigned events"}
         actions={
-          <Button size="md" onClick={openAddModal}>
-            <Plus className="h-4 w-4" />
-            Add Speaker
-          </Button>
+          canManage ? (
+            <Button size="md" onClick={openAddModal}>
+              <Plus className="h-4 w-4" />
+              Add Speaker
+            </Button>
+          ) : undefined
         }
       />
 
@@ -179,12 +196,14 @@ export default function SpeakersPage() {
         <EmptyState
           icon={Mic2}
           title="No speakers yet"
-          description="Add speakers to your directory"
+          description={canManage ? "Add speakers to your directory" : "No speakers in your assigned events yet"}
           action={
-            <Button size="md" onClick={openAddModal}>
-              <Plus className="h-4 w-4" />
-              Add Speaker
-            </Button>
+            canManage ? (
+              <Button size="md" onClick={openAddModal}>
+                <Plus className="h-4 w-4" />
+                Add Speaker
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -198,27 +217,29 @@ export default function SpeakersPage() {
                   size="lg"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2">
                     <p className="font-medium truncate">{speaker.name}</p>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditModal(speaker)}
-                        aria-label="Edit speaker"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(speaker.id, speaker.name)}
-                        aria-label="Delete speaker"
-                        className="text-status-blocked hover:text-status-blocked"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {canManage && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditModal(speaker)}
+                          aria-label="Edit speaker"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(speaker.id, speaker.name)}
+                          aria-label="Delete speaker"
+                          className="text-status-blocked hover:text-status-blocked"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   {speaker.email && (
                     <p className="text-sm text-muted truncate">{speaker.email}</p>

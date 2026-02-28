@@ -2,6 +2,35 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { prisma } from "./prisma";
 
+// Validate required environment variables
+function validateEnv() {
+  const required = [
+    "AUTH_SECRET",
+    "AUTH_GOOGLE_ID",
+    "AUTH_GOOGLE_SECRET",
+    "SUPER_ADMIN_EMAIL",
+  ];
+
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}\n` +
+      "Please check your .env file and ensure all required variables are set."
+    );
+  }
+
+  // Warn if CRON_SECRET is missing
+  if (!process.env.CRON_SECRET) {
+    console.warn(
+      "⚠️  CRON_SECRET is not set. Cron endpoints will not be accessible."
+    );
+  }
+}
+
+// Run validation on module load
+validateEnv();
+
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -21,10 +50,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const existing = await prisma.user.findUnique({
         where: { email },
+        select: { id: true, globalRole: true },
+      });
+
+      if (existing) {
+        return true;
+      }
+
+      // Also allow volunteers whose email matches a Volunteer record
+      const volunteerRecord = await prisma.volunteer.findFirst({
+        where: { email },
         select: { id: true },
       });
 
-      return !!existing;
+      return !!volunteerRecord;
     },
     async jwt({ token, user, trigger }) {
       const email = user?.email?.toLowerCase() ?? (token.email as string | undefined)?.toLowerCase();
@@ -35,6 +74,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         try {
           if (isSignIn) {
+            // Check if a volunteer record exists with this email and no user linked yet
+            const unlinkedVolunteer = await prisma.volunteer.findFirst({
+              where: { email, userId: null },
+              select: { id: true },
+            });
+
             const dbUser = await prisma.user.upsert({
               where: { email },
               update: {
@@ -44,10 +89,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               create: {
                 email,
                 name: user?.name ?? (token.name as string) ?? email,
-                globalRole: isSuperAdmin ? "SUPER_ADMIN" : "VIEWER",
+                globalRole: isSuperAdmin ? "SUPER_ADMIN" : unlinkedVolunteer ? "VOLUNTEER" : "VIEWER",
               },
               select: { id: true, globalRole: true },
             });
+
+            // Link volunteer profile to the user account on first sign-in
+            if (unlinkedVolunteer) {
+              await prisma.volunteer.update({
+                where: { id: unlinkedVolunteer.id },
+                data: { userId: dbUser.id },
+              });
+            }
+
             token.id = dbUser.id;
             token.globalRole = dbUser.globalRole;
           } else {

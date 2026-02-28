@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: checklistId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -46,7 +46,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: checklistId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

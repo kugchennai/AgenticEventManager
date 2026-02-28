@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
-export async function GET() {
-  const session = await auth();
+export async function GET(req: Request) {
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -30,7 +30,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

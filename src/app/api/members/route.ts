@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
-export async function GET() {
-  const session = await auth();
+export async function GET(req: Request) {
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -60,8 +60,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const assignableRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const callerRole = session.user.globalRole as GlobalRole;
+  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  if (callerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
   const role = assignableRoles.includes(globalRole) ? globalRole : "VIEWER";
+
+  if (globalRole === "ADMIN" && callerRole !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Only Super Admin can assign the Admin role" },
+      { status: 403 }
+    );
+  }
 
   const user = await prisma.user.create({
     data: {
@@ -92,7 +101,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -108,9 +117,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Missing userId or globalRole" }, { status: 400 });
   }
 
-  const assignableRoles: GlobalRole[] = ["ADMIN", "EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const patchCallerRole = session.user.globalRole as GlobalRole;
+  if (patchCallerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
+
   if (!assignableRoles.includes(globalRole)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+  }
+
+  if (globalRole === "ADMIN" && patchCallerRole !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Only Super Admin can assign the Admin role" },
+      { status: 403 }
+    );
   }
 
   const before = await prisma.user.findUnique({

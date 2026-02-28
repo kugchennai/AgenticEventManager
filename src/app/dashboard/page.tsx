@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { BentoGrid, BentoCard, StatCard, PageHeader, EmptyState, Button } from "@/components/design-system";
 import { StatusBadge, PriorityBadge, OwnerAvatar } from "@/components/design-system";
 import { CardSkeleton, TableRowSkeleton } from "@/components/design-system";
-import { Calendar, Mic2, Users, ClipboardCheck, Plus, ArrowRight, AlertTriangle, Clock } from "lucide-react";
+import { Calendar, Mic2, Users, ClipboardCheck, Plus, ArrowRight, AlertTriangle, Clock, Check } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 import { formatDate, formatTimeAgo } from "@/lib/utils";
+
+const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
 
 type DashboardData = {
   nextEvent: {
@@ -27,6 +31,9 @@ type DashboardData = {
     status: string;
     deadline: string | null;
     owner: string | null;
+    checklistId: string;
+    eventId: string;
+    eventTitle: string;
   }>;
   overdueTasks: Array<{
     id: string;
@@ -58,31 +65,50 @@ function activitySummary(entry: DashboardData["recentActivity"][0]): string {
 }
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const userRole = session?.user?.globalRole ?? "VIEWER";
+  const canCreate = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+  const isVolunteer = userRole === "VOLUNTEER";
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard");
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Please sign in to view the dashboard.");
+          return;
+        }
+        throw new Error("Failed to load dashboard");
+      }
+      const json = await res.json();
+      setData(json);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        const res = await fetch("/api/dashboard");
-        if (!res.ok) {
-          if (res.status === 401) {
-            setError("Please sign in to view the dashboard.");
-            return;
-          }
-          throw new Error("Failed to load dashboard");
-        }
-        const json = await res.json();
-        setData(json);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchDashboard();
-  }, []);
+  }, [fetchDashboard]);
+
+  const toggleTaskDone = async (task: DashboardData["myTasks"][number]) => {
+    setCompletingTaskId(task.id);
+    const newStatus = task.status === "DONE" ? "TODO" : "DONE";
+    await fetch(`/api/checklists/${task.checklistId}/tasks/${task.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    setCompletingTaskId(null);
+    fetchDashboard();
+  };
 
   if (loading) {
     return (
@@ -91,12 +117,14 @@ export default function DashboardPage() {
           title="Dashboard"
           description="Your meetup command center"
           actions={
-            <Link href="/events/new">
-              <Button size="md">
-                <Plus className="h-4 w-4" />
-                New Event
-              </Button>
-            </Link>
+            canCreate ? (
+              <Link href="/events/new">
+                <Button size="md">
+                  <Plus className="h-4 w-4" />
+                  New Event
+                </Button>
+              </Link>
+            ) : undefined
           }
         />
         <BentoGrid className="lg:grid-cols-3 xl:grid-cols-4">
@@ -152,29 +180,41 @@ export default function DashboardPage() {
         title="Dashboard"
         description="Your meetup command center"
         actions={
-          <Link href="/events/new">
-            <Button size="md">
-              <Plus className="h-4 w-4" />
-              New Event
-            </Button>
-          </Link>
+          canCreate ? (
+            <Link href="/events/new">
+              <Button size="md">
+                <Plus className="h-4 w-4" />
+                New Event
+              </Button>
+            </Link>
+          ) : undefined
         }
       />
 
       {!hasAnyData ? (
-        <EmptyState
-          icon={Calendar}
-          title="No data yet"
-          description="Create your first event to see stats and tasks here."
-          action={
-            <Link href="/events/new">
-              <Button size="md">
-                <Plus className="h-4 w-4" />
-                Create Event
-              </Button>
-            </Link>
-          }
-        />
+        isVolunteer ? (
+          <EmptyState
+            icon={Calendar}
+            title="No events assigned"
+            description="Seems you are not assigned to events — Contact the Leads to add to an event"
+          />
+        ) : (
+          <EmptyState
+            icon={Calendar}
+            title="No data yet"
+            description="Create your first event to see stats and tasks here."
+            action={
+              canCreate ? (
+                <Link href="/events/new">
+                  <Button size="md">
+                    <Plus className="h-4 w-4" />
+                    Create Event
+                  </Button>
+                </Link>
+              ) : undefined
+            }
+          />
+        )
       ) : (
         <BentoGrid className="lg:grid-cols-3 xl:grid-cols-4">
           {/* Hero: Next Event */}
@@ -230,11 +270,13 @@ export default function DashboardPage() {
               <EmptyState
                 icon={Calendar}
                 title="No upcoming events"
-                description="Create an event to get started."
+                description={isVolunteer ? "No upcoming events assigned to you yet." : "Create an event to get started."}
                 action={
-                  <Link href="/events/new">
-                    <Button size="sm">New Event</Button>
-                  </Link>
+                  canCreate ? (
+                    <Link href="/events/new">
+                      <Button size="sm">New Event</Button>
+                    </Link>
+                  ) : undefined
                 }
                 className="py-8"
               />
@@ -273,16 +315,37 @@ export default function DashboardPage() {
                 myTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-surface-hover transition-colors"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-surface-hover transition-colors group"
                   >
-                    <OwnerAvatar name={task.owner} size="sm" />
-                    <span className="text-sm flex-1 truncate">{task.title}</span>
+                    <button
+                      onClick={() => toggleTaskDone(task)}
+                      disabled={completingTaskId === task.id}
+                      className={cn(
+                        "h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer",
+                        task.status === "DONE"
+                          ? "bg-status-done border-status-done"
+                          : "border-border hover:border-accent",
+                        completingTaskId === task.id && "opacity-50 cursor-wait"
+                      )}
+                      title={task.status === "DONE" ? "Mark as to-do" : "Mark as done"}
+                    >
+                      {task.status === "DONE" && <Check className="h-3 w-3 text-white" />}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn("text-sm truncate", task.status === "DONE" && "line-through text-muted")}>
+                        {task.title}
+                      </p>
+                      <Link
+                        href={`/events/${task.eventId}`}
+                        className="text-[11px] text-muted hover:text-accent transition-colors truncate block"
+                      >
+                        {task.eventTitle}
+                      </Link>
+                    </div>
                     <PriorityBadge priority={task.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"} />
                     <StatusBadge type="task" status={task.status} />
                     <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted w-20 text-right shrink-0">
-                      {task.deadline
-                        ? formatDate(task.deadline)
-                        : "—"}
+                      {task.deadline ? formatDate(task.deadline) : "—"}
                     </span>
                   </div>
                 ))

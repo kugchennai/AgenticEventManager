@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { sendDiscordMessage } from "@/lib/discord";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
-export async function POST() {
-  const session = await auth();
+export async function POST(req: Request) {
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

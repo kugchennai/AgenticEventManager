@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: eventId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -20,24 +20,60 @@ export async function POST(
   }
 
   const body = await req.json();
-  const { volunteerId, assignedRole } = body;
+  const { volunteerId, userId, assignedRole } = body;
 
-  if (!volunteerId) {
-    return NextResponse.json({ error: "volunteerId is required" }, { status: 400 });
+  if (!volunteerId && !userId) {
+    return NextResponse.json(
+      { error: "Either volunteerId or userId is required" },
+      { status: 400 }
+    );
+  }
+
+  let resolvedVolunteerId: string;
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true },
+    });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    let volunteer = await prisma.volunteer.findUnique({
+      where: { userId },
+    });
+
+    if (!volunteer) {
+      volunteer = await prisma.volunteer.create({
+        data: {
+          name: user.name ?? user.email ?? "Unknown",
+          email: user.email,
+          userId: user.id,
+        },
+      });
+    }
+
+    resolvedVolunteerId = volunteer.id;
+  } else {
+    resolvedVolunteerId = volunteerId;
   }
 
   const existing = await prisma.eventVolunteer.findUnique({
-    where: { eventId_volunteerId: { eventId, volunteerId } },
+    where: { eventId_volunteerId: { eventId, volunteerId: resolvedVolunteerId } },
   });
 
   if (existing) {
-    return NextResponse.json({ error: "Volunteer already linked to this event" }, { status: 409 });
+    return NextResponse.json(
+      { error: "Volunteer already linked to this event" },
+      { status: 409 }
+    );
   }
 
   const link = await prisma.eventVolunteer.create({
     data: {
       eventId,
-      volunteerId,
+      volunteerId: resolvedVolunteerId,
       assignedRole: assignedRole || null,
     },
     include: {
@@ -51,7 +87,7 @@ export async function POST(
     entityType: "EventVolunteer",
     entityId: link.id,
     entityName: link.volunteer.name,
-    changes: { eventId, volunteerId, assignedRole },
+    changes: { eventId, volunteerId: resolvedVolunteerId, assignedRole },
   });
 
   return NextResponse.json(link, { status: 201 });
@@ -62,7 +98,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: eventId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -76,7 +112,10 @@ export async function DELETE(
   const volunteerId = searchParams.get("volunteerId");
 
   if (!volunteerId) {
-    return NextResponse.json({ error: "volunteerId query param is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "volunteerId query param is required" },
+      { status: 400 }
+    );
   }
 
   const link = await prisma.eventVolunteer.findUnique({

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { canUserAccessEvent } from "@/lib/permissions";
 import { logAudit, diffChanges } from "@/lib/audit";
 
@@ -12,7 +12,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; taskId: string }> }
 ) {
   const { id: checklistId, taskId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -27,8 +27,23 @@ export async function PATCH(
   }
 
   const canEdit = await canUserAccessEvent(session.user.id, checklist.eventId, "update");
+
+  // Volunteers can't fully edit, but may self-assign and toggle status
+  let volunteerSelfOnly = false;
+  let userVolunteerId: string | null = null;
+
   if (!canEdit) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const volunteerLink = await prisma.eventVolunteer.findFirst({
+      where: { eventId: checklist.eventId, volunteer: { userId: session.user.id } },
+      select: { volunteerId: true },
+    });
+
+    if (!volunteerLink) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    volunteerSelfOnly = true;
+    userVolunteerId = volunteerLink.volunteerId;
   }
 
   const before = await prisma.sOPTask.findFirst({
@@ -54,45 +69,64 @@ export async function PATCH(
     completedAt?: Date | null;
   } = {};
 
-  if (status !== undefined) {
-    if (STATUSES.includes(status)) {
+  if (volunteerSelfOnly) {
+    // Volunteers: only toggle status and self-assign/unassign
+    if (status !== undefined && STATUSES.includes(status)) {
       updateData.status = status;
-      if (status === "DONE") {
-        updateData.completedAt = new Date();
-      } else if (before.status === "DONE") {
-        updateData.completedAt = null;
+      if (status === "DONE") updateData.completedAt = new Date();
+      else if (before.status === "DONE") updateData.completedAt = null;
+    }
+
+    if (volunteerAssigneeId !== undefined) {
+      if (volunteerAssigneeId === userVolunteerId) {
+        updateData.volunteerAssigneeId = volunteerAssigneeId;
+        updateData.assigneeId = null;
+      } else if (!volunteerAssigneeId && before.volunteerAssigneeId === userVolunteerId) {
+        updateData.volunteerAssigneeId = null;
       }
     }
-  }
+  } else {
+    // Full edit for EVENT_LEAD+
+    if (status !== undefined) {
+      if (STATUSES.includes(status)) {
+        updateData.status = status;
+        if (status === "DONE") {
+          updateData.completedAt = new Date();
+        } else if (before.status === "DONE") {
+          updateData.completedAt = null;
+        }
+      }
+    }
 
-  if (priority !== undefined && PRIORITIES.includes(priority)) {
-    updateData.priority = priority;
-  }
+    if (priority !== undefined && PRIORITIES.includes(priority)) {
+      updateData.priority = priority;
+    }
 
-  if (deadline !== undefined) {
-    updateData.deadline = deadline ? new Date(deadline) : null;
-  }
+    if (deadline !== undefined) {
+      updateData.deadline = deadline ? new Date(deadline) : null;
+    }
 
-  if (ownerId !== undefined) {
-    updateData.ownerId = ownerId || null;
-  }
+    if (ownerId !== undefined) {
+      updateData.ownerId = ownerId || null;
+    }
 
-  if (assigneeId !== undefined) {
-    updateData.assigneeId = assigneeId || null;
-    if (assigneeId) updateData.volunteerAssigneeId = null;
-  }
+    if (assigneeId !== undefined) {
+      updateData.assigneeId = assigneeId || null;
+      if (assigneeId) updateData.volunteerAssigneeId = null;
+    }
 
-  if (volunteerAssigneeId !== undefined) {
-    updateData.volunteerAssigneeId = volunteerAssigneeId || null;
-    if (volunteerAssigneeId) updateData.assigneeId = null;
-  }
+    if (volunteerAssigneeId !== undefined) {
+      updateData.volunteerAssigneeId = volunteerAssigneeId || null;
+      if (volunteerAssigneeId) updateData.assigneeId = null;
+    }
 
-  if (blockedReason !== undefined) {
-    updateData.blockedReason = typeof blockedReason === "string" ? blockedReason.trim() || null : null;
-  }
+    if (blockedReason !== undefined) {
+      updateData.blockedReason = typeof blockedReason === "string" ? blockedReason.trim() || null : null;
+    }
 
-  if (title !== undefined && typeof title === "string" && title.trim()) {
-    updateData.title = title.trim();
+    if (title !== undefined && typeof title === "string" && title.trim()) {
+      updateData.title = title.trim();
+    }
   }
 
   const task = await prisma.sOPTask.update({
@@ -144,11 +178,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string; taskId: string }> }
 ) {
   const { id: checklistId, taskId } = await params;
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

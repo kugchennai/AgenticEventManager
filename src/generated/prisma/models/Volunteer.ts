@@ -30,6 +30,7 @@ export type VolunteerMinAggregateOutputType = {
   email: string | null
   discordId: string | null
   role: string | null
+  userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +41,7 @@ export type VolunteerMaxAggregateOutputType = {
   email: string | null
   discordId: string | null
   role: string | null
+  userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,7 @@ export type VolunteerCountAggregateOutputType = {
   email: number
   discordId: number
   role: number
+  userId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -62,6 +65,7 @@ export type VolunteerMinAggregateInputType = {
   email?: true
   discordId?: true
   role?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -72,6 +76,7 @@ export type VolunteerMaxAggregateInputType = {
   email?: true
   discordId?: true
   role?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +87,7 @@ export type VolunteerCountAggregateInputType = {
   email?: true
   discordId?: true
   role?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -165,6 +171,7 @@ export type VolunteerGroupByOutputType = {
   email: string | null
   discordId: string | null
   role: string | null
+  userId: string | null
   createdAt: Date
   updatedAt: Date
   _count: VolunteerCountAggregateOutputType | null
@@ -196,8 +203,10 @@ export type VolunteerWhereInput = {
   email?: Prisma.StringNullableFilter<"Volunteer"> | string | null
   discordId?: Prisma.StringNullableFilter<"Volunteer"> | string | null
   role?: Prisma.StringNullableFilter<"Volunteer"> | string | null
+  userId?: Prisma.StringNullableFilter<"Volunteer"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Volunteer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Volunteer"> | Date | string
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   events?: Prisma.EventVolunteerListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
 }
@@ -208,14 +217,17 @@ export type VolunteerOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   discordId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  user?: Prisma.UserOrderByWithRelationInput
   events?: Prisma.EventVolunteerOrderByRelationAggregateInput
   assignedTasks?: Prisma.SOPTaskOrderByRelationAggregateInput
 }
 
 export type VolunteerWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  userId?: string
   AND?: Prisma.VolunteerWhereInput | Prisma.VolunteerWhereInput[]
   OR?: Prisma.VolunteerWhereInput[]
   NOT?: Prisma.VolunteerWhereInput | Prisma.VolunteerWhereInput[]
@@ -225,9 +237,10 @@ export type VolunteerWhereUniqueInput = Prisma.AtLeast<{
   role?: Prisma.StringNullableFilter<"Volunteer"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Volunteer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Volunteer"> | Date | string
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   events?: Prisma.EventVolunteerListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
-}, "id">
+}, "id" | "userId">
 
 export type VolunteerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -235,6 +248,7 @@ export type VolunteerOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   discordId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.VolunteerCountOrderByAggregateInput
@@ -251,6 +265,7 @@ export type VolunteerScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<"Volunteer"> | string | null
   discordId?: Prisma.StringNullableWithAggregatesFilter<"Volunteer"> | string | null
   role?: Prisma.StringNullableWithAggregatesFilter<"Volunteer"> | string | null
+  userId?: Prisma.StringNullableWithAggregatesFilter<"Volunteer"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Volunteer"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Volunteer"> | Date | string
 }
@@ -263,6 +278,7 @@ export type VolunteerCreateInput = {
   role?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutVolunteerProfileInput
   events?: Prisma.EventVolunteerCreateNestedManyWithoutVolunteerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutVolunteerAssigneeInput
 }
@@ -273,6 +289,7 @@ export type VolunteerUncheckedCreateInput = {
   email?: string | null
   discordId?: string | null
   role?: string | null
+  userId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   events?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutVolunteerInput
@@ -287,6 +304,7 @@ export type VolunteerUpdateInput = {
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutVolunteerProfileNestedInput
   events?: Prisma.EventVolunteerUpdateManyWithoutVolunteerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutVolunteerAssigneeNestedInput
 }
@@ -297,6 +315,7 @@ export type VolunteerUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.EventVolunteerUncheckedUpdateManyWithoutVolunteerNestedInput
@@ -309,6 +328,7 @@ export type VolunteerCreateManyInput = {
   email?: string | null
   discordId?: string | null
   role?: string | null
+  userId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -329,8 +349,14 @@ export type VolunteerUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VolunteerNullableScalarRelationFilter = {
+  is?: Prisma.VolunteerWhereInput | null
+  isNot?: Prisma.VolunteerWhereInput | null
 }
 
 export type VolunteerCountOrderByAggregateInput = {
@@ -339,6 +365,7 @@ export type VolunteerCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   discordId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -349,6 +376,7 @@ export type VolunteerMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   discordId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -359,6 +387,7 @@ export type VolunteerMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   discordId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -368,9 +397,36 @@ export type VolunteerScalarRelationFilter = {
   isNot?: Prisma.VolunteerWhereInput
 }
 
-export type VolunteerNullableScalarRelationFilter = {
-  is?: Prisma.VolunteerWhereInput | null
-  isNot?: Prisma.VolunteerWhereInput | null
+export type VolunteerCreateNestedOneWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.VolunteerCreateOrConnectWithoutUserInput
+  connect?: Prisma.VolunteerWhereUniqueInput
+}
+
+export type VolunteerUncheckedCreateNestedOneWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.VolunteerCreateOrConnectWithoutUserInput
+  connect?: Prisma.VolunteerWhereUniqueInput
+}
+
+export type VolunteerUpdateOneWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.VolunteerCreateOrConnectWithoutUserInput
+  upsert?: Prisma.VolunteerUpsertWithoutUserInput
+  disconnect?: Prisma.VolunteerWhereInput | boolean
+  delete?: Prisma.VolunteerWhereInput | boolean
+  connect?: Prisma.VolunteerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VolunteerUpdateToOneWithWhereWithoutUserInput, Prisma.VolunteerUpdateWithoutUserInput>, Prisma.VolunteerUncheckedUpdateWithoutUserInput>
+}
+
+export type VolunteerUncheckedUpdateOneWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.VolunteerCreateOrConnectWithoutUserInput
+  upsert?: Prisma.VolunteerUpsertWithoutUserInput
+  disconnect?: Prisma.VolunteerWhereInput | boolean
+  delete?: Prisma.VolunteerWhereInput | boolean
+  connect?: Prisma.VolunteerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VolunteerUpdateToOneWithWhereWithoutUserInput, Prisma.VolunteerUpdateWithoutUserInput>, Prisma.VolunteerUncheckedUpdateWithoutUserInput>
 }
 
 export type VolunteerCreateNestedOneWithoutEventsInput = {
@@ -403,6 +459,70 @@ export type VolunteerUpdateOneWithoutAssignedTasksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VolunteerUpdateToOneWithWhereWithoutAssignedTasksInput, Prisma.VolunteerUpdateWithoutAssignedTasksInput>, Prisma.VolunteerUncheckedUpdateWithoutAssignedTasksInput>
 }
 
+export type VolunteerCreateWithoutUserInput = {
+  id?: string
+  name: string
+  email?: string | null
+  discordId?: string | null
+  role?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  events?: Prisma.EventVolunteerCreateNestedManyWithoutVolunteerInput
+  assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutVolunteerAssigneeInput
+}
+
+export type VolunteerUncheckedCreateWithoutUserInput = {
+  id?: string
+  name: string
+  email?: string | null
+  discordId?: string | null
+  role?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  events?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutVolunteerInput
+  assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutVolunteerAssigneeInput
+}
+
+export type VolunteerCreateOrConnectWithoutUserInput = {
+  where: Prisma.VolunteerWhereUniqueInput
+  create: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+}
+
+export type VolunteerUpsertWithoutUserInput = {
+  update: Prisma.XOR<Prisma.VolunteerUpdateWithoutUserInput, Prisma.VolunteerUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.VolunteerCreateWithoutUserInput, Prisma.VolunteerUncheckedCreateWithoutUserInput>
+  where?: Prisma.VolunteerWhereInput
+}
+
+export type VolunteerUpdateToOneWithWhereWithoutUserInput = {
+  where?: Prisma.VolunteerWhereInput
+  data: Prisma.XOR<Prisma.VolunteerUpdateWithoutUserInput, Prisma.VolunteerUncheckedUpdateWithoutUserInput>
+}
+
+export type VolunteerUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  events?: Prisma.EventVolunteerUpdateManyWithoutVolunteerNestedInput
+  assignedTasks?: Prisma.SOPTaskUpdateManyWithoutVolunteerAssigneeNestedInput
+}
+
+export type VolunteerUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  events?: Prisma.EventVolunteerUncheckedUpdateManyWithoutVolunteerNestedInput
+  assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutVolunteerAssigneeNestedInput
+}
+
 export type VolunteerCreateWithoutEventsInput = {
   id?: string
   name: string
@@ -411,6 +531,7 @@ export type VolunteerCreateWithoutEventsInput = {
   role?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutVolunteerProfileInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutVolunteerAssigneeInput
 }
 
@@ -420,6 +541,7 @@ export type VolunteerUncheckedCreateWithoutEventsInput = {
   email?: string | null
   discordId?: string | null
   role?: string | null
+  userId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutVolunteerAssigneeInput
@@ -449,6 +571,7 @@ export type VolunteerUpdateWithoutEventsInput = {
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutVolunteerProfileNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutVolunteerAssigneeNestedInput
 }
 
@@ -458,6 +581,7 @@ export type VolunteerUncheckedUpdateWithoutEventsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutVolunteerAssigneeNestedInput
@@ -471,6 +595,7 @@ export type VolunteerCreateWithoutAssignedTasksInput = {
   role?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutVolunteerProfileInput
   events?: Prisma.EventVolunteerCreateNestedManyWithoutVolunteerInput
 }
 
@@ -480,6 +605,7 @@ export type VolunteerUncheckedCreateWithoutAssignedTasksInput = {
   email?: string | null
   discordId?: string | null
   role?: string | null
+  userId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   events?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutVolunteerInput
@@ -509,6 +635,7 @@ export type VolunteerUpdateWithoutAssignedTasksInput = {
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutVolunteerProfileNestedInput
   events?: Prisma.EventVolunteerUpdateManyWithoutVolunteerNestedInput
 }
 
@@ -518,6 +645,7 @@ export type VolunteerUncheckedUpdateWithoutAssignedTasksInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.EventVolunteerUncheckedUpdateManyWithoutVolunteerNestedInput
@@ -569,8 +697,10 @@ export type VolunteerSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   email?: boolean
   discordId?: boolean
   role?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
   events?: boolean | Prisma.Volunteer$eventsArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.Volunteer$assignedTasksArgs<ExtArgs>
   _count?: boolean | Prisma.VolunteerCountOutputTypeDefaultArgs<ExtArgs>
@@ -582,8 +712,10 @@ export type VolunteerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   email?: boolean
   discordId?: boolean
   role?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
 }, ExtArgs["result"]["volunteer"]>
 
 export type VolunteerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -592,8 +724,10 @@ export type VolunteerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   email?: boolean
   discordId?: boolean
   role?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
 }, ExtArgs["result"]["volunteer"]>
 
 export type VolunteerSelectScalar = {
@@ -602,22 +736,29 @@ export type VolunteerSelectScalar = {
   email?: boolean
   discordId?: boolean
   role?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VolunteerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "discordId" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["volunteer"]>
+export type VolunteerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "discordId" | "role" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["volunteer"]>
 export type VolunteerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
   events?: boolean | Prisma.Volunteer$eventsArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.Volunteer$assignedTasksArgs<ExtArgs>
   _count?: boolean | Prisma.VolunteerCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type VolunteerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type VolunteerIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type VolunteerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
+}
+export type VolunteerIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.Volunteer$userArgs<ExtArgs>
+}
 
 export type $VolunteerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Volunteer"
   objects: {
+    user: Prisma.$UserPayload<ExtArgs> | null
     events: Prisma.$EventVolunteerPayload<ExtArgs>[]
     assignedTasks: Prisma.$SOPTaskPayload<ExtArgs>[]
   }
@@ -627,6 +768,7 @@ export type $VolunteerPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     email: string | null
     discordId: string | null
     role: string | null
+    userId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["volunteer"]>
@@ -1023,6 +1165,7 @@ readonly fields: VolunteerFieldRefs;
  */
 export interface Prisma__VolunteerClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  user<T extends Prisma.Volunteer$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Volunteer$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   events<T extends Prisma.Volunteer$eventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Volunteer$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVolunteerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedTasks<T extends Prisma.Volunteer$assignedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Volunteer$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1059,6 +1202,7 @@ export interface VolunteerFieldRefs {
   readonly email: Prisma.FieldRef<"Volunteer", 'String'>
   readonly discordId: Prisma.FieldRef<"Volunteer", 'String'>
   readonly role: Prisma.FieldRef<"Volunteer", 'String'>
+  readonly userId: Prisma.FieldRef<"Volunteer", 'String'>
   readonly createdAt: Prisma.FieldRef<"Volunteer", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Volunteer", 'DateTime'>
 }
@@ -1310,6 +1454,10 @@ export type VolunteerCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    */
   data: Prisma.VolunteerCreateManyInput | Prisma.VolunteerCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VolunteerIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1380,6 +1528,10 @@ export type VolunteerUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many Volunteers to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VolunteerIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1446,6 +1598,25 @@ export type VolunteerDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Volunteers to delete.
    */
   limit?: number
+}
+
+/**
+ * Volunteer.user
+ */
+export type Volunteer$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

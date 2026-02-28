@@ -3,6 +3,8 @@
 import { PageHeader, EmptyState, Button, Modal } from "@/components/design-system";
 import { Users, Plus, Pencil, Trash2, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface Volunteer {
@@ -147,7 +149,19 @@ function VolunteerFormModal({
   );
 }
 
+const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+
 export default function VolunteersPage() {
+  const { data: session, status } = useSession();
+  const nav = useRouter();
+  const userRole = session?.user?.globalRole ?? "";
+  const hasAccess = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!hasAccess) nav.replace("/dashboard");
+  }, [status, hasAccess, nav]);
+
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVolunteer, setModalVolunteer] = useState<Volunteer | null | "add">(null);

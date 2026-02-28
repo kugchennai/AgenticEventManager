@@ -208,6 +208,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
+  refreshTokens?: Prisma.RefreshTokenListRelationFilter
   eventMembers?: Prisma.EventMemberListRelationFilter
   createdEvents?: Prisma.EventListRelationFilter
   ownedSpeakers?: Prisma.EventSpeakerListRelationFilter
@@ -215,6 +216,7 @@ export type UserWhereInput = {
   ownedTasks?: Prisma.SOPTaskListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  volunteerProfile?: Prisma.XOR<Prisma.VolunteerNullableScalarRelationFilter, Prisma.VolunteerWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -228,6 +230,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
+  refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   eventMembers?: Prisma.EventMemberOrderByRelationAggregateInput
   createdEvents?: Prisma.EventOrderByRelationAggregateInput
   ownedSpeakers?: Prisma.EventSpeakerOrderByRelationAggregateInput
@@ -235,6 +238,7 @@ export type UserOrderByWithRelationInput = {
   ownedTasks?: Prisma.SOPTaskOrderByRelationAggregateInput
   assignedTasks?: Prisma.SOPTaskOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  volunteerProfile?: Prisma.VolunteerOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -251,6 +255,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
+  refreshTokens?: Prisma.RefreshTokenListRelationFilter
   eventMembers?: Prisma.EventMemberListRelationFilter
   createdEvents?: Prisma.EventListRelationFilter
   ownedSpeakers?: Prisma.EventSpeakerListRelationFilter
@@ -258,6 +263,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   ownedTasks?: Prisma.SOPTaskListRelationFilter
   assignedTasks?: Prisma.SOPTaskListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  volunteerProfile?: Prisma.XOR<Prisma.VolunteerNullableScalarRelationFilter, Prisma.VolunteerWhereInput> | null
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -299,6 +305,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
@@ -306,6 +313,7 @@ export type UserCreateInput = {
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -319,6 +327,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
@@ -326,6 +335,7 @@ export type UserUncheckedCreateInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -339,6 +349,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
@@ -346,6 +357,7 @@ export type UserUpdateInput = {
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -359,6 +371,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
@@ -366,6 +379,7 @@ export type UserUncheckedUpdateInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -472,6 +486,20 @@ export type UserUpdateOneRequiredWithoutSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSessionsInput, Prisma.UserUpdateWithoutSessionsInput>, Prisma.UserUncheckedUpdateWithoutSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutRefreshTokensInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRefreshTokensInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutRefreshTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRefreshTokensInput
+  upsert?: Prisma.UserUpsertWithoutRefreshTokensInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRefreshTokensInput, Prisma.UserUpdateWithoutRefreshTokensInput>, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+}
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
@@ -522,6 +550,22 @@ export type UserUpdateOneWithoutOwnedSpeakersNestedInput = {
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOwnedSpeakersInput, Prisma.UserUpdateWithoutOwnedSpeakersInput>, Prisma.UserUncheckedUpdateWithoutOwnedSpeakersInput>
+}
+
+export type UserCreateNestedOneWithoutVolunteerProfileInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVolunteerProfileInput, Prisma.UserUncheckedCreateWithoutVolunteerProfileInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVolunteerProfileInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutVolunteerProfileNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVolunteerProfileInput, Prisma.UserUncheckedCreateWithoutVolunteerProfileInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVolunteerProfileInput
+  upsert?: Prisma.UserUpsertWithoutVolunteerProfileInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVolunteerProfileInput, Prisma.UserUpdateWithoutVolunteerProfileInput>, Prisma.UserUncheckedUpdateWithoutVolunteerProfileInput>
 }
 
 export type UserCreateNestedOneWithoutOwnedVolunteersInput = {
@@ -596,6 +640,7 @@ export type UserCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
@@ -603,6 +648,7 @@ export type UserCreateWithoutAccountsInput = {
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -615,6 +661,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
@@ -622,6 +669,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -650,6 +698,7 @@ export type UserUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
@@ -657,6 +706,7 @@ export type UserUpdateWithoutAccountsInput = {
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -669,6 +719,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
@@ -676,6 +727,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -688,6 +740,7 @@ export type UserCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
@@ -695,6 +748,7 @@ export type UserCreateWithoutSessionsInput = {
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -707,6 +761,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
@@ -714,6 +769,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -742,6 +798,7 @@ export type UserUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
@@ -749,6 +806,7 @@ export type UserUpdateWithoutSessionsInput = {
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -761,6 +819,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
@@ -768,6 +827,107 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutRefreshTokensInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutRefreshTokensInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutRefreshTokensInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+}
+
+export type UserUpsertWithoutRefreshTokensInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRefreshTokensInput, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRefreshTokensInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRefreshTokensInput, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+}
+
+export type UserUpdateWithoutRefreshTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRefreshTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedEventsInput = {
@@ -781,12 +941,14 @@ export type UserCreateWithoutCreatedEventsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedEventsInput = {
@@ -800,12 +962,14 @@ export type UserUncheckedCreateWithoutCreatedEventsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedEventsInput = {
@@ -835,12 +999,14 @@ export type UserUpdateWithoutCreatedEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedEventsInput = {
@@ -854,12 +1020,14 @@ export type UserUncheckedUpdateWithoutCreatedEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutEventMembersInput = {
@@ -873,12 +1041,14 @@ export type UserCreateWithoutEventMembersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutEventMembersInput = {
@@ -892,12 +1062,14 @@ export type UserUncheckedCreateWithoutEventMembersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutEventMembersInput = {
@@ -927,12 +1099,14 @@ export type UserUpdateWithoutEventMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEventMembersInput = {
@@ -946,12 +1120,14 @@ export type UserUncheckedUpdateWithoutEventMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOwnedSpeakersInput = {
@@ -965,12 +1141,14 @@ export type UserCreateWithoutOwnedSpeakersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedSpeakersInput = {
@@ -984,12 +1162,14 @@ export type UserUncheckedCreateWithoutOwnedSpeakersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedSpeakersInput = {
@@ -1019,12 +1199,14 @@ export type UserUpdateWithoutOwnedSpeakersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedSpeakersInput = {
@@ -1038,8 +1220,110 @@ export type UserUncheckedUpdateWithoutOwnedSpeakersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutVolunteerProfileInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutVolunteerProfileInput = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  globalRole?: $Enums.GlobalRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
+  createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
+  ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
+  assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutVolunteerProfileInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutVolunteerProfileInput, Prisma.UserUncheckedCreateWithoutVolunteerProfileInput>
+}
+
+export type UserUpsertWithoutVolunteerProfileInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutVolunteerProfileInput, Prisma.UserUncheckedUpdateWithoutVolunteerProfileInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutVolunteerProfileInput, Prisma.UserUncheckedCreateWithoutVolunteerProfileInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutVolunteerProfileInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutVolunteerProfileInput, Prisma.UserUncheckedUpdateWithoutVolunteerProfileInput>
+}
+
+export type UserUpdateWithoutVolunteerProfileInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
+  ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
+  ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
+  assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutVolunteerProfileInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  globalRole?: Prisma.EnumGlobalRoleFieldUpdateOperationsInput | $Enums.GlobalRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
+  createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
+  ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
@@ -1057,12 +1341,14 @@ export type UserCreateWithoutOwnedVolunteersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedVolunteersInput = {
@@ -1076,12 +1362,14 @@ export type UserUncheckedCreateWithoutOwnedVolunteersInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedVolunteersInput = {
@@ -1111,12 +1399,14 @@ export type UserUpdateWithoutOwnedVolunteersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedVolunteersInput = {
@@ -1130,12 +1420,14 @@ export type UserUncheckedUpdateWithoutOwnedVolunteersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOwnedTasksInput = {
@@ -1149,12 +1441,14 @@ export type UserCreateWithoutOwnedTasksInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedTasksInput = {
@@ -1168,12 +1462,14 @@ export type UserUncheckedCreateWithoutOwnedTasksInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedTasksInput = {
@@ -1192,12 +1488,14 @@ export type UserCreateWithoutAssignedTasksInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedTasksInput = {
@@ -1211,12 +1509,14 @@ export type UserUncheckedCreateWithoutAssignedTasksInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedTasksInput = {
@@ -1246,12 +1546,14 @@ export type UserUpdateWithoutOwnedTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedTasksInput = {
@@ -1265,12 +1567,14 @@ export type UserUncheckedUpdateWithoutOwnedTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutAssignedTasksInput = {
@@ -1295,12 +1599,14 @@ export type UserUpdateWithoutAssignedTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedTasksInput = {
@@ -1314,12 +1620,14 @@ export type UserUncheckedUpdateWithoutAssignedTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -1333,12 +1641,14 @@ export type UserCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskCreateNestedManyWithoutAssigneeInput
+  volunteerProfile?: Prisma.VolunteerCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -1352,12 +1662,14 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   eventMembers?: Prisma.EventMemberUncheckedCreateNestedManyWithoutUserInput
   createdEvents?: Prisma.EventUncheckedCreateNestedManyWithoutCreatedByInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutOwnerInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedCreateNestedManyWithoutOwnerInput
   ownedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutOwnerInput
   assignedTasks?: Prisma.SOPTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  volunteerProfile?: Prisma.VolunteerUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -1387,12 +1699,14 @@ export type UserUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUpdateManyWithoutAssigneeNestedInput
+  volunteerProfile?: Prisma.VolunteerUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -1406,12 +1720,14 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   eventMembers?: Prisma.EventMemberUncheckedUpdateManyWithoutUserNestedInput
   createdEvents?: Prisma.EventUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedSpeakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedVolunteers?: Prisma.EventVolunteerUncheckedUpdateManyWithoutOwnerNestedInput
   ownedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutOwnerNestedInput
   assignedTasks?: Prisma.SOPTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  volunteerProfile?: Prisma.VolunteerUncheckedUpdateOneWithoutUserNestedInput
 }
 
 
@@ -1422,6 +1738,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
 export type UserCountOutputType = {
   accounts: number
   sessions: number
+  refreshTokens: number
   eventMembers: number
   createdEvents: number
   ownedSpeakers: number
@@ -1434,6 +1751,7 @@ export type UserCountOutputType = {
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
   eventMembers?: boolean | UserCountOutputTypeCountEventMembersArgs
   createdEvents?: boolean | UserCountOutputTypeCountCreatedEventsArgs
   ownedSpeakers?: boolean | UserCountOutputTypeCountOwnedSpeakersArgs
@@ -1465,6 +1783,13 @@ export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.E
  */
 export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRefreshTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RefreshTokenWhereInput
 }
 
 /**
@@ -1528,6 +1853,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+  refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   eventMembers?: boolean | Prisma.User$eventMembersArgs<ExtArgs>
   createdEvents?: boolean | Prisma.User$createdEventsArgs<ExtArgs>
   ownedSpeakers?: boolean | Prisma.User$ownedSpeakersArgs<ExtArgs>
@@ -1535,6 +1861,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   ownedTasks?: boolean | Prisma.User$ownedTasksArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  volunteerProfile?: boolean | Prisma.User$volunteerProfileArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1575,6 +1902,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+  refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   eventMembers?: boolean | Prisma.User$eventMembersArgs<ExtArgs>
   createdEvents?: boolean | Prisma.User$createdEventsArgs<ExtArgs>
   ownedSpeakers?: boolean | Prisma.User$ownedSpeakersArgs<ExtArgs>
@@ -1582,6 +1910,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   ownedTasks?: boolean | Prisma.User$ownedTasksArgs<ExtArgs>
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  volunteerProfile?: boolean | Prisma.User$volunteerProfileArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1592,6 +1921,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
+    refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
     eventMembers: Prisma.$EventMemberPayload<ExtArgs>[]
     createdEvents: Prisma.$EventPayload<ExtArgs>[]
     ownedSpeakers: Prisma.$EventSpeakerPayload<ExtArgs>[]
@@ -1599,6 +1929,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     ownedTasks: Prisma.$SOPTaskPayload<ExtArgs>[]
     assignedTasks: Prisma.$SOPTaskPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    volunteerProfile: Prisma.$VolunteerPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2005,6 +2336,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   eventMembers<T extends Prisma.User$eventMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$eventMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   createdEvents<T extends Prisma.User$createdEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ownedSpeakers<T extends Prisma.User$ownedSpeakersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedSpeakersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSpeakerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2012,6 +2344,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   ownedTasks<T extends Prisma.User$ownedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedTasks<T extends Prisma.User$assignedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SOPTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  volunteerProfile<T extends Prisma.User$volunteerProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$volunteerProfileArgs<ExtArgs>>): Prisma.Prisma__VolunteerClient<runtime.Types.Result.GetResult<Prisma.$VolunteerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2485,6 +2818,30 @@ export type User$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 }
 
 /**
+ * User.refreshTokens
+ */
+export type User$refreshTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RefreshToken
+   */
+  select?: Prisma.RefreshTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RefreshToken
+   */
+  omit?: Prisma.RefreshTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RefreshTokenInclude<ExtArgs> | null
+  where?: Prisma.RefreshTokenWhereInput
+  orderBy?: Prisma.RefreshTokenOrderByWithRelationInput | Prisma.RefreshTokenOrderByWithRelationInput[]
+  cursor?: Prisma.RefreshTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RefreshTokenScalarFieldEnum | Prisma.RefreshTokenScalarFieldEnum[]
+}
+
+/**
  * User.eventMembers
  */
 export type User$eventMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2650,6 +3007,25 @@ export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.volunteerProfile
+ */
+export type User$volunteerProfileArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Volunteer
+   */
+  select?: Prisma.VolunteerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Volunteer
+   */
+  omit?: Prisma.VolunteerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VolunteerInclude<ExtArgs> | null
+  where?: Prisma.VolunteerWhereInput
 }
 
 /**

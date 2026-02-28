@@ -1,8 +1,10 @@
 "use client";
 
 import { PageHeader, EmptyState, OwnerAvatar } from "@/components/design-system";
-import { ClipboardCheck, Filter } from "lucide-react";
+import { ClipboardCheck, Filter, ShieldX } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface AuditEntry {
@@ -59,9 +61,21 @@ const ACTION_STYLES: Record<string, string> = {
 };
 
 export default function AuditLogPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [entityFilter, setEntityFilter] = useState("");
+
+  const role = session?.user?.globalRole;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!isAdmin) router.replace("/dashboard");
+  }, [status, isAdmin, router]);
+
+  if (status === "loading" || !isAdmin) return null;
 
   useEffect(() => {
     const params = new URLSearchParams();

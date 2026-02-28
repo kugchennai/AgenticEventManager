@@ -21,15 +21,15 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
   EVENT_LEAD: "Event Lead",
   VOLUNTEER: "Volunteer",
-  VIEWER: "Viewer",
+  VIEWER: "Temporary Viewer",
 };
 
-const ASSIGNABLE_ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  EVENT_LEAD: "Event Lead",
-  VOLUNTEER: "Volunteer",
-  VIEWER: "Viewer",
-};
+const ALL_ASSIGNABLE_ROLES: { value: string; label: string }[] = [
+  { value: "ADMIN", label: "Admin" },
+  { value: "EVENT_LEAD", label: "Event Lead" },
+  { value: "VOLUNTEER", label: "Volunteer" },
+  { value: "VIEWER", label: "Temporary Viewer" },
+];
 
 const ROLE_COLORS: Record<string, string> = {
   SUPER_ADMIN: "text-rose-400",
@@ -43,10 +43,12 @@ function RoleDropdown({
   currentRole,
   onSelect,
   disabled,
+  assignableRoles,
 }: {
   currentRole: string;
   onSelect: (role: string) => void;
   disabled?: boolean;
+  assignableRoles: { value: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -120,17 +122,17 @@ function RoleDropdown({
             className="fixed z-[100] w-40 bg-surface border border-border rounded-lg shadow-xl py-1 animate-fade-in"
             style={{ top: pos.top, left: pos.left }}
           >
-            {Object.entries(ASSIGNABLE_ROLE_LABELS).map(([role, label]) => (
+            {assignableRoles.map(({ value, label }) => (
               <button
-                key={role}
+                key={value}
                 onClick={() => {
-                  onSelect(role);
+                  onSelect(value);
                   setOpen(false);
                 }}
                 className={cn(
                   "w-full text-left px-3 py-1.5 text-xs font-medium cursor-pointer",
                   "hover:bg-surface-hover transition-colors",
-                  role === currentRole ? "text-accent" : "text-foreground"
+                  value === currentRole ? "text-accent" : "text-foreground"
                 )}
               >
                 {label}
@@ -150,10 +152,12 @@ function AddMemberModal({
   open,
   onClose,
   onAdded,
+  assignableRoles,
 }: {
   open: boolean;
   onClose: () => void;
   onAdded: (member: Member) => void;
+  assignableRoles: { value: string; label: string }[];
 }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -230,7 +234,7 @@ function AddMemberModal({
             onChange={(e) => setRole(e.target.value)}
             className={INPUT_CLASS}
           >
-            {Object.entries(ASSIGNABLE_ROLE_LABELS).map(([value, label]) => (
+            {assignableRoles.map(({ value, label }) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -258,6 +262,10 @@ function AddMemberModal({
 export default function MembersPage() {
   const { data: session } = useSession();
   const myRole = session?.user?.globalRole ?? "VIEWER";
+  const isSuperAdmin = myRole === "SUPER_ADMIN";
+  const assignableRoles = isSuperAdmin
+    ? ALL_ASSIGNABLE_ROLES
+    : ALL_ASSIGNABLE_ROLES.filter((r) => r.value !== "ADMIN");
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -370,6 +378,7 @@ export default function MembersPage() {
               <RoleDropdown
                 currentRole={member.globalRole}
                 onSelect={(role) => updateRole(member.id, role)}
+                assignableRoles={assignableRoles}
                 disabled={
                   member.globalRole === "SUPER_ADMIN" ||
                   member.id === session?.user?.id ||
@@ -392,6 +401,7 @@ export default function MembersPage() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onAdded={(member) => setMembers((prev) => [member, ...prev])}
+        assignableRoles={assignableRoles}
       />
     </div>
   );

@@ -1,9 +1,14 @@
 "use client";
 
 import { PageHeader } from "@/components/design-system";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const role = session?.user?.globalRole;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
   return (
     <div className="animate-fade-in">
       <PageHeader
@@ -23,12 +28,14 @@ export default function SettingsPage() {
             <p className="text-sm text-muted">User roles and permissions</p>
           </div>
         </Link>
-        <Link href="/settings/audit-log">
-          <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
-            <h3 className="font-semibold mb-1">Audit Log</h3>
-            <p className="text-sm text-muted">Track changes across your workspace</p>
-          </div>
-        </Link>
+        {isAdmin && (
+          <Link href="/settings/audit-log">
+            <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
+              <h3 className="font-semibold mb-1">Audit Log</h3>
+              <p className="text-sm text-muted">Track changes across your workspace</p>
+            </div>
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { PageHeader, Button } from "@/components/design-system";
 import { ArrowLeft, Calendar, MapPin, FileText, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +14,19 @@ interface SOPTemplate {
   description: string | null;
 }
 
+const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+
 export default function CreateEventPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const userRole = session?.user?.globalRole ?? "";
+  const hasAccess = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!hasAccess) router.replace("/dashboard");
+  }, [status, hasAccess, router]);
+
   const [submitting, setSubmitting] = useState(false);
   const [templates, setTemplates] = useState<SOPTemplate[]>([]);
   const [form, setForm] = useState({

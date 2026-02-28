@@ -101,6 +101,18 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 // ─── Core Models ──────────────────────────────────────────────────
 
 model User {
@@ -115,6 +127,7 @@ model User {
 
   accounts       Account[]
   sessions       Session[]
+  refreshTokens  RefreshToken[]
   eventMembers   EventMember[]
   createdEvents  Event[]          @relation("EventCreator")
   ownedSpeakers  EventSpeaker[]   @relation("SpeakerOwner")
@@ -122,6 +135,7 @@ model User {
   ownedTasks     SOPTask[]        @relation("TaskOwner")
   assignedTasks  SOPTask[]        @relation("TaskAssignee")
   auditLogs      AuditLog[]
+  volunteerProfile Volunteer?     @relation("VolunteerUser")
 }
 
 model Event {
@@ -197,11 +211,13 @@ model Volunteer {
   email     String?
   discordId String?
   role      String?
+  userId    String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  events      EventVolunteer[]
-  assignedTasks SOPTask[]      @relation("TaskVolunteerAssignee")
+  user          User?            @relation("VolunteerUser", fields: [userId], references: [id])
+  events        EventVolunteer[]
+  assignedTasks SOPTask[]        @relation("TaskVolunteerAssignee")
 }
 
 model EventVolunteer {

@@ -7,14 +7,16 @@ import {
 import {
   ArrowLeft, Calendar, MapPin, Mic2, Users, ClipboardCheck,
   Check, Pencil, Trash2, Plus, CalendarDays, UserPlus, X, Search,
-  ChevronDown, ChevronsUpDown,
+  ChevronDown, ChevronsUpDown, UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
 
 type VolunteerOption = { id: string; name: string; email: string | null; role: string | null };
+type MemberOption = { id: string; name: string | null; email: string | null; image: string | null; globalRole: string };
 type SpeakerOption = { id: string; name: string; email: string | null; topic: string | null };
 
 interface EventDetail {
@@ -38,7 +40,7 @@ interface EventDetail {
     status: string;
     priority: string;
     assignedRole: string | null;
-    volunteer: { id: string; name: string; email: string | null };
+    volunteer: { id: string; name: string; email: string | null; userId: string | null };
     owner: { id: string; name: string | null; image: string | null } | null;
   }[];
   checklists: {
@@ -63,23 +65,40 @@ type EventVolunteerItem = EventDetail["volunteers"][number];
 const INPUT_CLASS =
   "w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all";
 
+type PickerTab = "members" | "directory";
+
 function VolunteerPicker({
   open,
   onClose,
   volunteers,
-  linkedIds,
-  onLink,
+  members,
+  linkedVolunteerIds,
+  linkedMemberIds,
+  onLinkVolunteer,
+  onLinkMember,
 }: {
   open: boolean;
   onClose: () => void;
   volunteers: VolunteerOption[];
-  linkedIds: string[];
-  onLink: (id: string) => Promise<void>;
+  members: MemberOption[];
+  linkedVolunteerIds: string[];
+  linkedMemberIds: string[];
+  onLinkVolunteer: (id: string) => Promise<void>;
+  onLinkMember: (userId: string) => Promise<void>;
 }) {
   const [query, setQuery] = useState("");
-  const available = volunteers.filter(
-    (v) => !linkedIds.includes(v.id) && v.name.toLowerCase().includes(query.toLowerCase())
+  const [tab, setTab] = useState<PickerTab>("members");
+
+  const availableVolunteers = volunteers.filter(
+    (v) => !linkedVolunteerIds.includes(v.id) && v.name.toLowerCase().includes(query.toLowerCase())
   );
+  const availableMembers = members.filter(
+    (m) => !linkedMemberIds.includes(m.id) && (m.name ?? m.email ?? "").toLowerCase().includes(query.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (open) { setQuery(""); setTab("members"); }
+  }, [open]);
 
   return (
     <Modal open={open} onClose={onClose} className="max-w-md max-h-[70vh] flex flex-col">
@@ -87,47 +106,97 @@ function VolunteerPicker({
         <h2 className="text-lg font-semibold font-[family-name:var(--font-display)] mb-3">
           Add Volunteer to Event
         </h2>
+        <div className="flex gap-1 mb-3">
+          <button
+            onClick={() => setTab("members")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer",
+              tab === "members" ? "bg-accent/15 text-accent" : "text-muted hover:text-foreground hover:bg-surface-hover"
+            )}
+          >
+            From Members
+          </button>
+          <button
+            onClick={() => setTab("directory")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer",
+              tab === "directory" ? "bg-accent/15 text-accent" : "text-muted hover:text-foreground hover:bg-surface-hover"
+            )}
+          >
+            From Directory
+          </button>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search volunteers..."
+            placeholder={tab === "members" ? "Search members..." : "Search volunteers..."}
             className={cn(INPUT_CLASS, "pl-9")}
             autoFocus
           />
         </div>
       </div>
       <div className="overflow-y-auto flex-1 py-1">
-        {available.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted">
-            {volunteers.length === 0
-              ? "No volunteers in directory yet. Add some first."
-              : query
-                ? "No matching volunteers found."
-                : "All volunteers are already linked."}
-          </p>
+        {tab === "members" ? (
+          availableMembers.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted">
+              {members.length === 0
+                ? "No members found."
+                : query
+                  ? "No matching members found."
+                  : "All members are already linked."}
+            </p>
+          ) : (
+            availableMembers.map((m) => (
+              <button
+                key={m.id}
+                onClick={async () => {
+                  await onLinkMember(m.id);
+                  onClose();
+                }}
+                className="flex items-center gap-3 w-full px-5 py-3 text-left hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                <OwnerAvatar name={m.name} image={m.image} size="md" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{m.name ?? m.email}</p>
+                  <p className="text-xs text-muted truncate">{m.email}</p>
+                </div>
+                <Plus className="h-4 w-4 text-muted shrink-0" />
+              </button>
+            ))
+          )
         ) : (
-          available.map((v) => (
-            <button
-              key={v.id}
-              onClick={async () => {
-                await onLink(v.id);
-                onClose();
-              }}
-              className="flex items-center gap-3 w-full px-5 py-3 text-left hover:bg-surface-hover transition-colors cursor-pointer"
-            >
-              <OwnerAvatar name={v.name} size="md" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{v.name}</p>
-                <p className="text-xs text-muted truncate">
-                  {v.role ?? v.email ?? "No role"}
-                </p>
-              </div>
-              <Plus className="h-4 w-4 text-muted shrink-0" />
-            </button>
-          ))
+          availableVolunteers.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted">
+              {volunteers.length === 0
+                ? "No volunteers in directory yet. Add some first."
+                : query
+                  ? "No matching volunteers found."
+                  : "All volunteers are already linked."}
+            </p>
+          ) : (
+            availableVolunteers.map((v) => (
+              <button
+                key={v.id}
+                onClick={async () => {
+                  await onLinkVolunteer(v.id);
+                  onClose();
+                }}
+                className="flex items-center gap-3 w-full px-5 py-3 text-left hover:bg-surface-hover transition-colors cursor-pointer"
+              >
+                <OwnerAvatar name={v.name} size="md" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{v.name}</p>
+                  <p className="text-xs text-muted truncate">
+                    {v.role ?? v.email ?? "No role"}
+                  </p>
+                </div>
+                <Plus className="h-4 w-4 text-muted shrink-0" />
+              </button>
+            ))
+          )
         )}
       </div>
     </Modal>
@@ -210,11 +279,17 @@ function TaskRow({
   checklistId,
   eventVolunteers,
   onUpdate,
+  readOnly,
+  volunteerMode,
+  currentVolunteerId,
 }: {
   task: TaskItem;
   checklistId: string;
   eventVolunteers: EventVolunteerItem[];
   onUpdate: (checklistId: string, taskId: string, data: Record<string, unknown>) => Promise<void>;
+  readOnly?: boolean;
+  volunteerMode?: boolean;
+  currentVolunteerId?: string | null;
 }) {
   const [showAssignee, setShowAssignee] = useState(false);
   const [editingDeadline, setEditingDeadline] = useState(false);
@@ -222,7 +297,11 @@ function TaskRow({
     task.deadline ? task.deadline.slice(0, 10) : ""
   );
 
+  const canToggleDone = !readOnly;
+  const canEditDeadline = !readOnly && !volunteerMode;
+
   const toggleDone = () => {
+    if (!canToggleDone) return;
     onUpdate(checklistId, task.id, {
       status: task.status === "DONE" ? "TODO" : "DONE",
     });
@@ -247,14 +326,18 @@ function TaskRow({
 
   const currentAssignee = task.volunteerAssignee ?? task.assignee;
   const currentVolAssigneeId = task.volunteerAssignee?.id;
+  const isSelfAssigned = volunteerMode && currentVolAssigneeId === currentVolunteerId;
+  const isAssignedToOther = !!currentAssignee && !isSelfAssigned;
+  const isUnassigned = !currentAssignee;
 
   return (
     <div className="flex items-center gap-3 px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors group">
-      {/* Checkbox */}
       <button
         onClick={toggleDone}
+        disabled={!canToggleDone}
         className={cn(
-          "h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer",
+          "h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+          !canToggleDone ? "cursor-default" : "cursor-pointer",
           task.status === "DONE"
             ? "bg-status-done border-status-done"
             : "border-border hover:border-accent"
@@ -263,7 +346,6 @@ function TaskRow({
         {task.status === "DONE" && <Check className="h-3 w-3 text-white" />}
       </button>
 
-      {/* Title */}
       <span
         className={cn(
           "text-sm flex-1 min-w-0 truncate",
@@ -273,77 +355,114 @@ function TaskRow({
         {task.title}
       </span>
 
-      {/* Assignee */}
-      <div className="relative shrink-0">
-        <button
-          onClick={() => setShowAssignee(!showAssignee)}
-          className={cn(
-            "flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs transition-colors cursor-pointer",
-            currentAssignee
-              ? "bg-surface-hover text-foreground"
-              : "text-muted hover:bg-surface-hover hover:text-foreground opacity-0 group-hover:opacity-100"
-          )}
-          title={currentAssignee ? `Assigned to ${currentAssignee.name}` : "Assign volunteer"}
-        >
-          {currentAssignee ? (
-            <>
-              <OwnerAvatar name={currentAssignee.name} size="sm" />
-              <span className="max-w-[80px] truncate">{currentAssignee.name}</span>
-            </>
-          ) : (
-            <>
-              <UserPlus className="h-3.5 w-3.5" />
-              <span>Assign</span>
-            </>
-          )}
-        </button>
-
-        {showAssignee && (
-          <div className="absolute top-full right-0 mt-1 z-30 w-52 bg-surface border border-border rounded-lg shadow-xl py-1 animate-fade-in">
-            {currentAssignee && (
-              <button
-                onClick={() => assignVolunteer(null)}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs text-status-blocked hover:bg-surface-hover transition-colors cursor-pointer"
-              >
-                <X className="h-3.5 w-3.5" />
-                Unassign
-              </button>
+      {/* Full assignment dropdown for EVENT_LEAD+ */}
+      {!readOnly && !volunteerMode && (
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setShowAssignee(!showAssignee)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs transition-colors cursor-pointer",
+              currentAssignee
+                ? "bg-surface-hover text-foreground"
+                : "text-muted hover:bg-surface-hover hover:text-foreground opacity-0 group-hover:opacity-100"
             )}
-            {eventVolunteers.length === 0 ? (
-              <p className="px-3 py-2 text-xs text-muted">
-                No volunteers linked. Add some in the Volunteers tab.
-              </p>
+            title={currentAssignee ? `Assigned to ${currentAssignee.name}` : "Assign volunteer"}
+          >
+            {currentAssignee ? (
+              <>
+                <OwnerAvatar name={currentAssignee.name} size="sm" />
+                <span className="max-w-[80px] truncate">{currentAssignee.name}</span>
+              </>
             ) : (
-              eventVolunteers.map((ev) => (
-                <button
-                  key={ev.volunteer.id}
-                  onClick={() => assignVolunteer(ev.volunteer.id)}
-                  className={cn(
-                    "flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-surface-hover transition-colors cursor-pointer",
-                    currentVolAssigneeId === ev.volunteer.id && "bg-accent/10 text-accent"
-                  )}
-                >
-                  <OwnerAvatar name={ev.volunteer.name} size="sm" />
-                  <span className="truncate">{ev.volunteer.name}</span>
-                  {ev.assignedRole && (
-                    <span className="ml-auto text-[10px] text-muted">{ev.assignedRole}</span>
-                  )}
-                </button>
-              ))
+              <>
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Assign</span>
+              </>
             )}
-          </div>
-        )}
-      </div>
+          </button>
 
-      {/* Priority */}
+          {showAssignee && (
+            <div className="absolute top-full right-0 mt-1 z-30 w-52 bg-surface border border-border rounded-lg shadow-xl py-1 animate-fade-in">
+              {currentAssignee && (
+                <button
+                  onClick={() => assignVolunteer(null)}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-status-blocked hover:bg-surface-hover transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Unassign
+                </button>
+              )}
+              {eventVolunteers.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted">
+                  No volunteers linked. Add some in the Volunteers tab.
+                </p>
+              ) : (
+                eventVolunteers.map((ev) => (
+                  <button
+                    key={ev.volunteer.id}
+                    onClick={() => assignVolunteer(ev.volunteer.id)}
+                    className={cn(
+                      "flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-surface-hover transition-colors cursor-pointer",
+                      currentVolAssigneeId === ev.volunteer.id && "bg-accent/10 text-accent"
+                    )}
+                  >
+                    <OwnerAvatar name={ev.volunteer.name} size="sm" />
+                    <span className="truncate">{ev.volunteer.name}</span>
+                    {ev.assignedRole && (
+                      <span className="ml-auto text-[10px] text-muted">{ev.assignedRole}</span>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Volunteer self-assign mode */}
+      {volunteerMode && (
+        <div className="shrink-0">
+          {isSelfAssigned ? (
+            <button
+              onClick={() => assignVolunteer(null)}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs bg-accent/10 text-accent transition-colors cursor-pointer hover:bg-accent/20"
+              title="Unassign yourself"
+            >
+              <OwnerAvatar name={currentAssignee!.name} size="sm" />
+              <span>You</span>
+              <X className="h-3 w-3 ml-0.5" />
+            </button>
+          ) : isUnassigned ? (
+            <button
+              onClick={() => currentVolunteerId && assignVolunteer(currentVolunteerId)}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+              title="Assign to yourself"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span>Take</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-muted">
+              <OwnerAvatar name={currentAssignee!.name} size="sm" />
+              <span className="max-w-[80px] truncate">{currentAssignee!.name}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Read-only assignee display for VIEWERs */}
+      {readOnly && currentAssignee && (
+        <div className="flex items-center gap-1.5 text-xs text-muted shrink-0">
+          <OwnerAvatar name={currentAssignee.name} size="sm" />
+          <span className="max-w-[80px] truncate">{currentAssignee.name}</span>
+        </div>
+      )}
+
       <PriorityBadge priority={task.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"} />
-
-      {/* Status */}
       <StatusBadge type="task" status={task.status} />
 
-      {/* Deadline */}
       <div className="shrink-0 w-28 text-right">
-        {editingDeadline ? (
+        {canEditDeadline && editingDeadline ? (
           <div className="flex items-center gap-1">
             <input
               type="date"
@@ -361,30 +480,35 @@ function TaskRow({
         ) : (
           <button
             onClick={() => {
+              if (!canEditDeadline) return;
               setDeadlineValue(task.deadline ? task.deadline.slice(0, 10) : "");
               setEditingDeadline(true);
             }}
+            disabled={!canEditDeadline}
             className={cn(
-              "text-[11px] font-[family-name:var(--font-mono)] transition-colors cursor-pointer rounded px-1.5 py-0.5",
+              "text-[11px] font-[family-name:var(--font-mono)] transition-colors rounded px-1.5 py-0.5",
+              !canEditDeadline ? "cursor-default" : "cursor-pointer",
               task.deadline
                 ? isOverdue
                   ? "text-status-blocked bg-status-blocked/10"
                   : "text-muted hover:bg-surface-hover"
-                : "text-muted/40 hover:bg-surface-hover hover:text-muted opacity-0 group-hover:opacity-100"
+                : !canEditDeadline
+                  ? "text-muted/40"
+                  : "text-muted/40 hover:bg-surface-hover hover:text-muted opacity-0 group-hover:opacity-100"
             )}
-            title="Click to edit deadline"
+            title={!canEditDeadline ? undefined : "Click to edit deadline"}
           >
             {task.deadline ? (
               <>
                 <CalendarDays className="h-3 w-3 inline mr-1" />
                 {formatDate(task.deadline)}
               </>
-            ) : (
+            ) : canEditDeadline ? (
               <>
                 <CalendarDays className="h-3 w-3 inline mr-1" />
                 Set date
               </>
-            )}
+            ) : null}
           </button>
         )}
       </div>
@@ -402,10 +526,16 @@ function ChecklistTab({
   checklists,
   eventVolunteers,
   onUpdateTask,
+  readOnly,
+  volunteerMode,
+  currentVolunteerId,
 }: {
   checklists: EventDetail["checklists"];
   eventVolunteers: EventVolunteerItem[];
   onUpdateTask: (checklistId: string, taskId: string, data: Record<string, unknown>) => Promise<void>;
+  readOnly?: boolean;
+  volunteerMode?: boolean;
+  currentVolunteerId?: string | null;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const allCollapsed = checklists.length > 0 && checklists.every((c) => collapsed[c.id]);
@@ -471,7 +601,6 @@ function ChecklistTab({
                 </h4>
 
                 <div className="flex items-center gap-2 ml-auto">
-                  {/* mini progress bar */}
                   <div className="w-16 h-1.5 rounded-full bg-surface-active overflow-hidden hidden sm:block">
                     <div
                       className={cn(
@@ -502,6 +631,9 @@ function ChecklistTab({
                       checklistId={checklist.id}
                       eventVolunteers={eventVolunteers}
                       onUpdate={onUpdateTask}
+                      readOnly={readOnly}
+                      volunteerMode={volunteerMode}
+                      currentVolunteerId={currentVolunteerId}
                     />
                   ))}
                 </div>
@@ -523,12 +655,24 @@ const TABS: { id: Tab; label: string; icon: typeof Calendar }[] = [
   { id: "checklist", label: "SOP Checklist", icon: ClipboardCheck },
 ];
 
+const ROLE_LEVEL: Record<string, number> = {
+  VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4,
+};
+
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
+  const userRole = session?.user?.globalRole ?? "VIEWER";
+  const canEdit = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+  const isAdmin = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.ADMIN;
+  const isVolunteer = userRole === "VOLUNTEER";
+  const isReadOnly = userRole === "VIEWER";
+
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [converting, setConverting] = useState<string | null>(null);
 
   const fetchEvent = useCallback(() => {
     fetch(`/api/events/${id}`)
@@ -559,11 +703,16 @@ export default function EventDetailPage() {
   const [volPickerOpen, setVolPickerOpen] = useState(false);
   const [spkPickerOpen, setSpkPickerOpen] = useState(false);
   const [allVolunteers, setAllVolunteers] = useState<VolunteerOption[]>([]);
+  const [allMembers, setAllMembers] = useState<MemberOption[]>([]);
   const [allSpeakers, setAllSpeakers] = useState<SpeakerOption[]>([]);
 
-  const loadVolunteers = useCallback(async () => {
-    const res = await fetch("/api/volunteers");
-    if (res.ok) setAllVolunteers(await res.json());
+  const loadVolunteersAndMembers = useCallback(async () => {
+    const [volRes, memRes] = await Promise.all([
+      fetch("/api/volunteers"),
+      fetch("/api/members/list"),
+    ]);
+    if (volRes.ok) setAllVolunteers(await volRes.json());
+    if (memRes.ok) setAllMembers(await memRes.json());
   }, []);
 
   const loadSpeakers = useCallback(async () => {
@@ -576,6 +725,15 @@ export default function EventDetailPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ volunteerId }),
+    });
+    fetchEvent();
+  };
+
+  const linkMember = async (userId: string) => {
+    await fetch(`/api/events/${id}/volunteers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
     });
     fetchEvent();
   };
@@ -601,6 +759,14 @@ export default function EventDetailPage() {
       method: "DELETE",
     });
     fetchEvent();
+  };
+
+  const convertToMember = async (volunteerId: string) => {
+    if (!confirm("Convert this volunteer to a member? They will be able to sign in to the app.")) return;
+    setConverting(volunteerId);
+    const res = await fetch(`/api/volunteers/${volunteerId}/convert`, { method: "POST" });
+    setConverting(null);
+    if (res.ok) fetchEvent();
   };
 
   // --- Edit event ---
@@ -642,6 +808,15 @@ export default function EventDetailPage() {
   const doneTasks = allTasks.filter((t) => t.status === "DONE").length;
   const progress = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
 
+  const linkedMemberIds = event.volunteers
+    .map((ev) => ev.volunteer.userId)
+    .filter((uid): uid is string => uid != null);
+
+  const myVolunteerEntry = isVolunteer
+    ? event.volunteers.find((ev) => ev.volunteer.userId === session?.user?.id)
+    : null;
+  const myVolunteerId = myVolunteerEntry?.volunteer.id ?? null;
+
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this event?")) return;
     const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
@@ -681,7 +856,6 @@ export default function EventDetailPage() {
 
   return (
     <div className="animate-fade-in">
-      {/* Breadcrumb */}
       <Link
         href="/events"
         className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors mb-4"
@@ -689,7 +863,6 @@ export default function EventDetailPage() {
         <ArrowLeft className="h-3 w-3" /> Events
       </Link>
 
-      {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
@@ -720,14 +893,16 @@ export default function EventDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="secondary" size="sm" onClick={openEdit}>
-            <Pencil className="h-3.5 w-3.5" /> Edit
-          </Button>
-          <Button variant="danger" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-3.5 w-3.5" /> Delete
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="secondary" size="sm" onClick={openEdit}>
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleDelete}>
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </Button>
+          </div>
+        )}
       </div>
 
       <Modal open={editOpen} onClose={() => setEditOpen(false)} className="p-6 max-w-md">
@@ -740,7 +915,7 @@ export default function EventDetailPage() {
               value={editForm.title}
               onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
               required
-              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
@@ -750,7 +925,7 @@ export default function EventDetailPage() {
               value={editForm.date}
               onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
               required
-              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
@@ -760,7 +935,7 @@ export default function EventDetailPage() {
               value={editForm.venue}
               onChange={(e) => setEditForm((f) => ({ ...f, venue: e.target.value }))}
               placeholder="e.g. Community Hall, Room 101"
-              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
@@ -770,7 +945,7 @@ export default function EventDetailPage() {
               onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Event description"
               rows={3}
-              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all min-h-[80px] resize-y"
+              className={cn(INPUT_CLASS, "min-h-[80px] resize-y")}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -778,13 +953,12 @@ export default function EventDetailPage() {
               Cancel
             </Button>
             <Button type="submit" disabled={editSaving}>
-              {editSaving ? "Saving…" : "Save Changes"}
+              {editSaving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Tab Bar */}
       <div className="flex items-center gap-1 border-b border-border mb-6">
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -816,7 +990,6 @@ export default function EventDetailPage() {
         })}
       </div>
 
-      {/* Tab Content */}
       {activeTab === "overview" && (
         <BentoGrid className="lg:grid-cols-3">
           <BentoCard colSpan={2}>
@@ -853,23 +1026,25 @@ export default function EventDetailPage() {
 
       {activeTab === "speakers" && (
         <div>
-          <div className="flex justify-end mb-4">
-            <Button
-              size="sm"
-              onClick={() => {
-                loadSpeakers();
-                setSpkPickerOpen(true);
-              }}
-            >
-              <Plus className="h-3.5 w-3.5" /> Add Speaker
-            </Button>
-          </div>
+          {canEdit && (
+            <div className="flex justify-end mb-4">
+              <Button
+                size="sm"
+                onClick={() => {
+                  loadSpeakers();
+                  setSpkPickerOpen(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" /> Add Speaker
+              </Button>
+            </div>
+          )}
 
           {event.speakers.length === 0 ? (
             <EmptyState
               icon={Mic2}
               title="No speakers assigned"
-              description="Click 'Add Speaker' to link speakers from your directory."
+              description={canEdit ? "Click 'Add Speaker' to link speakers from your directory." : "No speakers have been assigned to this event yet."}
             />
           ) : (
             <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -884,13 +1059,15 @@ export default function EventDetailPage() {
                     <p className="text-xs text-muted">{es.speaker.topic ?? es.speaker.email}</p>
                   </div>
                   <StatusBadge type="speaker" status={es.status} />
-                  <button
-                    onClick={() => unlinkSpeaker(es.speaker.id)}
-                    className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Remove speaker"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => unlinkSpeaker(es.speaker.id)}
+                      className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Remove speaker"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -908,23 +1085,25 @@ export default function EventDetailPage() {
 
       {activeTab === "volunteers" && (
         <div>
-          <div className="flex justify-end mb-4">
-            <Button
-              size="sm"
-              onClick={() => {
-                loadVolunteers();
-                setVolPickerOpen(true);
-              }}
-            >
-              <Plus className="h-3.5 w-3.5" /> Add Volunteer
-            </Button>
-          </div>
+          {canEdit && (
+            <div className="flex justify-end mb-4">
+              <Button
+                size="sm"
+                onClick={() => {
+                  loadVolunteersAndMembers();
+                  setVolPickerOpen(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" /> Add Volunteer
+              </Button>
+            </div>
+          )}
 
           {event.volunteers.length === 0 ? (
             <EmptyState
               icon={Users}
               title="No volunteers assigned"
-              description="Click 'Add Volunteer' to link volunteers from your directory."
+              description={canEdit ? "Click 'Add Volunteer' to link volunteers from your directory or members." : "No volunteers have been assigned to this event yet."}
             />
           ) : (
             <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -935,17 +1114,36 @@ export default function EventDetailPage() {
                 >
                   <OwnerAvatar name={ev.volunteer.name} size="md" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{ev.volunteer.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium">{ev.volunteer.name}</p>
+                      {ev.volunteer.userId && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 text-accent px-1.5 py-0.5 text-[10px] font-medium">
+                          Member
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted">{ev.assignedRole ?? "No role assigned"}</p>
                   </div>
                   <StatusBadge type="volunteer" status={ev.status} />
-                  <button
-                    onClick={() => unlinkVolunteer(ev.volunteer.id)}
-                    className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Remove volunteer"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {isAdmin && !ev.volunteer.userId && ev.volunteer.email && (
+                    <button
+                      onClick={() => convertToMember(ev.volunteer.id)}
+                      disabled={converting === ev.volunteer.id}
+                      className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-accent/10 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      title="Convert to member"
+                    >
+                      <UserCheck className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  {canEdit && (
+                    <button
+                      onClick={() => unlinkVolunteer(ev.volunteer.id)}
+                      className="p-1.5 rounded-lg text-muted hover:text-status-blocked hover:bg-status-blocked/10 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Remove volunteer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -955,8 +1153,11 @@ export default function EventDetailPage() {
             open={volPickerOpen}
             onClose={() => setVolPickerOpen(false)}
             volunteers={allVolunteers}
-            linkedIds={event.volunteers.map((v) => v.volunteer.id)}
-            onLink={linkVolunteer}
+            members={allMembers}
+            linkedVolunteerIds={event.volunteers.map((v) => v.volunteer.id)}
+            linkedMemberIds={linkedMemberIds}
+            onLinkVolunteer={linkVolunteer}
+            onLinkMember={linkMember}
           />
         </div>
       )}
@@ -966,6 +1167,9 @@ export default function EventDetailPage() {
           checklists={event.checklists}
           eventVolunteers={event.volunteers}
           onUpdateTask={updateTask}
+          readOnly={isReadOnly}
+          volunteerMode={isVolunteer}
+          currentVolunteerId={myVolunteerId}
         />
       )}
     </div>

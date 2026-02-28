@@ -5,12 +5,21 @@ import { notifyDeadlineApproaching, notifyOverdueTasks } from "@/lib/discord";
 const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function GET(req: NextRequest) {
-  if (CRON_SECRET) {
-    const authHeader = req.headers.get("authorization");
-    const secret = authHeader?.replace(/^Bearer\s+/i, "") ?? req.nextUrl.searchParams.get("secret");
-    if (secret !== CRON_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Require CRON_SECRET for security
+  if (!CRON_SECRET) {
+    console.error("CRON_SECRET environment variable is not set");
+    return NextResponse.json(
+      { error: "Server misconfiguration" },
+      { status: 500 }
+    );
+  }
+
+  // Validate the secret from Authorization header or query param
+  const authHeader = req.headers.get("authorization");
+  const secret = authHeader?.replace(/^Bearer\s+/i, "") ?? req.nextUrl.searchParams.get("secret");
+  
+  if (secret !== CRON_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now = new Date();

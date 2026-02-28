@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Calendar,
@@ -15,17 +15,32 @@ import {
   ChevronRight,
   Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const NAV_ITEMS = [
+type NavItem = { label: string; href: string; icon: LucideIcon; minRole?: string };
+
+const ROLE_LEVEL: Record<string, number> = {
+  VIEWER: 0,
+  VOLUNTEER: 1,
+  EVENT_LEAD: 2,
+  ADMIN: 3,
+  SUPER_ADMIN: 4,
+};
+
+function hasMinRole(userRole: string | undefined, minRole: string): boolean {
+  return (ROLE_LEVEL[userRole ?? ""] ?? 0) >= (ROLE_LEVEL[minRole] ?? 0);
+}
+
+const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Events", href: "/events", icon: Calendar },
-  { label: "Speakers", href: "/speakers", icon: Mic2 },
-  { label: "Volunteers", href: "/volunteers", icon: Users },
+  { label: "Speakers", href: "/speakers", icon: Mic2, minRole: "EVENT_LEAD" },
+  { label: "Volunteers", href: "/volunteers", icon: Users, minRole: "EVENT_LEAD" },
 ];
 
-const SETTINGS_ITEMS = [
-  { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck },
-  { label: "Settings", href: "/settings", icon: Settings },
+const SETTINGS_ITEMS: NavItem[] = [
+  { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, minRole: "EVENT_LEAD" },
+  { label: "Settings", href: "/settings", icon: Settings, minRole: "ADMIN" },
 ];
 
 interface SidebarProps {
@@ -35,11 +50,16 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const userRole = session?.user?.globalRole;
 
   const isActive = (href: string) => {
     if (href === "/dashboard" || href === "/settings") return pathname === href;
     return pathname.startsWith(href);
   };
+
+  const visibleNav = NAV_ITEMS.filter((item) => !item.minRole || hasMinRole(userRole, item.minRole));
+  const visibleSettings = SETTINGS_ITEMS.filter((item) => !item.minRole || hasMinRole(userRole, item.minRole));
 
   return (
     <aside
@@ -71,7 +91,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}>
           Main
         </p>
-        {NAV_ITEMS.map((item) => {
+        {visibleNav.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           return (
@@ -97,36 +117,40 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           );
         })}
 
-        <div className="h-px bg-border mx-2 my-3" />
+        {visibleSettings.length > 0 && (
+          <>
+            <div className="h-px bg-border mx-2 my-3" />
 
-        <p className={cn(
-          "text-[10px] font-semibold uppercase tracking-widest text-muted px-3 mb-2",
-          collapsed && "sr-only"
-        )}>
-          Manage
-        </p>
-        {SETTINGS_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
-                "transition-all duration-150",
-                active
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted hover:text-foreground hover:bg-surface-hover",
-                collapsed && "justify-center px-2"
-              )}
-              title={collapsed ? item.label : undefined}
-            >
-              <Icon className={cn("h-4 w-4 shrink-0", active && "text-accent")} />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
+            <p className={cn(
+              "text-[10px] font-semibold uppercase tracking-widest text-muted px-3 mb-2",
+              collapsed && "sr-only"
+            )}>
+              Manage
+            </p>
+            {visibleSettings.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+                    "transition-all duration-150",
+                    active
+                      ? "bg-accent/10 text-accent"
+                      : "text-muted hover:text-foreground hover:bg-surface-hover",
+                    collapsed && "justify-center px-2"
+                  )}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0", active && "text-accent")} />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       {/* Collapse toggle */}

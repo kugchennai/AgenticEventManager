@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import {
   Calendar,
@@ -13,14 +14,25 @@ import {
   ClipboardCheck,
   Search,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const COMMANDS = [
+type Command = { label: string; href: string; icon: LucideIcon; group: string; minRole?: string };
+
+const ROLE_LEVEL: Record<string, number> = {
+  VIEWER: 0,
+  VOLUNTEER: 1,
+  EVENT_LEAD: 2,
+  ADMIN: 3,
+  SUPER_ADMIN: 4,
+};
+
+const COMMANDS: Command[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, group: "Navigate" },
   { label: "Events", href: "/events", icon: Calendar, group: "Navigate" },
-  { label: "Speakers", href: "/speakers", icon: Mic2, group: "Navigate" },
-  { label: "Volunteers", href: "/volunteers", icon: Users, group: "Navigate" },
-  { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, group: "Navigate" },
-  { label: "Settings", href: "/settings", icon: Settings, group: "Navigate" },
+  { label: "Speakers", href: "/speakers", icon: Mic2, group: "Navigate", minRole: "EVENT_LEAD" },
+  { label: "Volunteers", href: "/volunteers", icon: Users, group: "Navigate", minRole: "EVENT_LEAD" },
+  { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, group: "Navigate", minRole: "EVENT_LEAD" },
+  { label: "Settings", href: "/settings", icon: Settings, group: "Navigate", minRole: "ADMIN" },
 ];
 
 interface CommandPaletteProps {
@@ -33,8 +45,15 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { data: session } = useSession();
+  const userRole = session?.user?.globalRole;
 
-  const filtered = COMMANDS.filter((cmd) =>
+  const roleLevel = ROLE_LEVEL[userRole ?? ""] ?? 0;
+  const available = COMMANDS.filter(
+    (cmd) => !cmd.minRole || roleLevel >= (ROLE_LEVEL[cmd.minRole] ?? 0)
+  );
+
+  const filtered = available.filter((cmd) =>
     cmd.label.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -51,7 +70,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         if (open) onClose();
-        else onClose(); // parent toggles
+        else onClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);

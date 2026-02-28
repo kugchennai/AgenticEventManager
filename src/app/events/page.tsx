@@ -4,6 +4,7 @@ import { PageHeader, Button, EmptyState, AvatarStack } from "@/components/design
 import { Calendar, Plus, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
 
 interface Event {
@@ -88,7 +89,13 @@ function EventCard({ event }: { event: Event }) {
   );
 }
 
+const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+
 export default function EventsPage() {
+  const { data: session } = useSession();
+  const userRole = session?.user?.globalRole ?? "VIEWER";
+  const canCreate = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
+
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("upcoming");
@@ -127,12 +134,14 @@ export default function EventsPage() {
         title="Events"
         description="Manage your meetups and events"
         actions={
-          <Link href="/events/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              New Event
-            </Button>
-          </Link>
+          canCreate ? (
+            <Link href="/events/new">
+              <Button>
+                <Plus className="h-4 w-4" />
+                New Event
+              </Button>
+            </Link>
+          ) : undefined
         }
       />
 
@@ -172,14 +181,16 @@ export default function EventsPage() {
         <EmptyState
           icon={Calendar}
           title="No events yet"
-          description="Create your first event to get started with managing your meetup."
+          description={canCreate ? "Create your first event to get started with managing your meetup." : "No events are available yet."}
           action={
-            <Link href="/events/new">
-              <Button>
-                <Plus className="h-4 w-4" />
-                Create Event
-              </Button>
-            </Link>
+            canCreate ? (
+              <Link href="/events/new">
+                <Button>
+                  <Plus className="h-4 w-4" />
+                  Create Event
+                </Button>
+              </Link>
+            ) : undefined
           }
         />
       ) : filtered.length === 0 ? (

@@ -1,20 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth-helpers";
 import { hasMinimumRole } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
-export async function GET() {
-  const session = await auth();
+export async function GET(req: Request) {
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const userRole = session.user.globalRole as GlobalRole;
+  const userId = session.user.id;
+  const isVolunteer = userRole === "VOLUNTEER";
+
+  // For volunteers, scope speakers to their assigned events
+  let assignedEventIds: string[] | null = null;
+  if (isVolunteer) {
+    const [volunteerLinks, memberLinks] = await Promise.all([
+      prisma.eventVolunteer.findMany({
+        where: { volunteer: { userId } },
+        select: { eventId: true },
+      }),
+      prisma.eventMember.findMany({
+        where: { userId },
+        select: { eventId: true },
+      }),
+    ]);
+    assignedEventIds = [
+      ...new Set([
+        ...volunteerLinks.map((v) => v.eventId),
+        ...memberLinks.map((m) => m.eventId),
+      ]),
+    ];
+  }
+
+  const speakerWhere =
+    assignedEventIds !== null
+      ? { events: { some: { eventId: { in: assignedEventIds } } } }
+      : {};
+
+  const eventFilter =
+    assignedEventIds !== null
+      ? { where: { eventId: { in: assignedEventIds } } }
+      : {};
+
   const speakers = await prisma.speaker.findMany({
+    where: speakerWhere,
     include: {
-      _count: { select: { events: true } },
       events: {
+        ...eventFilter,
         select: { status: true },
       },
     },
@@ -32,7 +68,7 @@ export async function GET() {
     const { events, ...rest } = speaker;
     return {
       ...rest,
-      eventCount: speaker._count.events,
+      eventCount: events.length,
       statusCounts,
     };
   });
@@ -41,7 +77,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await getAuthSession(req);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -38,15 +38,25 @@ export async function canUserAccessEvent(
 
   if (!user) return false;
   if (user.globalRole === "SUPER_ADMIN" || user.globalRole === "ADMIN") return true;
-  if (action === "read" && hasMinimumRole(user.globalRole, "VIEWER")) return true;
+
+  // VIEWER (Temporary Viewer) can only read
+  if (user.globalRole === "VIEWER") return action === "read";
 
   const membership = await prisma.eventMember.findUnique({
     where: { eventId_userId: { eventId, userId } },
     select: { eventRole: true },
   });
 
+  // For VOLUNTEER global role: also check if they're linked as a volunteer to this event
+  if (!membership && user.globalRole === "VOLUNTEER") {
+    const volunteerLink = await prisma.eventVolunteer.findFirst({
+      where: { eventId, volunteer: { userId } },
+    });
+    return volunteerLink ? action === "read" : false;
+  }
+
   if (!membership) {
-    return action === "read";
+    return action === "read" && hasMinimumRole(user.globalRole, "EVENT_LEAD");
   }
 
   switch (action) {
