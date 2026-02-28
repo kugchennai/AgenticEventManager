@@ -1,7 +1,8 @@
 /**
  * High-level email trigger functions.
  * Each function gathers data from the database, renders the appropriate template,
- * and sends the email via the core email service. All calls are fire-and-forget.
+ * and sends the email via the core email service.
+ * All functions are async and should be awaited (or wrapped in `after()` in API routes).
  */
 import { renderAndSend, isEmailConfigured } from "../email";
 import { prisma } from "../prisma";
@@ -61,18 +62,22 @@ export async function sendMemberInvitationEmail(
 
   const appUrl = getAppUrl();
 
-  renderAndSend(
-    memberEmail,
-    `You've been invited to join the team`,
-    "member_invitation",
-    React.createElement(MemberInvitationEmail, {
-      name: memberName,
-      email: memberEmail,
-      role,
-      inviterName,
-      appUrl,
-    })
-  ).catch((err) => console.error("[Email] Member invitation failed:", err));
+  try {
+    await renderAndSend(
+      memberEmail,
+      `You've been invited to join the team`,
+      "member_invitation",
+      React.createElement(MemberInvitationEmail, {
+        name: memberName,
+        email: memberEmail,
+        role,
+        inviterName,
+        appUrl,
+      })
+    );
+  } catch (err) {
+    console.error("[Email] Member invitation failed:", err);
+  }
 }
 
 // ─── 2a. Volunteer Welcome ───────────────────────────────────────
@@ -87,17 +92,21 @@ export async function sendVolunteerWelcomeEmail(
 
   const appUrl = getAppUrl();
 
-  renderAndSend(
-    volunteerEmail,
-    `Welcome to the team, ${volunteerName}!`,
-    "volunteer_welcome",
-    React.createElement(VolunteerWelcomeEmail, {
-      name: volunteerName,
-      role: volunteerRole,
-      inviterName,
-      appUrl,
-    })
-  ).catch((err) => console.error("[Email] Volunteer welcome failed:", err));
+  try {
+    await renderAndSend(
+      volunteerEmail,
+      `Welcome to the team, ${volunteerName}!`,
+      "volunteer_welcome",
+      React.createElement(VolunteerWelcomeEmail, {
+        name: volunteerName,
+        role: volunteerRole,
+        inviterName,
+        appUrl,
+      })
+    );
+  } catch (err) {
+    console.error("[Email] Volunteer welcome failed:", err);
+  }
 }
 
 // ─── 2b. Volunteer Promotion ─────────────────────────────────────
@@ -108,26 +117,30 @@ export async function sendVolunteerPromotionEmail(
 ): Promise<void> {
   if (!isEmailConfigured() || !volunteerEmail) return;
 
-  renderAndSend(
-    volunteerEmail,
-    `Congratulations! You've been promoted to Member`,
-    "volunteer_promotion",
-    React.createElement(VolunteerPromotionEmail, {
-      name: volunteerName,
-      newRole: "Member (Event Lead)",
-      permissions: [
-        "Create and manage events",
-        "Manage speakers, volunteers, and venue partners",
-        "Assign and track SOP checklist tasks",
-        "View all events (not just assigned ones)",
-      ],
-      nextSteps: [
-        "Sign in with your Google account to access the full dashboard",
-        "Check your assigned tasks on the dashboard",
-        "Explore the event management tools",
-      ],
-    })
-  ).catch((err) => console.error("[Email] Volunteer promotion failed:", err));
+  try {
+    await renderAndSend(
+      volunteerEmail,
+      `Congratulations! You've been promoted to Member`,
+      "volunteer_promotion",
+      React.createElement(VolunteerPromotionEmail, {
+        name: volunteerName,
+        newRole: "Member (Event Lead)",
+        permissions: [
+          "Create and manage events",
+          "Manage speakers, volunteers, and venue partners",
+          "Assign and track SOP checklist tasks",
+          "View all events (not just assigned ones)",
+        ],
+        nextSteps: [
+          "Sign in with your Google account to access the full dashboard",
+          "Check your assigned tasks on the dashboard",
+          "Explore the event management tools",
+        ],
+      })
+    );
+  } catch (err) {
+    console.error("[Email] Volunteer promotion failed:", err);
+  }
 }
 
 // ─── 3. Event Created ────────────────────────────────────────────
@@ -160,7 +173,7 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
 
     if (recipients.length === 0) return;
 
-    renderAndSend(
+    await renderAndSend(
       recipients,
       `New event: ${event.title}`,
       "event_created",
@@ -171,7 +184,7 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
         eventUrl,
         createdBy: event.createdBy.name ?? "Team Member",
       })
-    ).catch((err) => console.error("[Email] Event created failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Event created trigger error:", err);
   }
@@ -225,7 +238,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
       url: eventUrl,
     });
 
-    renderAndSend(
+    await renderAndSend(
       recipients,
       `Reminder: ${event.title} is in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`,
       "event_reminder",
@@ -245,7 +258,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
           },
         ],
       }
-    ).catch((err) => console.error("[Email] Event reminder failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Event reminder trigger error:", err);
   }
@@ -281,7 +294,7 @@ export async function sendTaskAssignedEmail(
     const appUrl = getAppUrl();
     const taskUrl = `${appUrl}/events/${task.checklist.event.id}`;
 
-    renderAndSend(
+    await renderAndSend(
       recipientEmail,
       `Task assigned: ${task.title}`,
       "task_assigned",
@@ -293,7 +306,7 @@ export async function sendTaskAssignedEmail(
         taskUrl,
         assignedBy: assignedByName,
       })
-    ).catch((err) => console.error("[Email] Task assigned failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Task assigned trigger error:", err);
   }
@@ -329,7 +342,7 @@ export async function sendTaskDueSoonEmail(
     const appUrl = getAppUrl();
     const taskUrl = `${appUrl}/events/${task.checklist.event.id}`;
 
-    renderAndSend(
+    await renderAndSend(
       recipientEmail,
       `Task due soon: ${task.title}`,
       "task_due_soon",
@@ -341,7 +354,7 @@ export async function sendTaskDueSoonEmail(
         taskUrl,
         priority: task.priority,
       })
-    ).catch((err) => console.error("[Email] Task due soon failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Task due soon trigger error:", err);
   }
@@ -394,7 +407,7 @@ export async function sendTaskOverdueEmail(
           .filter((email): email is string => !!email && email !== recipientEmail)
       : undefined;
 
-    renderAndSend(
+    await renderAndSend(
       recipientEmail,
       `OVERDUE: ${task.title}`,
       "task_overdue",
@@ -410,7 +423,7 @@ export async function sendTaskOverdueEmail(
       {
         cc: eventLeadEmails,
       }
-    ).catch((err) => console.error("[Email] Task overdue failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Task overdue trigger error:", err);
   }
@@ -434,7 +447,7 @@ export async function sendSpeakerInvitationEmail(
 
     if (!link || !link.speaker.email) return;
 
-    renderAndSend(
+    await renderAndSend(
       link.speaker.email,
       `Speaker invitation: ${link.event.title}`,
       "speaker_invitation",
@@ -445,7 +458,7 @@ export async function sendSpeakerInvitationEmail(
         date: formatDateTime(link.event.date),
         venue: link.event.venue,
       })
-    ).catch((err) => console.error("[Email] Speaker invitation failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Speaker invitation trigger error:", err);
   }
@@ -488,7 +501,7 @@ export async function sendVenueConfirmedEmail(
 
     if (recipients.length === 0) return;
 
-    renderAndSend(
+    await renderAndSend(
       recipients,
       `Venue confirmed: ${link.venuePartner.name} for ${event.title}`,
       "venue_confirmed",
@@ -500,7 +513,7 @@ export async function sendVenueConfirmedEmail(
         eventTitle: event.title,
         contactName: link.venuePartner.contactName,
       })
-    ).catch((err) => console.error("[Email] Venue confirmed failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Venue confirmed trigger error:", err);
   }
@@ -585,7 +598,7 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
       where: { status: { in: ["SCHEDULED", "LIVE"] } },
     });
 
-    renderAndSend(
+    await renderAndSend(
       user.email,
       `Weekly digest: ${totalTasks} active tasks, ${upcomingEvents.length} upcoming events`,
       "weekly_digest",
@@ -619,7 +632,7 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
         },
         appUrl,
       })
-    ).catch((err) => console.error("[Email] Weekly digest failed:", err));
+    );
   } catch (err) {
     console.error("[Email] Weekly digest trigger error:", err);
   }
