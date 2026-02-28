@@ -13,8 +13,13 @@ export async function GET(req: Request) {
 
   const volunteers = await prisma.volunteer.findMany({
     include: {
-      _count: {
-        select: { events: true },
+      events: {
+        select: {
+          status: true,
+          event: {
+            select: { id: true, title: true, date: true },
+          },
+        },
       },
     },
     orderBy: { name: "asc" },
@@ -23,8 +28,7 @@ export async function GET(req: Request) {
   return NextResponse.json(
     volunteers.map((v) => ({
       ...v,
-      eventsCount: v._count.events,
-      _count: undefined,
+      eventsCount: v.events.length,
     }))
   );
 }
@@ -50,6 +54,38 @@ export async function POST(req: NextRequest) {
       { error: "Name is required" },
       { status: 400 }
     );
+  }
+
+  // Prevent adding someone who is already a member
+  if (email && typeof email === "string" && email.trim()) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingMember = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (existingMember) {
+      return NextResponse.json(
+        {
+          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Also check for duplicate volunteer email
+    const existingVolunteer = await prisma.volunteer.findFirst({
+      where: { email: normalizedEmail },
+    });
+
+    if (existingVolunteer) {
+      return NextResponse.json(
+        {
+          error: `A volunteer with this email already exists: "${existingVolunteer.name}"`,
+        },
+        { status: 409 }
+      );
+    }
   }
 
   const volunteer = await prisma.volunteer.create({

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   }
 
   const users = await prisma.user.findMany({
-    where: { globalRole: { not: "SUPER_ADMIN" } },
+    where: { globalRole: { notIn: ["SUPER_ADMIN", "VOLUNTEER", "VIEWER"] } },
     select: {
       id: true,
       name: true,

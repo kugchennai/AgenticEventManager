@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, Button, EmptyState, OwnerAvatar, Modal } from "@/components/design-system";
+import { PageHeader, Button, EmptyState, OwnerAvatar, Modal, EventContributions } from "@/components/design-system";
 import { Users, Shield, ChevronDown, Plus, Mail } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
@@ -14,21 +14,25 @@ interface Member {
   image: string | null;
   globalRole: string;
   createdAt: string;
+  events?: Array<{
+    eventRole: string;
+    status: string;
+    event: { id: string; title: string; date: string };
+  }>;
+  eventsCount?: number;
 }
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
   ADMIN: "Admin",
-  EVENT_LEAD: "Event Lead",
+  EVENT_LEAD: "Member",
   VOLUNTEER: "Volunteer",
   VIEWER: "Temporary Viewer",
 };
 
 const ALL_ASSIGNABLE_ROLES: { value: string; label: string }[] = [
   { value: "ADMIN", label: "Admin" },
-  { value: "EVENT_LEAD", label: "Event Lead" },
-  { value: "VOLUNTEER", label: "Volunteer" },
-  { value: "VIEWER", label: "Temporary Viewer" },
+  { value: "EVENT_LEAD", label: "Member" },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -161,7 +165,7 @@ function AddMemberModal({
 }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("VIEWER");
+  const [role, setRole] = useState("EVENT_LEAD");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -187,7 +191,7 @@ function AddMemberModal({
       onAdded(member);
       setEmail("");
       setName("");
-      setRole("VIEWER");
+      setRole("EVENT_LEAD");
       onClose();
     } else {
       const data = await res.json().catch(() => null);
@@ -274,7 +278,7 @@ export default function MembersPage() {
   useEffect(() => {
     fetch("/api/members")
       .then((r) => (r.ok ? r.json() : []))
-      .then(setMembers)
+      .then((data: Member[]) => setMembers(data.filter((m) => m.globalRole !== "VOLUNTEER")))
       .catch(() => setMembers([]))
       .finally(() => setLoading(false));
   }, []);
@@ -360,17 +364,18 @@ export default function MembersPage() {
         />
       ) : (
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
-          <div className="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 px-5 py-3 border-b border-border text-[10px] font-semibold uppercase tracking-widest text-muted">
+          <div className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-border text-[10px] font-semibold uppercase tracking-widest text-muted">
             <span />
             <span>Name</span>
             <span>Email</span>
             <span>Role</span>
+            <span>Events</span>
             <span>Joined</span>
           </div>
           {members.map((member) => (
             <div
               key={member.id}
-              className="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
+              className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
             >
               <OwnerAvatar name={member.name} image={member.image} size="md" />
               <span className="text-sm font-medium truncate">{member.name ?? "—"}</span>
@@ -384,6 +389,13 @@ export default function MembersPage() {
                   member.id === session?.user?.id ||
                   (myRole === "ADMIN" && member.globalRole === "ADMIN")
                 }
+              />
+              <EventContributions
+                events={(member.events ?? []).map((e) => ({
+                  ...e,
+                  roleLabel: e.eventRole ?? undefined,
+                }))}
+                statusType="event"
               />
               <span className="text-[11px] font-[family-name:var(--font-mono)] text-muted">
                 {new Date(member.createdAt).toLocaleDateString("en-US", {

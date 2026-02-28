@@ -401,6 +401,7 @@ export const ModelName = {
   SOPTask: 'SOPTask',
   SOPTemplate: 'SOPTemplate',
   AuditLog: 'AuditLog',
+  AppSetting: 'AppSetting',
   DiscordConfig: 'DiscordConfig'
 } as const
 
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "refreshToken" | "user" | "event" | "eventMember" | "speaker" | "eventSpeaker" | "volunteer" | "eventVolunteer" | "venuePartner" | "eventVenuePartner" | "sOPChecklist" | "sOPTask" | "sOPTemplate" | "auditLog" | "discordConfig"
+    modelProps: "account" | "session" | "verificationToken" | "refreshToken" | "user" | "event" | "eventMember" | "speaker" | "eventSpeaker" | "volunteer" | "eventVolunteer" | "venuePartner" | "eventVenuePartner" | "sOPChecklist" | "sOPTask" | "sOPTemplate" | "auditLog" | "appSetting" | "discordConfig"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1679,6 +1680,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AppSetting: {
+      payload: Prisma.$AppSettingPayload<ExtArgs>
+      fields: Prisma.AppSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AppSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AppSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.AppSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AppSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        findMany: {
+          args: Prisma.AppSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        create: {
+          args: Prisma.AppSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        createMany: {
+          args: Prisma.AppSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AppSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.AppSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        update: {
+          args: Prisma.AppSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.AppSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AppSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AppSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.AppSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.AppSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAppSetting>
+        }
+        groupBy: {
+          args: Prisma.AppSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AppSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingCountAggregateOutputType> | number
+        }
+      }
+    }
     DiscordConfig: {
       payload: Prisma.$DiscordConfigPayload<ExtArgs>
       fields: Prisma.DiscordConfigFieldRefs
@@ -2031,6 +2106,15 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AppSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
 
 
 export const DiscordConfigScalarFieldEnum = {
@@ -2428,6 +2512,7 @@ export type GlobalOmitConfig = {
   sOPTask?: Prisma.SOPTaskOmit
   sOPTemplate?: Prisma.SOPTemplateOmit
   auditLog?: Prisma.AuditLogOmit
+  appSetting?: Prisma.AppSettingOmit
   discordConfig?: Prisma.DiscordConfigOmit
 }
 

@@ -12,6 +12,7 @@ import {
   BentoCard,
   BentoGrid,
   Modal,
+  EventContributions,
 } from "@/components/design-system";
 import { Mic2, Plus, Pencil, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,10 @@ type Speaker = {
   photoUrl: string | null;
   eventCount: number;
   statusCounts: Record<string, number>;
+  events: Array<{
+    status: string;
+    event: { id: string; title: string; date: string };
+  }>;
 };
 
 type FormData = {
@@ -258,26 +263,11 @@ export default function SpeakersPage() {
                       {speaker.topic}
                     </p>
                   )}
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-muted">
-                      {speaker.eventCount} event{speaker.eventCount !== 1 ? "s" : ""}
-                    </span>
-                    {Object.entries(speaker.statusCounts)
-                      .filter(([, c]) => c > 0)
-                      .map(([status, count]) => (
-                        <span
-                          key={status}
-                          className="inline-flex items-center gap-1 text-xs text-muted"
-                        >
-                          <StatusBadge
-                            type="speaker"
-                            status={status}
-                            size="sm"
-                            className="shrink-0"
-                          />
-                          <span>×{count}</span>
-                        </span>
-                      ))}
+                  <div className="mt-2">
+                    <EventContributions
+                      events={speaker.events ?? []}
+                      statusType="speaker"
+                    />
                   </div>
                 </div>
               </div>

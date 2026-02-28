@@ -28,20 +28,40 @@ function isUpcoming(dateStr: string) {
   return eventDate >= today;
 }
 
+function isToday(dateStr: string) {
+  const eventDate = new Date(dateStr);
+  const today = new Date();
+  return (
+    eventDate.getFullYear() === today.getFullYear() &&
+    eventDate.getMonth() === today.getMonth() &&
+    eventDate.getDate() === today.getDate()
+  );
+}
+
 function EventCard({ event }: { event: Event }) {
   const upcoming = isUpcoming(event.date);
+  const today = isToday(event.date);
 
   return (
     <Link href={`/events/${event.id}`}>
       <div
         className={cn(
           "rounded-xl border bg-surface p-5 card-glow hover:-translate-y-[1px] hover:border-border-hover transition-all duration-150 h-full",
-          upcoming ? "border-border" : "border-border/60 opacity-75 hover:opacity-100"
+          today
+            ? "border-accent/40 shadow-[0_0_20px_-4px_hsl(var(--accent)/0.25)] ring-1 ring-accent/20"
+            : upcoming
+              ? "border-border"
+              : "border-border/60 opacity-75 hover:opacity-100"
         )}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            {upcoming ? (
+            {today ? (
+              <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium bg-accent/15 text-accent border-accent/25 animate-[pulse-glow_2s_ease-in-out_infinite]">
+                <Calendar className="h-3 w-3" />
+                Today
+              </span>
+            ) : upcoming ? (
               <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium bg-status-progress/15 text-status-progress border-status-progress/20">
                 <Calendar className="h-3 w-3" />
                 Upcoming

@@ -38,6 +38,24 @@ export async function POST(
     );
   }
 
+  // Check volunteer promotion threshold
+  const thresholdSetting = await prisma.appSetting.findUnique({
+    where: { key: "volunteer_promotion_threshold" },
+  });
+  const threshold = parseInt(thresholdSetting?.value ?? "5", 10);
+  const eventCount = await prisma.eventVolunteer.count({
+    where: { volunteerId: id },
+  });
+
+  if (eventCount < threshold) {
+    return NextResponse.json(
+      {
+        error: `Volunteer needs at least ${threshold} event contributions to be eligible (currently has ${eventCount})`,
+      },
+      { status: 400 }
+    );
+  }
+
   const normalizedEmail = volunteer.email.trim().toLowerCase();
 
   const existingUser = await prisma.user.findUnique({
@@ -45,10 +63,17 @@ export async function POST(
   });
 
   if (existingUser) {
-    await prisma.volunteer.update({
-      where: { id },
-      data: { userId: existingUser.id },
-    });
+    // Upgrade role to Member (EVENT_LEAD) if currently lower
+    const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
+    if ((ROLE_LEVEL[existingUser.globalRole] ?? 0) < ROLE_LEVEL.EVENT_LEAD) {
+      await prisma.user.update({
+        where: { id: existingUser.id },
+        data: { globalRole: "EVENT_LEAD" },
+      });
+    }
+
+    // Remove volunteer from directory
+    await prisma.volunteer.delete({ where: { id } });
 
     await logAudit({
       userId: session.user.id,
@@ -56,13 +81,13 @@ export async function POST(
       entityType: "Volunteer",
       entityId: id,
       entityName: volunteer.name,
-      changes: { action: "linked_to_existing_member", memberEmail: normalizedEmail },
+      changes: { action: "promoted_to_member", memberEmail: normalizedEmail },
     });
 
     return NextResponse.json({
-      user: existingUser,
+      user: { ...existingUser, globalRole: "EVENT_LEAD" },
       linked: true,
-      message: "Volunteer linked to existing member account",
+      message: "Volunteer promoted to member and removed from volunteer directory",
     });
   }
 
@@ -70,7 +95,7 @@ export async function POST(
     data: {
       email: normalizedEmail,
       name: volunteer.name,
-      globalRole: "VOLUNTEER",
+      globalRole: "EVENT_LEAD",
     },
     select: {
       id: true,
@@ -81,10 +106,8 @@ export async function POST(
     },
   });
 
-  await prisma.volunteer.update({
-    where: { id },
-    data: { userId: user.id },
-  });
+  // Remove volunteer from directory
+  await prisma.volunteer.delete({ where: { id } });
 
   await logAudit({
     userId: session.user.id,
@@ -92,12 +115,12 @@ export async function POST(
     entityType: "User",
     entityId: user.id,
     entityName: user.name ?? user.email ?? undefined,
-    changes: { convertedFromVolunteer: volunteer.name, globalRole: "VOLUNTEER" },
+    changes: { convertedFromVolunteer: volunteer.name, globalRole: "EVENT_LEAD" },
   });
 
   return NextResponse.json({
     user,
     linked: false,
-    message: "Volunteer converted to member",
+    message: "Volunteer promoted to member and removed from volunteer directory",
   }, { status: 201 });
 }

@@ -45,7 +45,6 @@ const VENUE_PARTNER_STATUS: Record<string, StatusConfig> = {
   INQUIRY: { label: "Inquiry", icon: Send, className: "bg-status-pending/15 text-status-pending border-status-pending/20" },
   PENDING: { label: "Pending", icon: Clock, className: "bg-status-progress/15 text-status-progress border-status-progress/20" },
   CONFIRMED: { label: "Confirmed", icon: Check, className: "bg-status-done/15 text-status-done border-status-done/20" },
-  CONTRACTED: { label: "Contracted", icon: UserCheck, className: "bg-accent/15 text-accent border-accent/20" },
   DECLINED: { label: "Declined", icon: X, className: "bg-status-blocked/15 text-status-blocked border-status-blocked/20" },
   CANCELLED: { label: "Cancelled", icon: UserX, className: "bg-status-pending/15 text-status-pending border-status-pending/20" },
 };

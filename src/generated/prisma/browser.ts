@@ -103,6 +103,11 @@ export type SOPTemplate = Prisma.SOPTemplateModel
  */
 export type AuditLog = Prisma.AuditLogModel
 /**
+ * Model AppSetting
+ * 
+ */
+export type AppSetting = Prisma.AppSettingModel
+/**
  * Model DiscordConfig
  * 
  */

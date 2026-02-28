@@ -43,6 +43,9 @@ type DashboardData = {
   }>;
   stats: {
     totalEvents: number;
+    upcomingEvents: number;
+    pastEvents: number;
+    todayEvents: number;
     totalSpeakers: number;
     totalVolunteers: number;
     tasksCompletedThisWeek: number;
@@ -283,12 +286,34 @@ export default function DashboardPage() {
             )}
           </BentoCard>
 
-          {/* Stats */}
-          <StatCard
-            label="Total Events"
-            value={stats.totalEvents}
-            icon={Calendar}
-          />
+          {/* Event Stats */}
+          <BentoCard className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">Events</p>
+              <div className="rounded-lg bg-accent/10 p-2">
+                <Calendar className="h-4 w-4 text-accent" />
+              </div>
+            </div>
+            <p className="text-2xl font-semibold font-[family-name:var(--font-display)] tracking-tight">{stats.totalEvents}</p>
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border text-xs">
+              {stats.todayEvents > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                  <span className="text-accent font-medium">{stats.todayEvents} today</span>
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-status-progress" />
+                <span className="text-muted">{stats.upcomingEvents} upcoming</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-muted/40" />
+                <span className="text-muted">{stats.pastEvents} past</span>
+              </span>
+            </div>
+          </BentoCard>
+
+          {/* Speakers */}
           <StatCard
             label="Speakers"
             value={stats.totalSpeakers}
@@ -381,16 +406,11 @@ export default function DashboardPage() {
             </div>
           </BentoCard>
 
-          {/* Quick Stats Row */}
+          {/* Volunteers */}
           <StatCard
             label="Volunteers"
             value={stats.totalVolunteers}
             icon={Users}
-          />
-          <StatCard
-            label="Tasks Completed This Week"
-            value={stats.tasksCompletedThisWeek}
-            icon={Clock}
           />
 
           {/* Recent Activity */}

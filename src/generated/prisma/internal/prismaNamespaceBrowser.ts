@@ -68,6 +68,7 @@ export const ModelName = {
   SOPTask: 'SOPTask',
   SOPTemplate: 'SOPTemplate',
   AuditLog: 'AuditLog',
+  AppSetting: 'AppSetting',
   DiscordConfig: 'DiscordConfig'
 } as const
 
@@ -326,6 +327,15 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AppSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
 
 
 export const DiscordConfigScalarFieldEnum = {

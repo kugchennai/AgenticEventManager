@@ -67,7 +67,6 @@ enum VenuePartnerStatus {
   INQUIRY
   PENDING
   CONFIRMED
-  CONTRACTED
   DECLINED
   CANCELLED
 }
@@ -353,6 +352,14 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ─── App Settings ─────────────────────────────────────────────────
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Discord Config ───────────────────────────────────────────────

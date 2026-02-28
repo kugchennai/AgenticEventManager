@@ -359,7 +359,7 @@ function VenuePartnerPicker({
   );
 }
 
-const VENUE_STATUSES = ["INQUIRY", "PENDING", "CONFIRMED", "CONTRACTED", "DECLINED", "CANCELLED"] as const;
+const VENUE_STATUSES = ["INQUIRY", "PENDING", "CONFIRMED", "DECLINED", "CANCELLED"] as const;
 
 type VenuePartnerItem = EventDetail["venuePartners"][number];
 
@@ -843,7 +843,7 @@ function ChecklistTab({
           return (
             <div
               key={checklist.id}
-              className="bg-surface border border-border rounded-xl overflow-hidden"
+              className="bg-surface border border-border rounded-xl"
             >
               <button
                 onClick={() => toggle(checklist.id)}

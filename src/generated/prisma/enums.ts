@@ -93,7 +93,6 @@ export const VenuePartnerStatus = {
   INQUIRY: 'INQUIRY',
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
-  CONTRACTED: 'CONTRACTED',
   DECLINED: 'DECLINED',
   CANCELLED: 'CANCELLED'
 } as const

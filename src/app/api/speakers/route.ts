@@ -51,7 +51,12 @@ export async function GET(req: Request) {
     include: {
       events: {
         ...eventFilter,
-        select: { status: true },
+        select: {
+          status: true,
+          event: {
+            select: { id: true, title: true, date: true },
+          },
+        },
       },
     },
     orderBy: { name: "asc" },
@@ -65,10 +70,9 @@ export async function GET(req: Request) {
       },
       {} as Record<string, number>
     );
-    const { events, ...rest } = speaker;
     return {
-      ...rest,
-      eventCount: events.length,
+      ...speaker,
+      eventCount: speaker.events.length,
       statusCounts,
     };
   });

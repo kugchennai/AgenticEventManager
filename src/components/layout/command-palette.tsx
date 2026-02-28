@@ -110,7 +110,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           "animate-fade-in"
         )}
       >
-        <div className="flex items-center gap-3 px-4 border-b border-border">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
           <Search className="h-4 w-4 text-muted shrink-0" />
           <input
             ref={inputRef}
@@ -121,7 +121,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Type a command or search..."
-            className="flex-1 bg-transparent py-3.5 text-sm outline-none placeholder:text-muted"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted"
           />
           <kbd className="text-[10px] font-[family-name:var(--font-mono)] text-muted bg-surface-hover rounded px-1.5 py-0.5">
             ESC

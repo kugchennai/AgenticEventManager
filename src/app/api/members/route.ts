@@ -23,11 +23,30 @@ export async function GET(req: Request) {
       image: true,
       globalRole: true,
       createdAt: true,
+      eventMembers: {
+        select: {
+          eventRole: true,
+          event: {
+            select: { id: true, title: true, date: true, status: true },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(users);
+  return NextResponse.json(
+    users.map((u) => ({
+      ...u,
+      events: u.eventMembers.map((em) => ({
+        eventRole: em.eventRole,
+        event: em.event,
+        status: em.event.status,
+      })),
+      eventsCount: u.eventMembers.length,
+      eventMembers: undefined,
+    }))
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -60,10 +79,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Prevent adding someone who is already a volunteer — use the convert flow instead
+  const existingVolunteer = await prisma.volunteer.findFirst({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingVolunteer) {
+    return NextResponse.json(
+      {
+        error: `This email belongs to volunteer "${existingVolunteer.name}". Use the "Promote to Member" action on the Volunteers page instead of adding them directly.`,
+      },
+      { status: 409 }
+    );
+  }
+
   const callerRole = session.user.globalRole as GlobalRole;
-  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
   if (callerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
-  const role = assignableRoles.includes(globalRole) ? globalRole : "VIEWER";
+  const role = assignableRoles.includes(globalRole) ? globalRole : "EVENT_LEAD";
 
   if (globalRole === "ADMIN" && callerRole !== "SUPER_ADMIN") {
     return NextResponse.json(
@@ -117,7 +150,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Missing userId or globalRole" }, { status: 400 });
   }
 
-  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER", "VIEWER"];
+  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
   const patchCallerRole = session.user.globalRole as GlobalRole;
   if (patchCallerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
 

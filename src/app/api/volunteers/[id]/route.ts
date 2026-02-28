@@ -73,6 +73,38 @@ export async function PATCH(
     return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
   }
 
+  // If email is being changed, validate it doesn't belong to a member
+  if (updateData.email && updateData.email !== before.email) {
+    const normalizedEmail = updateData.email.trim().toLowerCase();
+
+    const existingMember = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (existingMember) {
+      return NextResponse.json(
+        {
+          error: `This email belongs to existing member "${existingMember.name ?? existingMember.email}". Members cannot be added as volunteers directly.`,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Also check for duplicate volunteer email
+    const existingVolunteer = await prisma.volunteer.findFirst({
+      where: { email: normalizedEmail, id: { not: id } },
+    });
+
+    if (existingVolunteer) {
+      return NextResponse.json(
+        {
+          error: `A volunteer with this email already exists: "${existingVolunteer.name}"`,
+        },
+        { status: 409 }
+      );
+    }
+  }
+
   const volunteer = await prisma.volunteer.update({
     where: { id },
     data: updateData,
