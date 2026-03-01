@@ -3,6 +3,7 @@ import { getAuthSession } from "@/lib/auth-helpers";
 import { isEmailConfigured, verifyConnection, renderAndSend } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { LOGO_CID } from "@/lib/emails/triggers";
+import { generateICS } from "@/lib/emails/ics";
 import type { GlobalRole } from "@/generated/prisma/enums";
 import React from "react";
 import {
@@ -78,7 +79,7 @@ function buildTemplateElement(
   email: string,
   appName?: string,
   logoUrl?: string,
-): { element: React.ReactElement; subject: string } {
+): { element: React.ReactElement; subject: string; attachments?: Array<{ filename: string; content: string | Buffer; contentType?: string }> } {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const name = appName ?? "Meetup Manager";
 
@@ -133,12 +134,20 @@ function buildTemplateElement(
           logoUrl,
         }),
       };
-    case "event-reminder":
+    case "event-reminder": {
+      const eventDate = new Date(Date.now() + 2 * 86400000);
+      const icsContent = generateICS({
+        title: "Sample Tech Meetup",
+        description: "Test event reminder from " + name,
+        startDate: eventDate,
+        location: "Innovation Hub, Downtown — 123 Main Street, Suite 400",
+        url: `${appUrl}/events/sample-123`,
+      });
       return {
         subject: `[Test] Event Reminder — ${name}`,
         element: React.createElement(EventReminderEmail, {
           eventTitle: "Sample Tech Meetup",
-          date: new Date(Date.now() + 2 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+          date: eventDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
           venue: "Innovation Hub, Downtown",
           location: "123 Main Street, Suite 400",
           eventUrl: `${appUrl}/events/sample-123`,
@@ -146,7 +155,15 @@ function buildTemplateElement(
           appName,
           logoUrl,
         }),
+        attachments: [
+          {
+            filename: "event.ics",
+            content: icsContent,
+            contentType: "text/calendar",
+          },
+        ],
       };
+    }
     case "task-assigned":
       return {
         subject: `[Test] Task Assigned — ${name}`,
@@ -335,14 +352,14 @@ export async function POST(req: NextRequest) {
     }
   } catch { /* use defaults */ }
 
-  const { element, subject } = buildTemplateElement(template, recipientEmail, appName, logoUrl);
+  const { element, subject, attachments: templateAttachments } = buildTemplateElement(template, recipientEmail, appName, logoUrl);
 
   const result = await renderAndSend(
     recipientEmail,
     subject,
     template === "test" ? "test" : `test-${template}`,
     element,
-    { fromName: appName, logoBase64, logoCid: LOGO_CID }
+    { fromName: appName, logoBase64, logoCid: LOGO_CID, attachments: templateAttachments }
   );
 
   if (result.success) {
