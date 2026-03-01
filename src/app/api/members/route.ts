@@ -16,7 +16,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const callerRole = session.user.globalRole as GlobalRole;
+
   const users = await prisma.user.findMany({
+    where: {
+      // Only Super Admins can see volunteer-role users in the members list
+      ...(callerRole !== "SUPER_ADMIN" ? { globalRole: { not: "VOLUNTEER" } } : {}),
+    },
     select: {
       id: true,
       name: true,
@@ -188,7 +194,7 @@ export async function POST(req: NextRequest) {
   }
 
   const callerRole = session.user.globalRole as GlobalRole;
-  const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
+  const assignableRoles: GlobalRole[] = ["EVENT_LEAD"];
   if (callerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
   const role = assignableRoles.includes(globalRole) ? globalRole : "EVENT_LEAD";
 
@@ -297,7 +303,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const assignableRoles: GlobalRole[] = ["EVENT_LEAD", "VOLUNTEER"];
+    const assignableRoles: GlobalRole[] = ["EVENT_LEAD"];
     const patchCallerRole = session.user.globalRole as GlobalRole;
     if (patchCallerRole === "SUPER_ADMIN") assignableRoles.unshift("ADMIN");
 
