@@ -179,11 +179,13 @@ Open [http://localhost:3000](http://localhost:3000).
 **Key features:**
 - **Gmail App Password** — uses SMTP with Gmail's app-specific passwords (no OAuth complexity)
 - **Branded HTML templates** — JSX-based email templates with amber/gold accent, responsive design, inline CSS (via `@react-email/components`)
+- **Custom branding** — emails automatically use the configured group name as the sender and embed the uploaded logo in the header via CID attachment (works in all email clients without external image hosting)
+- **Template preview** — test endpoint supports all 12 templates with realistic sample data; settings UI includes a template selector dropdown for previewing any email
 - **ICS calendar attachments** — event reminder emails include a downloadable `.ics` file
 - **EmailLog tracking** — every email sent is logged to the database with status (`PENDING` → `SENT` / `FAILED`), recipient, subject, and template name
 - **Fire-and-forget** — email sends never block API responses; failures are logged but don't affect the user-facing operation
 - **Graceful degradation** — all email functions silently skip if SMTP is not configured
-- **Test endpoint** — `POST /api/email/test` sends a test email to verify SMTP connectivity (Super Admin only)
+- **Test endpoint** — `POST /api/email/test` sends a test email to verify SMTP connectivity; supports a `template` body param to preview any of the 12 templates (Admin+)
 - **Email log API** — `GET /api/email/log` returns paginated email logs with filtering by template and status (Admin+)
 - **Cron jobs** — daily event reminders, daily task deadline/overdue checks, weekly digest
 
@@ -226,7 +228,9 @@ Open [http://localhost:3000](http://localhost:3000).
 ### App Settings
 
 - **Volunteer promotion threshold** — Super Admin-only setting to configure the minimum event contributions before a volunteer can be promoted to member
+- **Group logo upload** — upload light and dark logo variants (PNG, JPEG, SVG, WebP, max 200KB); the light logo is automatically embedded in all email headers via CID attachment
 - **Key-value store** — extensible `AppSetting` model for future settings
+- **Logo serving endpoint** — `GET /api/settings/logo?variant=light|dark` serves stored logos as real images with caching headers (public, no auth required)
 - **Audit-logged** — all setting changes are tracked
 
 ---
@@ -328,9 +332,9 @@ src/
 │   │   ├── members/      # Member management + role changes
 │   │   ├── dashboard/    # Aggregated dashboard data
 │   │   ├── audit-log/    # Paginated audit logs
-│   │   ├── settings/     # App settings CRUD
+│   │   ├── settings/     # App settings CRUD + logo endpoint
 │   │   ├── discord/      # Discord config + test
-│   │   ├── email/        # Email test + log endpoints
+│   │   ├── email/        # Email test (12 templates) + log endpoints
 │   │   └── cron/         # Scheduled reminder + email jobs
 │   ├── dashboard/        # Dashboard page
 │   ├── events/           # Event list + detail + new event pages
@@ -357,7 +361,7 @@ src/
 │   ├── utils.ts          # Shared utilities
 │   └── emails/           # Email notification system
 │       ├── components/   # Shared email layout (React Email)
-│       ├── templates/    # 10 branded email templates
+│       ├── templates/    # 11 branded email templates
 │       ├── triggers.ts   # High-level email trigger functions
 │       └── ics.ts        # ICS calendar file generator
 ├── generated/prisma/     # Generated Prisma client
