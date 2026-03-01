@@ -245,6 +245,7 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
       React.createElement(EventCreatedEmail, {
         eventTitle: event.title,
         date: formatDateTime(event.date),
+        endDate: formatDateTime(event.endDate),
         venue: event.venue,
         eventUrl,
         createdBy: event.createdBy.name ?? "Team Member",
@@ -303,6 +304,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
       title: event.title,
       description: event.description ?? undefined,
       startDate: eventDate,
+      endDate: new Date(event.endDate),
       location: event.venue ?? undefined,
       url: eventUrl,
     });
@@ -314,6 +316,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
       React.createElement(EventReminderEmail, {
         eventTitle: event.title,
         date: formatDateTime(event.date),
+        endDate: formatDateTime(event.endDate),
         venue: event.venue,
         eventUrl,
         daysUntil,
@@ -521,7 +524,7 @@ export async function sendSpeakerInvitationEmail(
       where: { id: eventSpeakerId },
       include: {
         speaker: { select: { name: true, email: true, topic: true } },
-        event: { select: { title: true, date: true, venue: true } },
+        event: { select: { title: true, date: true, endDate: true, venue: true } },
       },
     });
 
@@ -538,6 +541,7 @@ export async function sendSpeakerInvitationEmail(
         eventTitle: link.event.title,
         topic: link.speaker.topic,
         date: formatDateTime(link.event.date),
+        endDate: formatDateTime(link.event.endDate),
         venue: link.event.venue,
         appName: branding.appName,
         logoUrl: branding.logoUrl,
@@ -658,7 +662,7 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
         date: { gte: now, lte: twoWeeksFromNow },
         status: { in: ["SCHEDULED", "LIVE"] },
       },
-      select: { id: true, title: true, date: true, venue: true },
+      select: { id: true, title: true, date: true, endDate: true, venue: true },
       orderBy: { date: "asc" },
       take: 5,
     });
@@ -711,7 +715,8 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
         })),
         upcomingEvents: upcomingEvents.map((e) => ({
           title: e.title,
-          date: formatDate(e.date),
+          date: formatDateTime(e.date),
+          endDate: formatDateTime(e.endDate),
           venue: e.venue,
           eventUrl: `${appUrl}/events/${e.id}`,
         })),

@@ -2010,6 +2010,7 @@ export const EventScalarFieldEnum = {
   title: 'title',
   description: 'description',
   date: 'date',
+  endDate: 'endDate',
   venue: 'venue',
   pageLink: 'pageLink',
   status: 'status',

@@ -9,7 +9,7 @@ import { Calendar, Mic2, Users, ClipboardCheck, Plus, ArrowRight, AlertTriangle,
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-import { formatDate, formatTimeAgo } from "@/lib/utils";
+import { formatDate, formatDateTime, formatTimeAgo } from "@/lib/utils";
 
 const ROLE_LEVEL: Record<string, number> = { VIEWER: 0, VOLUNTEER: 1, EVENT_LEAD: 2, ADMIN: 3, SUPER_ADMIN: 4 };
 
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3 mt-1.5">
                       <span className="text-xs text-muted flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {formatDate(nextEvent.date)}
+                        {formatDateTime(nextEvent.date)}
                       </span>
                       {nextEvent.venue && (
                         <span className="text-xs text-muted">{nextEvent.venue}</span>

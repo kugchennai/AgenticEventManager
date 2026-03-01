@@ -19,6 +19,7 @@ interface TaskItem {
 interface EventItem {
   title: string;
   date: string;
+  endDate?: string;
   venue?: string | null;
   eventUrl: string;
 }
@@ -199,7 +200,7 @@ export function WeeklyDigestEmail({
                 {event.title}
               </Link>
               <Text style={{ fontSize: "13px", color: "#6B7280", margin: "4px 0 0 0" }}>
-                📅 {event.date} {event.venue ? `• 📍 ${event.venue}` : ""}
+                📅 {event.date}{event.endDate ? ` – ${event.endDate}` : ""} {event.venue ? `• 📍 ${event.venue}` : ""}
               </Text>
             </div>
           ))}

@@ -2,7 +2,7 @@
 
 import {
   PageHeader, Button, StatusBadge, PriorityBadge,
-  OwnerAvatar, EmptyState, BentoGrid, BentoCard, StatCard, Modal,
+  OwnerAvatar, EmptyState, BentoGrid, BentoCard, StatCard, Modal, DateTimePicker,
 } from "@/components/design-system";
 import {
   ArrowLeft, Calendar, MapPin, Mic2, Users, ClipboardCheck,
@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
+import { formatDate, formatRelativeDate, formatDateTimeRange, cn } from "@/lib/utils";
 import { useAppSettings } from "@/lib/app-settings-context";
 
 type VolunteerOption = { id: string; name: string; email: string | null; role: string | null };
@@ -26,6 +26,7 @@ interface EventDetail {
   title: string;
   description: string | null;
   date: string;
+  endDate: string;
   venue: string | null;
   pageLink: string | null;
   status: string;
@@ -1307,6 +1308,7 @@ export default function EventDetailPage() {
   const userRole = session?.user?.globalRole ?? "VIEWER";
   const canEdit = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.EVENT_LEAD;
   const isAdmin = (ROLE_LEVEL[userRole] ?? 0) >= ROLE_LEVEL.ADMIN;
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
   const isVolunteer = userRole === "VOLUNTEER";
   const isReadOnly = userRole === "VIEWER";
 
@@ -1325,6 +1327,10 @@ export default function EventDetailPage() {
   useEffect(() => {
     fetchEvent();
   }, [fetchEvent]);
+
+  // Check if user can delete this specific event
+  // Only: 1) Super Admin (any event), or 2) Event creator if they are Admin/Super Admin
+  const canDelete = event && (isSuperAdmin || (event.createdBy.id === session?.user?.id && (isAdmin || isSuperAdmin)));
 
   const updateTask = async (
     checklistId: string,
@@ -1483,6 +1489,7 @@ export default function EventDetailPage() {
   const [editForm, setEditForm] = useState({
     title: "",
     date: "",
+    endDate: "",
     venue: "",
     description: "",
     pageLink: "",
@@ -1548,7 +1555,8 @@ export default function EventDetailPage() {
   const openEdit = () => {
     setEditForm({
       title: event.title,
-      date: event.date.slice(0, 10),
+      date: event.date.slice(0, 16),
+      endDate: event.endDate.slice(0, 16),
       venue: event.venue ?? "",
       description: event.description ?? "",
       pageLink: event.pageLink ?? "",
@@ -1558,7 +1566,7 @@ export default function EventDetailPage() {
 
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editForm.title.trim() || !editForm.date) return;
+    if (!editForm.title.trim() || !editForm.date || !editForm.endDate) return;
     setEditSaving(true);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
@@ -1566,6 +1574,7 @@ export default function EventDetailPage() {
       body: JSON.stringify({
         title: editForm.title.trim(),
         date: editForm.date,
+        endDate: editForm.endDate,
         venue: editForm.venue.trim() || null,
         description: editForm.description.trim() || null,
         pageLink: editForm.pageLink.trim() || null,
@@ -1607,7 +1616,7 @@ export default function EventDetailPage() {
           <div className="flex items-center gap-4 text-sm text-muted">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
-              {formatDate(event.date)} ({formatRelativeDate(event.date)})
+              {formatDateTimeRange(event.date, event.endDate)} ({formatRelativeDate(event.date)})
             </span>
             {event.venue && (
               <span className="flex items-center gap-1.5">
@@ -1633,9 +1642,11 @@ export default function EventDetailPage() {
             <Button variant="secondary" size="sm" onClick={openEdit}>
               <Pencil className="h-3.5 w-3.5" /> Edit
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-3.5 w-3.5" /> Delete
-            </Button>
+            {canDelete && (
+              <Button variant="danger" size="sm" onClick={handleDelete}>
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -1654,13 +1665,19 @@ export default function EventDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5">Date *</label>
-            <input
-              type="date"
-              value={editForm.date}
-              onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+            <label className="block text-sm font-medium mb-1.5">Start Date & Time *</label>
+            <DateTimePicker
               required
-              className={INPUT_CLASS}
+              value={editForm.date}
+              onChange={(date) => setEditForm((f) => ({ ...f, date }))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">End Date & Time *</label>
+            <DateTimePicker
+              required
+              value={editForm.endDate}
+              onChange={(endDate) => setEditForm((f) => ({ ...f, endDate }))}
             />
           </div>
           <div>

@@ -128,11 +128,11 @@ const PERMISSIONS: PermissionRow[] = [
     actions: {
       VIEWER: "none",
       VOLUNTEER: "none",
-      EVENT_LEAD: "full",
-      ADMIN: "full",
+      EVENT_LEAD: "limited",
+      ADMIN: "limited",
       SUPER_ADMIN: "full",
     },
-    note: "Event Leads can edit/delete events they're assigned to as ORGANIZER/LEAD",
+    note: "Edit: Event members with ORGANIZER/LEAD role. Delete: Event creator (if Admin/Super Admin) or Super Admin (any event)",
   },
   {
     feature: "Speakers",

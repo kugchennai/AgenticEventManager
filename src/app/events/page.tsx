@@ -5,13 +5,14 @@ import { Calendar, Plus, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { formatDate, formatRelativeDate, cn } from "@/lib/utils";
+import { formatDate, formatRelativeDate, formatDateTimeRange, cn } from "@/lib/utils";
 
 interface Event {
   id: string;
   title: string;
   description: string | null;
   date: string;
+  endDate: string;
   venue: string | null;
   status: string;
   createdBy: { id: string; name: string | null; image: string | null };
@@ -90,7 +91,7 @@ function EventCard({ event }: { event: Event }) {
         <div className="flex items-center gap-3 text-xs text-muted mt-auto pt-2 border-t border-border">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {formatDate(event.date)} ({formatRelativeDate(event.date)})
+            {formatDateTimeRange(event.date, event.endDate)} ({formatRelativeDate(event.date)})
           </span>
           {event.venue && (
             <span className="flex items-center gap-1 truncate">

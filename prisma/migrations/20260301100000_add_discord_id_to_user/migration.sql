@@ -1,0 +1,2 @@
+-- This migration is intentionally empty.
+-- The discordId column was already included in the init migration.

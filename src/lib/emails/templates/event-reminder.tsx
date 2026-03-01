@@ -13,6 +13,7 @@ import {
 interface EventReminderProps {
   eventTitle: string;
   date: string;
+  endDate: string;
   venue?: string | null;
   location?: string | null;
   eventUrl: string;
@@ -24,6 +25,7 @@ interface EventReminderProps {
 export function EventReminderEmail({
   eventTitle,
   date,
+  endDate,
   venue,
   location,
   eventUrl,
@@ -50,7 +52,8 @@ export function EventReminderEmail({
 
       <DetailTable>
         <DetailItem label="Event" value={eventTitle} />
-        <DetailItem label="Date" value={date} />
+        <DetailItem label="Start" value={date} />
+        <DetailItem label="End" value={endDate} />
         {venue && <DetailItem label="Venue" value={venue} />}
         {location && <DetailItem label="Location" value={location} />}
         <DetailItem label="Days Until" value={urgencyLabel} />

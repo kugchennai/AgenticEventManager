@@ -12,6 +12,7 @@ import {
 interface EventCreatedProps {
   eventTitle: string;
   date: string;
+  endDate: string;
   venue?: string | null;
   eventUrl: string;
   createdBy: string;
@@ -22,6 +23,7 @@ interface EventCreatedProps {
 export function EventCreatedEmail({
   eventTitle,
   date,
+  endDate,
   venue,
   eventUrl,
   createdBy,
@@ -43,7 +45,8 @@ export function EventCreatedEmail({
       </div>
 
       <DetailTable>
-        <DetailItem label="Date" value={date} />
+        <DetailItem label="Start" value={date} />
+        <DetailItem label="End" value={endDate} />
         {venue && <DetailItem label="Venue" value={venue} />}
         <DetailItem label="Created By" value={createdBy} />
       </DetailTable>

@@ -13,6 +13,49 @@ export function formatDate(date: Date | string) {
   });
 }
 
+export function formatDateTime(date: Date | string) {
+  return new Date(date).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Format a start–end date/time range.
+ * Same day:  "Mar 1, 2026, 10:00 AM – 12:30 PM"
+ * Different days: "Mar 1, 2026, 10:00 AM – Mar 2, 2026, 12:30 PM"
+ */
+export function formatDateTimeRange(start: Date | string, end: Date | string) {
+  const s = new Date(start);
+  const e = new Date(end);
+  const sameDay =
+    s.getFullYear() === e.getFullYear() &&
+    s.getMonth() === e.getMonth() &&
+    s.getDate() === e.getDate();
+
+  if (sameDay) {
+    const datePart = s.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    const startTime = s.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const endTime = e.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    return `${datePart}, ${startTime} – ${endTime}`;
+  }
+
+  return `${formatDateTime(s)} – ${formatDateTime(e)}`;
+}
+
 export function formatRelativeDate(date: Date | string) {
   const now = new Date();
   const target = new Date(date);

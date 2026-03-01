@@ -13,6 +13,7 @@ interface SpeakerInvitationProps {
   eventTitle: string;
   topic?: string | null;
   date: string;
+  endDate: string;
   venue?: string | null;
   appName?: string;
   logoUrl?: string;
@@ -23,6 +24,7 @@ export function SpeakerInvitationEmail({
   eventTitle,
   topic,
   date,
+  endDate,
   venue,
   appName,
   logoUrl,
@@ -53,7 +55,8 @@ export function SpeakerInvitationEmail({
 
       <DetailTable>
         <DetailItem label="Event" value={eventTitle} />
-        <DetailItem label="Date" value={date} />
+        <DetailItem label="Start" value={date} />
+        <DetailItem label="End" value={endDate} />
         {venue && <DetailItem label="Venue" value={venue} />}
         {topic && <DetailItem label="Topic" value={topic} />}
       </DetailTable>

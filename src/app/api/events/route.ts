@@ -50,10 +50,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, description, date, venue, pageLink, templateId } = body;
+  const { title, description, date, endDate, venue, pageLink, templateId } = body;
 
-  if (!title || !date) {
-    return NextResponse.json({ error: "Title and date are required" }, { status: 400 });
+  if (!title || !date || !endDate) {
+    return NextResponse.json({ error: "Title, start date, and end date are required" }, { status: 400 });
   }
 
   if (!templateId) {
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       title,
       description,
       date: new Date(date),
+      endDate: new Date(endDate),
       venue,
       pageLink: pageLink || null,
       createdById: session.user.id,
@@ -164,13 +165,11 @@ export async function POST(req: NextRequest) {
     entityType: "Event",
     entityId: event.id,
     entityName: title,
-    changes: { title, date, venue },
+    changes: { title, date, endDate, venue },
   });
 
-  // Send event creation notification if status is SCHEDULED
-  if (event.status === "SCHEDULED" || body.status === "SCHEDULED") {
-    await sendEventCreatedEmail(event.id);
-  }
+  // Send event creation notification to all event members
+  await sendEventCreatedEmail(event.id);
 
   return NextResponse.json(event, { status: 201 });
 }

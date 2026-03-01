@@ -126,7 +126,8 @@ function buildTemplateElement(
         subject: `[Test] Event Created — ${name}`,
         element: React.createElement(EventCreatedEmail, {
           eventTitle: "Sample Tech Meetup",
-          date: new Date(Date.now() + 7 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+          date: new Date(Date.now() + 7 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          endDate: new Date(Date.now() + 7 * 86400000 + 3 * 3600000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
           venue: "Innovation Hub, Downtown",
           eventUrl: `${appUrl}/events/sample-123`,
           createdBy: "Admin User",
@@ -136,10 +137,12 @@ function buildTemplateElement(
       };
     case "event-reminder": {
       const eventDate = new Date(Date.now() + 2 * 86400000);
+      const eventEndDate = new Date(eventDate.getTime() + 3 * 3600000);
       const icsContent = generateICS({
         title: "Sample Tech Meetup",
         description: "Test event reminder from " + name,
         startDate: eventDate,
+        endDate: eventEndDate,
         location: "Innovation Hub, Downtown — 123 Main Street, Suite 400",
         url: `${appUrl}/events/sample-123`,
       });
@@ -147,7 +150,8 @@ function buildTemplateElement(
         subject: `[Test] Event Reminder — ${name}`,
         element: React.createElement(EventReminderEmail, {
           eventTitle: "Sample Tech Meetup",
-          date: eventDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+          date: eventDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          endDate: eventEndDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
           venue: "Innovation Hub, Downtown",
           location: "123 Main Street, Suite 400",
           eventUrl: `${appUrl}/events/sample-123`,
@@ -214,7 +218,8 @@ function buildTemplateElement(
           speakerName: "Dr. Jane Smith",
           eventTitle: "Sample Tech Meetup",
           topic: "The Future of AI in Web Development",
-          date: new Date(Date.now() + 14 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+          date: new Date(Date.now() + 14 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          endDate: new Date(Date.now() + 14 * 86400000 + 3 * 3600000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
           venue: "Innovation Hub, Downtown",
           appName,
           logoUrl,
@@ -247,7 +252,7 @@ function buildTemplateElement(
             { title: "Send speaker confirmations", eventTitle: "Sample Tech Meetup", priority: "HIGH", deadline: new Date(Date.now() - 86400000).toISOString(), taskUrl: `${appUrl}/events/sample-123` },
           ],
           upcomingEvents: [
-            { title: "Sample Tech Meetup", date: new Date(Date.now() + 7 * 86400000).toISOString(), venue: "Innovation Hub", eventUrl: `${appUrl}/events/sample-123` },
+            { title: "Sample Tech Meetup", date: new Date(Date.now() + 7 * 86400000).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }), endDate: new Date(Date.now() + 7 * 86400000 + 3 * 3600000).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }), venue: "Innovation Hub", eventUrl: `${appUrl}/events/sample-123` },
           ],
           summary: { totalTasks: 5, completedTasks: 2, totalEvents: 3, upcomingEventsCount: 1 },
           appUrl,

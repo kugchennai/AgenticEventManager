@@ -33,6 +33,7 @@ export default function CreateEventPage() {
     title: "",
     description: "",
     date: "",
+    endDate: "",
     venue: "",
     pageLink: "",
     templateId: "",
@@ -109,11 +110,11 @@ export default function CreateEventPage() {
             />
           </div>
 
-          {/* Date & Venue */}
+          {/* Date & Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
-                Date & Time *
+                Start Date & Time *
               </label>
               <DateTimePicker
                 required
@@ -123,16 +124,28 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
-                <MapPin className="h-3 w-3" /> Venue
+                End Date & Time *
               </label>
-              <input
-                type="text"
-                value={form.venue}
-                onChange={(e) => setForm({ ...form, venue: e.target.value })}
-                placeholder="WeWork, Koramangala"
-                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+              <DateTimePicker
+                required
+                value={form.endDate}
+                onChange={(endDate) => setForm({ ...form, endDate })}
               />
             </div>
+          </div>
+
+          {/* Venue */}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">
+              <MapPin className="h-3 w-3" /> Venue
+            </label>
+            <input
+              type="text"
+              value={form.venue}
+              onChange={(e) => setForm({ ...form, venue: e.target.value })}
+              placeholder="WeWork, Koramangala"
+              className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all"
+            />
           </div>
 
           {/* Event Page Link */}

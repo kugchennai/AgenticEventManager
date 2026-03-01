@@ -153,6 +153,7 @@ model Event {
   title       String
   description String?     @db.Text
   date        DateTime
+  endDate     DateTime
   venue       String?
   pageLink    String?
   status      EventStatus @default(DRAFT)
