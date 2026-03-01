@@ -11,6 +11,8 @@ interface VolunteerPromotionProps {
   newRole: string;
   permissions: string[];
   nextSteps: string[];
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function VolunteerPromotionEmail({
@@ -18,9 +20,11 @@ export function VolunteerPromotionEmail({
   newRole,
   permissions,
   nextSteps,
+  appName,
+  logoUrl,
 }: VolunteerPromotionProps) {
   return (
-    <EmailLayout preview={`Congratulations! You've been promoted to ${newRole}`}>
+    <EmailLayout preview={`Congratulations! You've been promoted to ${newRole}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Congratulations! 🎊</Text>
 
       <Text style={styles.paragraph}>

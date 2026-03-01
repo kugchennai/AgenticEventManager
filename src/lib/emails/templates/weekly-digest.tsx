@@ -35,6 +35,8 @@ interface WeeklyDigestProps {
     upcomingEventsCount: number;
   };
   appUrl: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 const priorityEmoji: Record<string, string> = {
@@ -51,9 +53,11 @@ export function WeeklyDigestEmail({
   upcomingEvents,
   summary,
   appUrl,
+  appName,
+  logoUrl,
 }: WeeklyDigestProps) {
   return (
-    <EmailLayout preview={`Weekly digest: ${summary.totalTasks} tasks, ${summary.upcomingEventsCount} upcoming events`}>
+    <EmailLayout preview={`Weekly digest: ${summary.totalTasks} tasks, ${summary.upcomingEventsCount} upcoming events`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Weekly Digest 📊</Text>
 
       <Text style={styles.paragraph}>

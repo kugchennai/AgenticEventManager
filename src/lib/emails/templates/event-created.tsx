@@ -15,6 +15,8 @@ interface EventCreatedProps {
   venue?: string | null;
   eventUrl: string;
   createdBy: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function EventCreatedEmail({
@@ -23,9 +25,11 @@ export function EventCreatedEmail({
   venue,
   eventUrl,
   createdBy,
+  appName,
+  logoUrl,
 }: EventCreatedProps) {
   return (
-    <EmailLayout preview={`New event scheduled: ${eventTitle}`}>
+    <EmailLayout preview={`New event scheduled: ${eventTitle}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>New Event Scheduled 📅</Text>
 
       <Text style={styles.paragraph}>

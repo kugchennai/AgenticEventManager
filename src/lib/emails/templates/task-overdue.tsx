@@ -17,6 +17,8 @@ interface TaskOverdueProps {
   taskUrl: string;
   priority: string;
   isEscalation?: boolean;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function TaskOverdueEmail({
@@ -27,9 +29,11 @@ export function TaskOverdueEmail({
   taskUrl,
   priority,
   isEscalation = false,
+  appName,
+  logoUrl,
 }: TaskOverdueProps) {
   return (
-    <EmailLayout preview={`OVERDUE: ${taskTitle} is ${overdueDays} day(s) past deadline`}>
+    <EmailLayout preview={`OVERDUE: ${taskTitle} is ${overdueDays} day(s) past deadline`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Task Overdue 🚨</Text>
 
       <div style={styles.dangerBox}>

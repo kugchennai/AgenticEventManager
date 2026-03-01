@@ -6,7 +6,10 @@ import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 // Public settings anyone authenticated can read
-const PUBLIC_KEYS = ["volunteer_promotion_threshold", "meetup_name", "min_volunteer_tasks"];
+const PUBLIC_KEYS = ["volunteer_promotion_threshold", "meetup_name", "min_volunteer_tasks", "logo_light", "logo_dark"];
+
+// Max size for base64 logo values (~200KB encoded)
+const MAX_LOGO_SIZE = 300_000;
 
 export async function GET(req: Request) {
   const session = await getAuthSession(req);
@@ -50,6 +53,14 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unknown setting key" }, { status: 400 });
   }
 
+  // Validate logo size
+  if ((key === "logo_light" || key === "logo_dark") && value.length > MAX_LOGO_SIZE) {
+    return NextResponse.json(
+      { error: "Logo image is too large. Please use an image under 200KB." },
+      { status: 400 }
+    );
+  }
+
   const setting = await prisma.appSetting.upsert({
     where: { key },
     update: { value },
@@ -62,7 +73,7 @@ export async function PATCH(req: NextRequest) {
     entityType: "AppSetting",
     entityId: key,
     entityName: key,
-    changes: { value },
+    changes: key.startsWith("logo_") ? { value: "(logo image updated)" } : { value },
   });
 
   return NextResponse.json(setting);

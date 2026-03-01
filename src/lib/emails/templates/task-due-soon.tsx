@@ -17,6 +17,8 @@ interface TaskDueSoonProps {
   eventName: string;
   taskUrl: string;
   priority: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function TaskDueSoonEmail({
@@ -26,6 +28,8 @@ export function TaskDueSoonEmail({
   eventName,
   taskUrl,
   priority,
+  appName,
+  logoUrl,
 }: TaskDueSoonProps) {
   const urgencyText =
     daysRemaining <= 1
@@ -33,7 +37,7 @@ export function TaskDueSoonEmail({
       : `due in ${daysRemaining} days`;
 
   return (
-    <EmailLayout preview={`Task ${urgencyText}: ${taskTitle}`}>
+    <EmailLayout preview={`Task ${urgencyText}: ${taskTitle}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Task Due Soon ⏳</Text>
 
       <div style={styles.warningBox}>

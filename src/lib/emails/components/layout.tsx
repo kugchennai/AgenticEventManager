@@ -187,10 +187,11 @@ const styles = {
 interface EmailLayoutProps {
   preview: string;
   appName?: string;
+  logoUrl?: string;
   children?: React.ReactNode;
 }
 
-export function EmailLayout({ preview, appName = "Meetup Manager", children }: EmailLayoutProps) {
+export function EmailLayout({ preview, appName = "Meetup Manager", logoUrl, children }: EmailLayoutProps) {
   return (
     <Html>
       <Head />
@@ -200,7 +201,27 @@ export function EmailLayout({ preview, appName = "Meetup Manager", children }: E
           <Section style={styles.card}>
             {/* Header */}
             <Section style={styles.header}>
-              <Text style={styles.headerTitle}>{appName}</Text>
+              {logoUrl ? (
+                <table cellPadding="0" cellSpacing="0" style={{ margin: "0 auto" }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ verticalAlign: "middle", paddingRight: "16px" }}>
+                        <Img
+                          src={logoUrl}
+                          width="72"
+                          alt={appName}
+                          style={{ borderRadius: "8px", display: "block", height: "auto", maxHeight: "72px" }}
+                        />
+                      </td>
+                      <td style={{ verticalAlign: "middle" }}>
+                        <Text style={{ ...styles.headerTitle, margin: "0" }}>{appName}</Text>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : (
+                <Text style={styles.headerTitle}>{appName}</Text>
+              )}
             </Section>
 
             {/* Content */}

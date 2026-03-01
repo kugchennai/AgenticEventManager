@@ -17,6 +17,8 @@ interface TaskAssignedProps {
   eventName: string;
   taskUrl: string;
   assignedBy?: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function TaskAssignedEmail({
@@ -26,9 +28,11 @@ export function TaskAssignedEmail({
   eventName,
   taskUrl,
   assignedBy,
+  appName,
+  logoUrl,
 }: TaskAssignedProps) {
   return (
-    <EmailLayout preview={`New task assigned: ${taskTitle}`}>
+    <EmailLayout preview={`New task assigned: ${taskTitle}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Task Assigned 📋</Text>
 
       <Text style={styles.paragraph}>

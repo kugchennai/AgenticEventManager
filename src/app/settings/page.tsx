@@ -2,8 +2,8 @@
 
 import { PageHeader, Button } from "@/components/design-system";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle, Shield } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle, Shield, ImagePlus, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/lib/app-settings-context";
@@ -303,8 +303,24 @@ function MinVolunteerTasksCard() {
   );
 }
 
+const EMAIL_TEMPLATE_OPTIONS = [
+  { value: "test", label: "Basic Test Email" },
+  { value: "member-invitation", label: "Member Invitation" },
+  { value: "volunteer-welcome", label: "Volunteer Welcome" },
+  { value: "volunteer-promotion", label: "Volunteer Promotion" },
+  { value: "event-created", label: "Event Created" },
+  { value: "event-reminder", label: "Event Reminder" },
+  { value: "task-assigned", label: "Task Assigned" },
+  { value: "task-due-soon", label: "Task Due Soon" },
+  { value: "task-overdue", label: "Task Overdue" },
+  { value: "speaker-invitation", label: "Speaker Invitation" },
+  { value: "venue-confirmed", label: "Venue Confirmed" },
+  { value: "weekly-digest", label: "Weekly Digest" },
+] as const;
+
 function TestEmailCard() {
   const [email, setEmail] = useState("");
+  const [template, setTemplate] = useState("test");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
   const [smtpStatus, setSmtpStatus] = useState<{
@@ -338,11 +354,12 @@ function TestEmailCard() {
       const res = await fetch("/api/email/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify({ email: trimmed, template }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setResult({ success: true, message: `Test email sent to ${data.sentTo}` });
+        const templateLabel = EMAIL_TEMPLATE_OPTIONS.find((t) => t.value === template)?.label ?? "Test";
+        setResult({ success: true, message: `"${templateLabel}" email sent to ${data.sentTo}` });
         setEmail("");
       } else {
         setResult({ success: false, message: data.error ?? "Failed to send" });
@@ -365,8 +382,8 @@ function TestEmailCard() {
         <div>
           <h3 className="font-semibold mb-1">Test Email</h3>
           <p className="text-sm text-muted">
-            Send a test email to verify your SMTP configuration is working.
-            Enter any member&apos;s email address below.
+            Send a test email to verify your SMTP configuration and preview any
+            email template. Select a template and enter a recipient below.
           </p>
         </div>
       </div>
@@ -386,8 +403,30 @@ function TestEmailCard() {
           <span>SMTP connected and ready</span>
         </div>
       )}
-      <div className="flex items-end gap-3">
-        <div className="flex-1 max-w-[360px]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex-1 max-w-[240px]">
+          <label className="block text-sm font-medium mb-1.5">
+            Email Template
+          </label>
+          <div className="relative">
+            <select
+              value={template}
+              onChange={(e) => {
+                setTemplate(e.target.value);
+                setResult(null);
+              }}
+              className={cn(INPUT_CLASS, "appearance-none pr-8 cursor-pointer")}
+            >
+              {EMAIL_TEMPLATE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+          </div>
+        </div>
+        <div className="flex-1 max-w-[280px]">
           <label className="block text-sm font-medium mb-1.5">
             Recipient Email
           </label>
@@ -428,6 +467,200 @@ function TestEmailCard() {
         >
           {result.message}
         </p>
+      )}
+    </div>
+  );
+}
+
+function LogoUploadCard() {
+  const { logoLight, setLogoLight, logoDark, setLogoDark } = useAppSettings();
+  const [lightPreview, setLightPreview] = useState<string | null>(null);
+  const [darkPreview, setDarkPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const lightInputRef = useRef<HTMLInputElement>(null);
+  const darkInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLightPreview(logoLight);
+  }, [logoLight]);
+
+  useEffect(() => {
+    setDarkPreview(logoDark);
+  }, [logoDark]);
+
+  const MAX_SIZE = 200 * 1024; // 200KB
+  const ACCEPT = "image/png,image/jpeg,image/svg+xml,image/webp";
+
+  const handleFile = (file: File, variant: "logo_light" | "logo_dark") => {
+    if (file.size > MAX_SIZE) {
+      setError(`Image too large (${(file.size / 1024).toFixed(0)}KB). Max 200KB.`);
+      return;
+    }
+    if (!["image/png", "image/jpeg", "image/svg+xml", "image/webp"].includes(file.type)) {
+      setError("Only PNG, JPEG, SVG, and WebP images are supported.");
+      return;
+    }
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUri = reader.result as string;
+
+      if (variant === "logo_light") setLightPreview(dataUri);
+      else setDarkPreview(dataUri);
+
+      setSaving(variant);
+      setSaved(null);
+      try {
+        const res = await fetch("/api/settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: variant, value: dataUri }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? "Failed to save");
+        }
+        if (variant === "logo_light") setLogoLight(dataUri);
+        else setLogoDark(dataUri);
+        setSaved(variant);
+        setTimeout(() => setSaved(null), 2000);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to save");
+        if (variant === "logo_light") setLightPreview(logoLight);
+        else setDarkPreview(logoDark);
+      } finally {
+        setSaving(null);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemove = async (variant: "logo_light" | "logo_dark") => {
+    setSaving(variant);
+    setError(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: variant, value: "" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to remove");
+      }
+      if (variant === "logo_light") {
+        setLogoLight(null);
+        setLightPreview(null);
+      } else {
+        setLogoDark(null);
+        setDarkPreview(null);
+      }
+      setSaved(variant);
+      setTimeout(() => setSaved(null), 2000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to remove");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const renderUploadZone = (
+    variant: "logo_light" | "logo_dark",
+    label: string,
+    preview: string | null,
+    inputRef: React.RefObject<HTMLInputElement | null>,
+    bgClass: string
+  ) => (
+    <div className="flex-1 min-w-[200px]">
+      <label className="block text-sm font-medium mb-1.5">{label}</label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file, variant);
+          e.target.value = "";
+        }}
+      />
+      {preview ? (
+        <div className={cn("relative rounded-lg border border-border p-4 flex items-center gap-4", bgClass)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={preview}
+            alt={label}
+            className="h-12 w-12 object-contain rounded"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="text-xs px-3 py-1.5 rounded-md border border-border bg-surface hover:bg-surface-hover transition-colors"
+              disabled={saving === variant}
+            >
+              Replace
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRemove(variant)}
+              className="text-xs px-3 py-1.5 rounded-md border border-status-blocked/30 text-status-blocked hover:bg-status-blocked/10 transition-colors"
+              disabled={saving === variant}
+            >
+              Remove
+            </button>
+          </div>
+          {saving === variant && (
+            <span className="text-xs text-muted ml-auto">Saving…</span>
+          )}
+          {saved === variant && (
+            <span className="text-xs text-status-done ml-auto flex items-center gap-1">
+              <Check className="h-3 w-3" /> Saved
+            </span>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className={cn(
+            "w-full rounded-lg border-2 border-dashed border-border p-6 flex flex-col items-center gap-2 hover:border-accent/50 hover:bg-accent/5 transition-colors cursor-pointer",
+            bgClass
+          )}
+          disabled={saving === variant}
+        >
+          <ImagePlus className="h-6 w-6 text-muted" />
+          <span className="text-sm text-muted">
+            {saving === variant ? "Uploading…" : "Click to upload"}
+          </span>
+          <span className="text-xs text-muted/60">PNG, JPEG, SVG, WebP · Max 200KB</span>
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="bg-surface border border-border rounded-xl p-6">
+      <div className="flex items-start gap-3 mb-4">
+        <div className="p-2 rounded-lg bg-accent/10 text-accent">
+          <ImagePlus className="h-5 w-5" />
+        </div>
+        <div>
+          <h3 className="font-semibold mb-1">Group Logo</h3>
+          <p className="text-sm text-muted">
+            Upload your group&apos;s logo for light and dark themes. The light logo will be used in email headers.
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-4">
+        {renderUploadZone("logo_light", "Light Logo (for dark backgrounds)", lightPreview, lightInputRef, "bg-gray-900")}
+        {renderUploadZone("logo_dark", "Dark Logo (for light backgrounds)", darkPreview, darkInputRef, "bg-gray-100 dark:bg-gray-100")}
+      </div>
+      {error && (
+        <p className="mt-3 text-sm text-status-blocked">{error}</p>
       )}
     </div>
   );
@@ -476,6 +709,7 @@ export default function SettingsPage() {
           </Link>
         )}
         {isSuperAdmin && <MeetupNameCard />}
+        {isSuperAdmin && <LogoUploadCard />}
         {isSuperAdmin && <VolunteerThresholdCard />}
         {isSuperAdmin && <MinVolunteerTasksCard />}
         {isAdmin && <TestEmailCard />}

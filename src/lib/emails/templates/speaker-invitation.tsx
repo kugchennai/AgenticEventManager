@@ -14,6 +14,8 @@ interface SpeakerInvitationProps {
   topic?: string | null;
   date: string;
   venue?: string | null;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function SpeakerInvitationEmail({
@@ -22,9 +24,11 @@ export function SpeakerInvitationEmail({
   topic,
   date,
   venue,
+  appName,
+  logoUrl,
 }: SpeakerInvitationProps) {
   return (
-    <EmailLayout preview={`You're invited to speak at ${eventTitle}`}>
+    <EmailLayout preview={`You're invited to speak at ${eventTitle}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Speaker Invitation 🎤</Text>
 
       <Text style={styles.paragraph}>

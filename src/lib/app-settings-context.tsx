@@ -7,6 +7,10 @@ interface AppSettingsContextValue {
   setMeetupName: (name: string) => void;
   minVolunteerTasks: number;
   setMinVolunteerTasks: (n: number) => void;
+  logoLight: string | null;
+  setLogoLight: (url: string | null) => void;
+  logoDark: string | null;
+  setLogoDark: (url: string | null) => void;
   loading: boolean;
 }
 
@@ -15,12 +19,18 @@ const AppSettingsContext = createContext<AppSettingsContextValue>({
   setMeetupName: () => {},
   minVolunteerTasks: 7,
   setMinVolunteerTasks: () => {},
+  logoLight: null,
+  setLogoLight: () => {},
+  logoDark: null,
+  setLogoDark: () => {},
   loading: true,
 });
 
 export function AppSettingsProvider({ children }: { children: ReactNode }) {
   const [meetupName, setMeetupName] = useState("Meetup Manager");
   const [minVolunteerTasks, setMinVolunteerTasks] = useState(7);
+  const [logoLight, setLogoLight] = useState<string | null>(null);
+  const [logoDark, setLogoDark] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +44,8 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
           const parsed = parseInt(data.min_volunteer_tasks, 10);
           if (!isNaN(parsed) && parsed > 0) setMinVolunteerTasks(parsed);
         }
+        if (data.logo_light) setLogoLight(data.logo_light);
+        if (data.logo_dark) setLogoDark(data.logo_dark);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -47,8 +59,28 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
     setMinVolunteerTasks(n);
   }, []);
 
+  const updateLogoLight = useCallback((url: string | null) => {
+    setLogoLight(url);
+  }, []);
+
+  const updateLogoDark = useCallback((url: string | null) => {
+    setLogoDark(url);
+  }, []);
+
   return (
-    <AppSettingsContext.Provider value={{ meetupName, setMeetupName: updateMeetupName, minVolunteerTasks, setMinVolunteerTasks: updateMinVolunteerTasks, loading }}>
+    <AppSettingsContext.Provider
+      value={{
+        meetupName,
+        setMeetupName: updateMeetupName,
+        minVolunteerTasks,
+        setMinVolunteerTasks: updateMinVolunteerTasks,
+        logoLight,
+        setLogoLight: updateLogoLight,
+        logoDark,
+        setLogoDark: updateLogoDark,
+        loading,
+      }}
+    >
       {children}
     </AppSettingsContext.Provider>
   );

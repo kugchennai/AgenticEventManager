@@ -55,10 +55,13 @@ export interface SendEmailOptions {
   html: string;
   text?: string;
   template: string;
+  fromName?: string;
   attachments?: Array<{
     filename: string;
     content: string | Buffer;
     contentType?: string;
+    /** Content-ID for inline/embedded images (used with cid: references in HTML) */
+    cid?: string;
   }>;
   cc?: string | string[];
 }
@@ -100,9 +103,14 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     console.error("[Email] Failed to create email log:", err);
   }
 
+  // Build the from address using stored meetup name if provided
+  const fromAddress = options.fromName && SMTP_USER
+    ? `${options.fromName} <${SMTP_USER}>`
+    : SMTP_FROM;
+
   try {
     const info = await transporter.sendMail({
-      from: SMTP_FROM,
+      from: fromAddress,
       to: options.to,
       cc: options.cc,
       subject: options.subject,
@@ -150,6 +158,11 @@ export async function renderAndSend(
   options?: {
     attachments?: SendEmailOptions["attachments"];
     cc?: string | string[];
+    fromName?: string;
+    /** Raw base64 data URI of a logo to embed as a CID attachment */
+    logoBase64?: string;
+    /** CID identifier (without "cid:" prefix) for the logo attachment */
+    logoCid?: string;
   }
 ): Promise<SendEmailResult> {
   if (!isEmailConfigured()) {
@@ -160,13 +173,31 @@ export async function renderAndSend(
     const html = await render(component);
     const text = await render(component, { plainText: true });
 
+    // Build attachments list, auto-embedding logo as CID if provided
+    const allAttachments: SendEmailOptions["attachments"] = [
+      ...(options?.attachments ?? []),
+    ];
+
+    if (options?.logoBase64 && options?.logoCid) {
+      const match = options.logoBase64.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+      if (match) {
+        allAttachments.push({
+          filename: `logo.${match[1].split("/")[1].replace("+xml", "")}`,
+          content: Buffer.from(match[2], "base64"),
+          contentType: match[1],
+          cid: options.logoCid,
+        });
+      }
+    }
+
     return sendEmail({
       to,
       subject,
       html,
       text,
       template,
-      attachments: options?.attachments,
+      fromName: options?.fromName,
+      attachments: allAttachments.length > 0 ? allAttachments : undefined,
       cc: options?.cc,
     });
   } catch (err) {

@@ -12,6 +12,8 @@ interface VolunteerWelcomeProps {
   role?: string | null;
   inviterName: string;
   appUrl: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function VolunteerWelcomeEmail({
@@ -19,9 +21,11 @@ export function VolunteerWelcomeEmail({
   role,
   inviterName,
   appUrl,
+  appName,
+  logoUrl,
 }: VolunteerWelcomeProps) {
   return (
-    <EmailLayout preview={`Welcome to the team, ${name}!`}>
+    <EmailLayout preview={`Welcome to the team, ${name}!`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Welcome Aboard! 🎉</Text>
 
       <Text style={styles.paragraph}>

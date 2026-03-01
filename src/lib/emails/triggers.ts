@@ -52,6 +52,55 @@ function formatDateTime(date: Date | string): string {
   });
 }
 
+// ─── Email Branding ───────────────────────────────────────────────
+
+interface EmailBranding {
+  appName: string;
+  logoUrl?: string;
+  /** Raw base64 data URI of the logo — passed to renderAndSend for CID embedding */
+  logoBase64?: string;
+}
+
+/** CID identifier used in <img src="cid:..."> and as the attachment CID */
+export const LOGO_CID = "company-logo";
+
+/**
+ * Fetch meetup name and logo from AppSettings.
+ * The light logo is used for emails (dark header background).
+ * Returns a CID reference (cid:company-logo) as logoUrl so the image
+ * is embedded directly in the email as a MIME attachment.
+ * This works in all email clients regardless of whether the app is deployed.
+ */
+async function getEmailBranding(): Promise<EmailBranding> {
+  try {
+    const settings = await prisma.appSetting.findMany({
+      where: { key: { in: ["meetup_name", "logo_light"] } },
+    });
+    const map: Record<string, string> = {};
+    for (const s of settings) map[s.key] = s.value;
+
+    const hasLogo = !!map.logo_light;
+
+    return {
+      appName: map.meetup_name || "Meetup Manager",
+      logoUrl: hasLogo ? `cid:${LOGO_CID}` : undefined,
+      logoBase64: map.logo_light || undefined,
+    };
+  } catch {
+    return { appName: "Meetup Manager" };
+  }
+}
+
+/** Build renderAndSend options with branding (fromName + CID logo attachment) */
+function brandingOptions(branding: EmailBranding, extra?: { attachments?: Array<{ filename: string; content: string | Buffer; contentType?: string }>; cc?: string | string[] }) {
+  return {
+    fromName: branding.appName,
+    logoBase64: branding.logoBase64,
+    logoCid: LOGO_CID,
+    ...extra,
+  };
+}
+
 // ─── 1. Member Invitation ─────────────────────────────────────────
 
 export async function sendMemberInvitationEmail(
@@ -63,6 +112,7 @@ export async function sendMemberInvitationEmail(
   if (!isEmailConfigured()) return;
 
   const appUrl = getAppUrl();
+  const branding = await getEmailBranding();
 
   try {
     await renderAndSend(
@@ -75,7 +125,10 @@ export async function sendMemberInvitationEmail(
         role,
         inviterName,
         appUrl,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Member invitation failed:", err);
@@ -93,6 +146,7 @@ export async function sendVolunteerWelcomeEmail(
   if (!isEmailConfigured() || !volunteerEmail) return;
 
   const appUrl = getAppUrl();
+  const branding = await getEmailBranding();
 
   try {
     await renderAndSend(
@@ -104,7 +158,10 @@ export async function sendVolunteerWelcomeEmail(
         role: volunteerRole,
         inviterName,
         appUrl,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Volunteer welcome failed:", err);
@@ -118,6 +175,8 @@ export async function sendVolunteerPromotionEmail(
   volunteerEmail: string
 ): Promise<void> {
   if (!isEmailConfigured() || !volunteerEmail) return;
+
+  const branding = await getEmailBranding();
 
   try {
     await renderAndSend(
@@ -138,7 +197,10 @@ export async function sendVolunteerPromotionEmail(
           "Check your assigned tasks on the dashboard",
           "Explore the event management tools",
         ],
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Volunteer promotion failed:", err);
@@ -167,6 +229,7 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
 
     const appUrl = getAppUrl();
     const eventUrl = `${appUrl}/events/${eventId}`;
+    const branding = await getEmailBranding();
 
     // Send to all event members
     const recipients = event.members
@@ -185,7 +248,10 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
         venue: event.venue,
         eventUrl,
         createdBy: event.createdBy.name ?? "Team Member",
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Event created trigger error:", err);
@@ -222,6 +288,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
     const now = new Date();
     const eventDate = new Date(event.date);
     const daysUntil = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const branding = await getEmailBranding();
 
     // Collect all recipient emails
     const emails = new Set<string>();
@@ -250,8 +317,10 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
         venue: event.venue,
         eventUrl,
         daysUntil,
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
       }),
-      {
+      brandingOptions(branding, {
         attachments: [
           {
             filename: "event.ics",
@@ -259,7 +328,7 @@ export async function sendEventReminderEmail(eventId: string): Promise<void> {
             contentType: "text/calendar",
           },
         ],
-      }
+      })
     );
   } catch (err) {
     console.error("[Email] Event reminder trigger error:", err);
@@ -295,6 +364,7 @@ export async function sendTaskAssignedEmail(
 
     const appUrl = getAppUrl();
     const taskUrl = `${appUrl}/events/${task.checklist.event.id}`;
+    const branding = await getEmailBranding();
 
     await renderAndSend(
       recipientEmail,
@@ -307,7 +377,10 @@ export async function sendTaskAssignedEmail(
         eventName: task.checklist.event.title,
         taskUrl,
         assignedBy: assignedByName,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Task assigned trigger error:", err);
@@ -343,6 +416,7 @@ export async function sendTaskDueSoonEmail(
 
     const appUrl = getAppUrl();
     const taskUrl = `${appUrl}/events/${task.checklist.event.id}`;
+    const branding = await getEmailBranding();
 
     await renderAndSend(
       recipientEmail,
@@ -355,7 +429,10 @@ export async function sendTaskDueSoonEmail(
         eventName: task.checklist.event.title,
         taskUrl,
         priority: task.priority,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Task due soon trigger error:", err);
@@ -401,6 +478,7 @@ export async function sendTaskOverdueEmail(
 
     const appUrl = getAppUrl();
     const taskUrl = `${appUrl}/events/${task.checklist.event.id}`;
+    const branding = await getEmailBranding();
 
     // Get event lead email for CC
     const eventLeadEmails = ccEventLead
@@ -421,10 +499,10 @@ export async function sendTaskOverdueEmail(
         taskUrl,
         priority: task.priority,
         isEscalation: ccEventLead && (eventLeadEmails?.length ?? 0) > 0,
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
       }),
-      {
-        cc: eventLeadEmails,
-      }
+      brandingOptions(branding, { cc: eventLeadEmails })
     );
   } catch (err) {
     console.error("[Email] Task overdue trigger error:", err);
@@ -449,6 +527,8 @@ export async function sendSpeakerInvitationEmail(
 
     if (!link || !link.speaker.email) return;
 
+    const branding = await getEmailBranding();
+
     await renderAndSend(
       link.speaker.email,
       `Speaker invitation: ${link.event.title}`,
@@ -459,7 +539,10 @@ export async function sendSpeakerInvitationEmail(
         topic: link.speaker.topic,
         date: formatDateTime(link.event.date),
         venue: link.event.venue,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Speaker invitation trigger error:", err);
@@ -503,6 +586,8 @@ export async function sendVenueConfirmedEmail(
 
     if (recipients.length === 0) return;
 
+    const branding = await getEmailBranding();
+
     await renderAndSend(
       recipients,
       `Venue confirmed: ${link.venuePartner.name} for ${event.title}`,
@@ -514,7 +599,10 @@ export async function sendVenueConfirmedEmail(
         confirmationDate: formatDate(new Date()),
         eventTitle: event.title,
         contactName: link.venuePartner.contactName,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Venue confirmed trigger error:", err);
@@ -536,6 +624,7 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
 
     const appUrl = getAppUrl();
     const now = new Date();
+    const branding = await getEmailBranding();
 
     // Get assigned incomplete tasks
     const assignedTasks = await prisma.sOPTask.findMany({
@@ -633,7 +722,10 @@ export async function sendWeeklyDigestEmail(userId: string): Promise<void> {
           upcomingEventsCount: upcomingEvents.length,
         },
         appUrl,
-      })
+        appName: branding.appName,
+        logoUrl: branding.logoUrl,
+      }),
+      brandingOptions(branding)
     );
   } catch (err) {
     console.error("[Email] Weekly digest trigger error:", err);

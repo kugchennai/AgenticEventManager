@@ -15,6 +15,8 @@ interface VenueConfirmedProps {
   confirmationDate: string;
   eventTitle: string;
   contactName?: string | null;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function VenueConfirmedEmail({
@@ -24,9 +26,11 @@ export function VenueConfirmedEmail({
   confirmationDate,
   eventTitle,
   contactName,
+  appName,
+  logoUrl,
 }: VenueConfirmedProps) {
   return (
-    <EmailLayout preview={`Venue confirmed: ${venueName} for ${eventTitle}`}>
+    <EmailLayout preview={`Venue confirmed: ${venueName} for ${eventTitle}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Venue Confirmed ✅</Text>
 
       <Text style={styles.paragraph}>

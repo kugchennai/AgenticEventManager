@@ -16,6 +16,8 @@ interface MemberInvitationProps {
   role: string;
   inviterName: string;
   appUrl: string;
+  appName?: string;
+  logoUrl?: string;
 }
 
 const roleLabels: Record<string, string> = {
@@ -32,11 +34,13 @@ export function MemberInvitationEmail({
   role,
   inviterName,
   appUrl,
+  appName,
+  logoUrl,
 }: MemberInvitationProps) {
   const roleLabel = roleLabels[role] ?? role;
 
   return (
-    <EmailLayout preview={`You've been invited to join the team as ${roleLabel}`}>
+    <EmailLayout preview={`You've been invited to join the team as ${roleLabel}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Welcome to the Team! 🎉</Text>
 
       <Text style={styles.paragraph}>

@@ -17,6 +17,8 @@ interface EventReminderProps {
   location?: string | null;
   eventUrl: string;
   daysUntil: number;
+  appName?: string;
+  logoUrl?: string;
 }
 
 export function EventReminderEmail({
@@ -26,11 +28,13 @@ export function EventReminderEmail({
   location,
   eventUrl,
   daysUntil,
+  appName,
+  logoUrl,
 }: EventReminderProps) {
   const urgencyLabel = daysUntil <= 1 ? "Tomorrow" : `In ${daysUntil} Days`;
 
   return (
-    <EmailLayout preview={`Reminder: ${eventTitle} is ${urgencyLabel.toLowerCase()}`}>
+    <EmailLayout preview={`Reminder: ${eventTitle} is ${urgencyLabel.toLowerCase()}`} appName={appName} logoUrl={logoUrl}>
       <Text style={styles.h1}>Event Reminder ⏰</Text>
 
       <div style={styles.warningBox}>
