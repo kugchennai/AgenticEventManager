@@ -5,6 +5,7 @@ import { Search, Bell, Sun, Moon, LogOut } from "lucide-react";
 import { OwnerAvatar } from "@/components/design-system/owner-avatar";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useAppSettings } from "@/lib/app-settings-context";
 
 interface TopBarProps {
   sidebarCollapsed: boolean;
@@ -13,6 +14,7 @@ interface TopBarProps {
 
 export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
   const { data: session } = useSession();
+  const { logoLight, logoDark, meetupName } = useAppSettings();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -62,6 +64,7 @@ export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
   const userName = session?.user?.name ?? "User";
   const userEmail = session?.user?.email;
   const userImage = session?.user?.image;
+  const activeLogo = theme === "light" ? logoDark : logoLight;
 
   return (
     <header
@@ -75,25 +78,38 @@ export function TopBar({ sidebarCollapsed, onCommandPalette }: TopBarProps) {
           : "left-[var(--sidebar-width)]"
       )}
     >
-      {/* Search trigger */}
-      <button
-        onClick={onCommandPalette}
-        className={cn(
-          "flex items-center gap-2 rounded-lg",
-          "bg-background border border-border px-3 py-1.5",
-          "text-sm text-muted hover:border-border-hover",
-          "transition-all duration-150 w-64 cursor-pointer"
-        )}
-      >
-        <Search className="h-3.5 w-3.5" />
-        <span>Search...</span>
-        <kbd className="ml-auto text-[10px] font-[family-name:var(--font-mono)] bg-surface-hover rounded px-1.5 py-0.5">
-          ⌘K
-        </kbd>
-      </button>
+      {/* Left: Search trigger */}
+      <div className="flex-1 flex items-center">
+        <button
+          onClick={onCommandPalette}
+          className={cn(
+            "flex items-center gap-2 rounded-lg",
+            "bg-background border border-border px-3 py-1.5",
+            "text-sm text-muted hover:border-border-hover",
+            "transition-all duration-150 w-64 cursor-pointer"
+          )}
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>Search...</span>
+          <kbd className="ml-auto text-[10px] font-[family-name:var(--font-mono)] bg-surface-hover rounded px-1.5 py-0.5">
+            ⌘K
+          </kbd>
+        </button>
+      </div>
+
+      {/* Center: Logo — absolutely positioned to center on page */}
+      {activeLogo && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <img
+            src={activeLogo}
+            alt={meetupName}
+            className="h-10 max-w-[240px] object-contain pointer-events-auto"
+          />
+        </div>
+      )}
 
       {/* Right side */}
-      <div className="flex items-center gap-1">
+      <div className="flex-1 flex items-center justify-end gap-1">
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface-hover transition-all duration-150 cursor-pointer"
