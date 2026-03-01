@@ -1495,6 +1495,7 @@ export default function EventDetailPage() {
     pageLink: "",
   });
   const [editSaving, setEditSaving] = useState(false);
+  const [dateValidationError, setDateValidationError] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -1561,12 +1562,23 @@ export default function EventDetailPage() {
       description: event.description ?? "",
       pageLink: event.pageLink ?? "",
     });
+    setDateValidationError(null);
     setEditOpen(true);
   };
 
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm.title.trim() || !editForm.date || !editForm.endDate) return;
+    
+    // Validate that end date is after start date
+    const startDate = new Date(editForm.date);
+    const endDate = new Date(editForm.endDate);
+    if (endDate <= startDate) {
+      setDateValidationError("End time must be greater than start time");
+      return;
+    }
+    
+    setDateValidationError(null);
     setEditSaving(true);
     const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
@@ -1669,7 +1681,13 @@ export default function EventDetailPage() {
             <DateTimePicker
               required
               value={editForm.date}
-              onChange={(date) => setEditForm((f) => ({ ...f, date }))}
+              onChange={(date) => {
+                setEditForm((f) => ({ ...f, date }));
+                // Clear validation error when user changes the date
+                if (dateValidationError) {
+                  setDateValidationError(null);
+                }
+              }}
             />
           </div>
           <div>
@@ -1677,8 +1695,19 @@ export default function EventDetailPage() {
             <DateTimePicker
               required
               value={editForm.endDate}
-              onChange={(endDate) => setEditForm((f) => ({ ...f, endDate }))}
+              onChange={(endDate) => {
+                setEditForm((f) => ({ ...f, endDate }));
+                // Clear validation error when user changes the date
+                if (dateValidationError) {
+                  setDateValidationError(null);
+                }
+              }}
             />
+            {dateValidationError && (
+              <p className="text-sm text-status-blocked mt-1.5">
+                {dateValidationError}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1.5">Venue</label>
