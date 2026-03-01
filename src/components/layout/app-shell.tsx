@@ -3,21 +3,28 @@
 import { cn } from "@/lib/utils";
 import { useState, useCallback, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 import { CommandPalette } from "./command-palette";
 import type { ReactNode } from "react";
 
 const SHELL_EXCLUDED_ROUTES = ["/", "/unauthorized"];
+// Routes that hide shell for unauthenticated users only
+const AUTH_DEPENDENT_ROUTES = ["/docs"];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { status } = useSession();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  const isShellHidden = SHELL_EXCLUDED_ROUTES.some(
+  const isAuthDependentRoute = AUTH_DEPENDENT_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
   );
+  const isShellHidden = SHELL_EXCLUDED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  ) || (isAuthDependentRoute && status !== "authenticated");
 
   const toggleCommandPalette = useCallback(() => {
     setCommandPaletteOpen((prev) => !prev);

@@ -16,6 +16,7 @@ import {
   Zap,
   Building2,
   Shield,
+  FileText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAppSettings } from "@/lib/app-settings-context";
@@ -42,9 +43,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Volunteers", href: "/volunteers", icon: Users, minRole: "EVENT_LEAD" },
 ];
 
+const DOCUMENTS_ITEMS: NavItem[] = [
+  { label: "How to Become a Member", href: "/docs/how-to-become-a-member", icon: Users },
+  { label: "Roles & Permissions", href: "/settings/permissions", icon: Shield },
+];
+
 const SETTINGS_ITEMS: NavItem[] = [
   { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, minRole: "EVENT_LEAD" },
-  { label: "Features & Permissions", href: "/settings/permissions", icon: Shield },
   { label: "Settings", href: "/settings", icon: Settings, minRole: "ADMIN" },
 ];
 
@@ -125,6 +130,37 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         {visibleSettings.length > 0 && (
           <>
+            <div className="h-px bg-border mx-2 my-3" />
+
+            <p className={cn(
+              "text-[10px] font-semibold uppercase tracking-widest text-muted px-3 mb-2",
+              collapsed && "sr-only"
+            )}>
+              Documents
+            </p>
+            {DOCUMENTS_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+                    "transition-all duration-150",
+                    active
+                      ? "bg-accent/10 text-accent"
+                      : "text-muted hover:text-foreground hover:bg-surface-hover",
+                    collapsed && "justify-center px-2"
+                  )}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0", active && "text-accent")} />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+
             <div className="h-px bg-border mx-2 my-3" />
 
             <p className={cn(
