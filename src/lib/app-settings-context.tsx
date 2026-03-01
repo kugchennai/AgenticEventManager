@@ -7,6 +7,8 @@ interface AppSettingsContextValue {
   setMeetupName: (name: string) => void;
   minVolunteerTasks: number;
   setMinVolunteerTasks: (n: number) => void;
+  minEventDuration: number;
+  setMinEventDuration: (hours: number) => void;
   logoLight: string | null;
   setLogoLight: (url: string | null) => void;
   logoDark: string | null;
@@ -19,6 +21,8 @@ const AppSettingsContext = createContext<AppSettingsContextValue>({
   setMeetupName: () => {},
   minVolunteerTasks: 7,
   setMinVolunteerTasks: () => {},
+  minEventDuration: 4,
+  setMinEventDuration: () => {},
   logoLight: null,
   setLogoLight: () => {},
   logoDark: null,
@@ -29,6 +33,7 @@ const AppSettingsContext = createContext<AppSettingsContextValue>({
 export function AppSettingsProvider({ children }: { children: ReactNode }) {
   const [meetupName, setMeetupName] = useState("Meetup Manager");
   const [minVolunteerTasks, setMinVolunteerTasks] = useState(7);
+  const [minEventDuration, setMinEventDuration] = useState(4);
   const [logoLight, setLogoLight] = useState<string | null>(null);
   const [logoDark, setLogoDark] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +49,10 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
           const parsed = parseInt(data.min_volunteer_tasks, 10);
           if (!isNaN(parsed) && parsed > 0) setMinVolunteerTasks(parsed);
         }
+        if (data.min_event_duration) {
+          const parsed = parseInt(data.min_event_duration, 10);
+          if (!isNaN(parsed) && parsed > 0) setMinEventDuration(parsed);
+        }
         if (data.logo_light) setLogoLight(data.logo_light);
         if (data.logo_dark) setLogoDark(data.logo_dark);
       })
@@ -57,6 +66,10 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
 
   const updateMinVolunteerTasks = useCallback((n: number) => {
     setMinVolunteerTasks(n);
+  }, []);
+
+  const updateMinEventDuration = useCallback((hours: number) => {
+    setMinEventDuration(hours);
   }, []);
 
   const updateLogoLight = useCallback((url: string | null) => {
@@ -74,6 +87,8 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
         setMeetupName: updateMeetupName,
         minVolunteerTasks,
         setMinVolunteerTasks: updateMinVolunteerTasks,
+        minEventDuration,
+        setMinEventDuration: updateMinEventDuration,
         logoLight,
         setLogoLight: updateLogoLight,
         logoDark,

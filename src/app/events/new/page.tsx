@@ -29,6 +29,7 @@ export default function CreateEventPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [templates, setTemplates] = useState<SOPTemplate[]>([]);
+  const [dateValidationError, setDateValidationError] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -48,6 +49,18 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that end date is after start date
+    if (form.date && form.endDate) {
+      const startDate = new Date(form.date);
+      const endDate = new Date(form.endDate);
+      if (endDate <= startDate) {
+        setDateValidationError("End time must be greater than start time");
+        return;
+      }
+    }
+    
+    setDateValidationError(null);
     setSubmitting(true);
 
     try {
@@ -119,7 +132,13 @@ export default function CreateEventPage() {
               <DateTimePicker
                 required
                 value={form.date}
-                onChange={(date) => setForm({ ...form, date })}
+                onChange={(date) => {
+                  setForm({ ...form, date });
+                  // Clear validation error when user changes the date
+                  if (dateValidationError) {
+                    setDateValidationError(null);
+                  }
+                }}
               />
             </div>
             <div>
@@ -129,8 +148,20 @@ export default function CreateEventPage() {
               <DateTimePicker
                 required
                 value={form.endDate}
-                onChange={(endDate) => setForm({ ...form, endDate })}
+                minDateTime={form.date} // Constrain end time to be after start time
+                onChange={(endDate) => {
+                  setForm({ ...form, endDate });
+                  // Clear validation error when user changes the date
+                  if (dateValidationError) {
+                    setDateValidationError(null);
+                  }
+                }}
               />
+              {dateValidationError && (
+                <p className="text-sm text-red-400 mt-1.5">
+                  {dateValidationError}
+                </p>
+              )}
             </div>
           </div>
 

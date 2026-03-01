@@ -56,6 +56,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Title, start date, and end date are required" }, { status: 400 });
   }
 
+  // Validate that end date is after start date
+  const startDate = new Date(date);
+  const endDateParsed = new Date(endDate);
+  if (endDateParsed <= startDate) {
+    return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+  }
+
+  // Validate minimum event duration
+  const minDurationSetting = await prisma.appSetting.findUnique({
+    where: { key: "min_event_duration" }
+  });
+  const minEventDuration = minDurationSetting ? parseInt(minDurationSetting.value, 10) : 4; // Default to 4 hours
+  const eventDurationHours = (endDateParsed.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+  
+  if (eventDurationHours < minEventDuration) {
+    return NextResponse.json({ 
+      error: `Event duration must be at least ${minEventDuration} hours. Current duration: ${eventDurationHours.toFixed(1)} hours.` 
+    }, { status: 400 });
+  }
+
   if (!templateId) {
     return NextResponse.json({ error: "SOP template is required. Please create one in Settings > Templates first." }, { status: 400 });
   }
@@ -65,7 +85,7 @@ export async function POST(req: NextRequest) {
       title,
       description,
       date: new Date(date),
-      endDate: new Date(endDate),
+      endDate: endDateParsed,
       venue,
       pageLink: pageLink || null,
       createdById: session.user.id,

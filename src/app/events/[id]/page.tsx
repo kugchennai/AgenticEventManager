@@ -1695,6 +1695,7 @@ export default function EventDetailPage() {
             <DateTimePicker
               required
               value={editForm.endDate}
+              minDateTime={editForm.date} // Constrain end time to be after start time
               onChange={(endDate) => {
                 setEditForm((f) => ({ ...f, endDate }));
                 // Clear validation error when user changes the date

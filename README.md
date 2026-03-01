@@ -135,6 +135,11 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Soft-delete reactivation** — re-adding a previously removed member restores their account
 - **Volunteer collision detection** — adding an email belonging to a volunteer directs to the "Promote to Member" flow
 
+### Features & Permissions
+
+- **Permissions & Access** — read-only reference page showing global roles, permission matrix, event roles, and key rules
+- **Email Workflows** — visual reference for all 11 automated email notifications with trigger conditions, recipients, and subject lines; accessible to all authenticated users at `/settings/permissions/email-workflows`
+
 ### Audit Trail
 
 - **Activity feed** with user avatar, action badge (CREATE / UPDATE / DELETE with color-coding), entity type label, entity name, and timestamp
@@ -167,7 +172,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | 1 | **Member Invitation** | Admin invites a new member | Invited email |
 | 2 | **Volunteer Welcome** | Volunteer added with email | Volunteer's email |
 | 3 | **Volunteer Promotion** | Volunteer promoted to Member | Volunteer's email |
-| 4 | **Event Created** | Event status → SCHEDULED | Event Lead + linked members |
+| 4 | **Event Created** | Event created or status → SCHEDULED | All Members, Admins, Super Admins + event members |
 | 5 | **Event Reminder** | 2 days before event (cron) | Event team + confirmed speakers |
 | 6 | **Task Assigned** | Task assigned / reassigned | Assigned user |
 | 7 | **Task Due Soon** | Task deadline within 3 days (cron) | Assigned user |
@@ -345,7 +350,8 @@ src/
 │   │   ├── members/      # Member management page
 │   │   ├── audit-log/    # Audit log viewer
 │   │   ├── templates/    # SOP template editor
-│   │   └── discord/      # Discord config page
+│   │   ├── discord/      # Discord config page
+│   │   └── permissions/  # Features & Permissions + Email Workflows
 │   └── login/            # Login page
 ├── components/
 │   ├── design-system/    # 12 reusable UI components

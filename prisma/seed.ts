@@ -52,6 +52,27 @@ async function main() {
     });
     console.log("Updated Default Meetup template with sections");
   }
+
+  // Seed default app settings
+  const defaultSettings = [
+    { key: "meetup_name", value: "Meetup Manager" },
+    { key: "volunteer_promotion_threshold", value: "5" },
+    { key: "min_volunteer_tasks", value: "7" },
+    { key: "min_event_duration", value: "4" }
+  ];
+
+  for (const setting of defaultSettings) {
+    const existingSetting = await prisma.appSetting.findUnique({
+      where: { key: setting.key }
+    });
+    
+    if (!existingSetting) {
+      await prisma.appSetting.create({
+        data: setting
+      });
+      console.log(`Seeded app setting: ${setting.key} = ${setting.value}`);
+    }
+  }
 }
 
 main()

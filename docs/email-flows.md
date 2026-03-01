@@ -104,14 +104,15 @@ All emails are **fire-and-forget** — they never block the API response. Failur
 | **Trigger function** | `sendEventCreatedEmail(eventId)` |
 | **Fired from** | `POST /api/events` and `PATCH /api/events/[id]` |
 | **When** | Event is created with status `SCHEDULED`, or updated to `SCHEDULED` |
-| **Recipients** | All event members (users linked to the event) |
+| **Recipients** | All Members (EVENT_LEAD), Admins, and Super Admins + event members |
 | **Subject** | `New event: {title}` |
 | **Content** | Event title, date, venue, created by, link to event page |
 
 ### Conditions:
-- Only sent for events with status `SCHEDULED`
-- Only sent to members who have been linked to the event
-- Skips events with no linked members
+- All active users with `EVENT_LEAD`, `ADMIN`, or `SUPER_ADMIN` role receive this email
+- Event members (if any additional) are also included
+- Deduplicated — each email address only receives one copy
+- Skips if no recipients are found
 
 ---
 

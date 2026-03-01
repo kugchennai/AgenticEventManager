@@ -231,11 +231,25 @@ export async function sendEventCreatedEmail(eventId: string): Promise<void> {
     const eventUrl = `${appUrl}/events/${eventId}`;
     const branding = await getEmailBranding();
 
-    // Send to all event members
-    const recipients = event.members
-      .map((m) => m.user.email)
-      .filter((email): email is string => !!email);
+    // Collect event member emails
+    const recipientSet = new Set<string>();
+    event.members.forEach((m) => {
+      if (m.user.email) recipientSet.add(m.user.email);
+    });
 
+    // Also notify all Members (EVENT_LEAD), Admins, and Super Admins
+    const globalUsers = await prisma.user.findMany({
+      where: {
+        globalRole: { in: ["EVENT_LEAD", "ADMIN", "SUPER_ADMIN"] },
+        deletedAt: null,
+      },
+      select: { email: true },
+    });
+    globalUsers.forEach((u) => {
+      if (u.email) recipientSet.add(u.email);
+    });
+
+    const recipients = Array.from(recipientSet);
     if (recipients.length === 0) return;
 
     await renderAndSend(

@@ -83,6 +83,29 @@ export async function PATCH(
   const body = await req.json();
   const { title, description, date, endDate, venue, pageLink, status } = body;
 
+  // Validate that end date is after start date if both dates are being updated
+  if (date !== undefined && endDate !== undefined) {
+    const startDate = new Date(date);
+    const endDateParsed = new Date(endDate);
+    if (endDateParsed <= startDate) {
+      return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+    }
+  }
+  // If only one date is being updated, check against the existing date
+  else if (date !== undefined || endDate !== undefined) {
+    const existingEvent = await prisma.event.findUnique({ where: { id }, select: { date: true, endDate: true } });
+    if (!existingEvent) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    
+    const finalStartDate = date !== undefined ? new Date(date) : existingEvent.date;
+    const finalEndDate = endDate !== undefined ? new Date(endDate) : existingEvent.endDate;
+    
+    if (finalEndDate <= finalStartDate) {
+      return NextResponse.json({ error: "End time must be greater than start time" }, { status: 400 });
+    }
+  }
+
   const before = await prisma.event.findUnique({ where: { id } });
   if (!before) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

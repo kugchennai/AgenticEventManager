@@ -3,13 +3,505 @@
 import { PageHeader, Button } from "@/components/design-system";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
-import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle, Shield, ImagePlus, ChevronDown } from "lucide-react";
+import { Users, Save, Check, Type, ClipboardCheck, Mail, Send, AlertCircle, Shield, ImagePlus, ChevronDown, Clock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/lib/app-settings-context";
 
 const INPUT_CLASS =
   "w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm placeholder:text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none transition-all";
+
+function AppConfigCard() {
+  const { meetupName, setMeetupName, minVolunteerTasks, setMinVolunteerTasks, minEventDuration, setMinEventDuration, logoLight, setLogoLight, logoDark, setLogoDark } = useAppSettings();
+  const [config, setConfig] = useState({
+    meetupName: "",
+    volunteerThreshold: "5",
+    minVolunteerTasks: "7", 
+    minEventDuration: "4"
+  });
+  const [lightPreview, setLightPreview] = useState<string | null>(null);
+  const [darkPreview, setDarkPreview] = useState<string | null>(null);
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isExpanded, setIsExpanded] = useState(false);
+  const lightInputRef = useRef<HTMLInputElement>(null);
+  const darkInputRef = useRef<HTMLInputElement>(null);
+
+  // Load initial values from context and API
+  useEffect(() => {
+    setConfig(prev => ({
+      ...prev,
+      meetupName,
+      minVolunteerTasks: String(minVolunteerTasks),
+      minEventDuration: String(minEventDuration)
+    }));
+
+    // Load volunteer threshold from API
+    fetch("/api/settings")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: Record<string, string>) => {
+        if (data.volunteer_promotion_threshold) {
+          setConfig(prev => ({ ...prev, volunteerThreshold: data.volunteer_promotion_threshold }));
+        }
+      })
+      .catch(() => {});
+  }, [meetupName, minVolunteerTasks, minEventDuration]);
+
+  useEffect(() => {
+    setLightPreview(logoLight);
+  }, [logoLight]);
+
+  useEffect(() => {
+    setDarkPreview(logoDark);
+  }, [logoDark]);
+
+  const handleSave = async (key: string, value: string, contextSetter?: (v: any) => void) => {
+    // Validation
+    if (key === 'meetupName') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        setErrors(prev => ({ ...prev, [key]: "Meetup name cannot be empty" }));
+        return;
+      }
+      value = trimmed;
+    } else if (['volunteerThreshold', 'minVolunteerTasks', 'minEventDuration'].includes(key)) {
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1) {
+        setErrors(prev => ({ ...prev, [key]: "Must be a number greater than 0" }));
+        return;
+      }
+      if (key === 'minEventDuration' && num > 168) { // Max 1 week
+        setErrors(prev => ({ ...prev, [key]: "Maximum event duration is 168 hours (1 week)" }));
+        return;
+      }
+    }
+
+    setSaving(prev => ({ ...prev, [key]: true }));
+    setErrors(prev => ({ ...prev, [key]: "" }));
+    setSaved(prev => ({ ...prev, [key]: false }));
+    
+    try {
+      const apiKey = {
+        meetupName: 'meetup_name',
+        volunteerThreshold: 'volunteer_promotion_threshold',
+        minVolunteerTasks: 'min_volunteer_tasks',
+        minEventDuration: 'min_event_duration'
+      }[key];
+
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: apiKey, value }),
+      });
+      
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to save");
+      }
+
+      // Update context if available
+      if (contextSetter) {
+        contextSetter(key === 'meetupName' ? value : parseInt(value, 10));
+      }
+
+      setSaved(prev => ({ ...prev, [key]: true }));
+      setTimeout(() => setSaved(prev => ({ ...prev, [key]: false })), 2000);
+    } catch (e) {
+      setErrors(prev => ({ ...prev, [key]: e instanceof Error ? e.message : "Failed to save" }));
+    } finally {
+      setSaving(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Logo upload functionality
+  const MAX_SIZE = 200 * 1024; // 200KB
+  const ACCEPT = "image/png,image/jpeg,image/svg+xml,image/webp";
+
+  const handleFile = (file: File, variant: "logo_light" | "logo_dark") => {
+    if (file.size > MAX_SIZE) {
+      setErrors(prev => ({ ...prev, logoUpload: `Image too large (${(file.size / 1024).toFixed(0)}KB). Max 200KB.` }));
+      return;
+    }
+    if (!["image/png", "image/jpeg", "image/svg+xml", "image/webp"].includes(file.type)) {
+      setErrors(prev => ({ ...prev, logoUpload: "Only PNG, JPEG, SVG, and WebP images are supported." }));
+      return;
+    }
+    setErrors(prev => ({ ...prev, logoUpload: "" }));
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUri = reader.result as string;
+
+      if (variant === "logo_light") setLightPreview(dataUri);
+      else setDarkPreview(dataUri);
+
+      setSaving(prev => ({ ...prev, [variant]: true }));
+      setSaved(prev => ({ ...prev, [variant]: false }));
+      try {
+        const res = await fetch("/api/settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: variant, value: dataUri }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? "Failed to save");
+        }
+        if (variant === "logo_light") setLogoLight(dataUri);
+        else setLogoDark(dataUri);
+        setSaved(prev => ({ ...prev, [variant]: true }));
+        setTimeout(() => setSaved(prev => ({ ...prev, [variant]: false })), 2000);
+      } catch (e) {
+        setErrors(prev => ({ ...prev, logoUpload: e instanceof Error ? e.message : "Failed to save" }));
+        if (variant === "logo_light") setLightPreview(logoLight);
+        else setDarkPreview(logoDark);
+      } finally {
+        setSaving(prev => ({ ...prev, [variant]: false }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemove = async (variant: "logo_light" | "logo_dark") => {
+    setSaving(prev => ({ ...prev, [variant]: true }));
+    setErrors(prev => ({ ...prev, logoUpload: "" }));
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: variant, value: "" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to remove");
+      }
+      if (variant === "logo_light") {
+        setLogoLight(null);
+        setLightPreview(null);
+      } else {
+        setLogoDark(null);
+        setDarkPreview(null);
+      }
+      setSaved(prev => ({ ...prev, [variant]: true }));
+      setTimeout(() => setSaved(prev => ({ ...prev, [variant]: false })), 2000);
+    } catch (e) {
+      setErrors(prev => ({ ...prev, logoUpload: e instanceof Error ? e.message : "Failed to remove" }));
+    } finally {
+      setSaving(prev => ({ ...prev, [variant]: false }));
+    }
+  };
+
+  const renderUploadZone = (
+    variant: "logo_light" | "logo_dark",
+    label: string,
+    preview: string | null,
+    inputRef: React.RefObject<HTMLInputElement | null>,
+    bgClass: string
+  ) => (
+    <div className="flex-1 min-w-[200px]">
+      <label className="block text-sm font-medium mb-1.5">{label}</label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file, variant);
+          e.target.value = "";
+        }}
+      />
+      {preview ? (
+        <div className={cn("relative rounded-lg border border-border p-4 flex items-center gap-4", bgClass)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={preview}
+            alt={label}
+            className="h-12 w-12 object-contain rounded"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="text-xs px-3 py-1.5 rounded-md border border-border bg-surface hover:bg-surface-hover transition-colors"
+              disabled={saving[variant]}
+            >
+              Replace
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRemove(variant)}
+              className="text-xs px-3 py-1.5 rounded-md border border-status-blocked/30 text-status-blocked hover:bg-status-blocked/10 transition-colors"
+              disabled={saving[variant]}
+            >
+              Remove
+            </button>
+          </div>
+          {saving[variant] && (
+            <span className="text-xs text-muted ml-auto">Saving…</span>
+          )}
+          {saved[variant] && (
+            <span className="text-xs text-status-done ml-auto flex items-center gap-1">
+              <Check className="h-3 w-3" /> Saved
+            </span>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className={cn(
+            "w-full rounded-lg border-2 border-dashed border-border p-6 flex flex-col items-center gap-2 hover:border-accent/50 hover:bg-accent/5 transition-colors cursor-pointer",
+            bgClass
+          )}
+          disabled={saving[variant]}
+        >
+          <ImagePlus className="h-6 w-6 text-muted" />
+          <span className="text-sm text-muted">
+            {saving[variant] ? "Uploading…" : "Click to upload"}
+          </span>
+          <span className="text-xs text-muted/60">PNG, JPEG, SVG, WebP · Max 200KB</span>
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="bg-surface border border-border rounded-xl p-6">
+      <div 
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-accent/10 text-accent">
+            <Type className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold mb-1">App Configuration</h3>
+            <p className="text-sm text-muted">
+              Configure core application settings and thresholds for your organization.
+            </p>
+          </div>
+        </div>
+        <ChevronDown className={cn(
+          "h-5 w-5 text-muted transition-transform",
+          isExpanded && "rotate-180"
+        )} />
+      </div>
+
+      {isExpanded && (
+        <div className="mt-6 space-y-6">
+        {/* Meetup Name */}
+        <div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1 max-w-[320px]">
+              <label className="block text-sm font-medium mb-1.5">
+                Meetup Name
+              </label>
+              <input
+                type="text"
+                value={config.meetupName}
+                onChange={(e) => {
+                  setConfig(prev => ({ ...prev, meetupName: e.target.value }));
+                  setSaved(prev => ({ ...prev, meetupName: false }));
+                }}
+                placeholder="e.g. React Bangalore"
+                className={INPUT_CLASS}
+              />
+            </div>
+            <Button
+              size="md"
+              onClick={() => handleSave('meetupName', config.meetupName, setMeetupName)}
+              disabled={saving.meetupName}
+              className={cn(saved.meetupName && "bg-status-done/15 text-status-done border-status-done/20")}
+            >
+              {saved.meetupName ? (
+                <>
+                  <Check className="h-4 w-4" /> Saved
+                </>
+              ) : saving.meetupName ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+          {errors.meetupName && <p className="mt-2 text-sm text-status-blocked">{errors.meetupName}</p>}
+        </div>
+
+        {/* Min Event Duration */}
+        <div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1 max-w-[200px]">
+              <label className="block text-sm font-medium mb-1.5">
+                Minimum Event Duration (hours)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={168}
+                value={config.minEventDuration}
+                onChange={(e) => {
+                  setConfig(prev => ({ ...prev, minEventDuration: e.target.value }));
+                  setSaved(prev => ({ ...prev, minEventDuration: false }));
+                }}
+                className={INPUT_CLASS}
+              />
+            </div>
+            <Button
+              size="md"
+              onClick={() => handleSave('minEventDuration', config.minEventDuration, setMinEventDuration)}
+              disabled={saving.minEventDuration}
+              className={cn(saved.minEventDuration && "bg-status-done/15 text-status-done border-status-done/20")}
+            >
+              {saved.minEventDuration ? (
+                <>
+                  <Check className="h-4 w-4" /> Saved
+                </>
+              ) : saving.minEventDuration ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+          {errors.minEventDuration && <p className="mt-2 text-sm text-status-blocked">{errors.minEventDuration}</p>}
+        </div>
+
+        {/* Volunteer Promotion Threshold */}
+        <div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1 max-w-[200px]">
+              <label className="block text-sm font-medium mb-1.5">
+                Volunteer Promotion (min events)
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={config.volunteerThreshold}
+                onChange={(e) => {
+                  setConfig(prev => ({ ...prev, volunteerThreshold: e.target.value }));
+                  setSaved(prev => ({ ...prev, volunteerThreshold: false }));
+                }}
+                className={INPUT_CLASS}
+              />
+            </div>
+            <Button
+              size="md"
+              onClick={() => handleSave('volunteerThreshold', config.volunteerThreshold)}
+              disabled={saving.volunteerThreshold}
+              className={cn(saved.volunteerThreshold && "bg-status-done/15 text-status-done border-status-done/20")}
+            >
+              {saved.volunteerThreshold ? (
+                <>
+                  <Check className="h-4 w-4" /> Saved
+                </>
+              ) : saving.volunteerThreshold ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+          {errors.volunteerThreshold && <p className="mt-2 text-sm text-status-blocked">{errors.volunteerThreshold}</p>}
+        </div>
+
+        {/* Min Volunteer Tasks */}
+        <div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1 max-w-[200px]">
+              <label className="block text-sm font-medium mb-1.5">
+                Minimum Volunteer Tasks
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={config.minVolunteerTasks}
+                onChange={(e) => {
+                  setConfig(prev => ({ ...prev, minVolunteerTasks: e.target.value }));
+                  setSaved(prev => ({ ...prev, minVolunteerTasks: false }));
+                }}
+                className={INPUT_CLASS}
+              />
+            </div>
+            <Button
+              size="md"
+              onClick={() => handleSave('minVolunteerTasks', config.minVolunteerTasks, setMinVolunteerTasks)}
+              disabled={saving.minVolunteerTasks}
+              className={cn(saved.minVolunteerTasks && "bg-status-done/15 text-status-done border-status-done/20")}
+            >
+              {saved.minVolunteerTasks ? (
+                <>
+                  <Check className="h-4 w-4" /> Saved
+                </>
+              ) : saving.minVolunteerTasks ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+          {errors.minVolunteerTasks && <p className="mt-2 text-sm text-status-blocked">{errors.minVolunteerTasks}</p>}
+        </div>
+
+        {/* Group Logo */}
+        <div>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-accent/10 text-accent">
+              <ImagePlus className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">Group Logo</h4>
+              <p className="text-sm text-muted">
+                Upload your group's logo for light and dark themes. The light logo will be used in email headers.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {renderUploadZone("logo_light", "Light Logo (for dark backgrounds)", lightPreview, lightInputRef, "bg-gray-900")}
+            {renderUploadZone("logo_dark", "Dark Logo (for light backgrounds)", darkPreview, darkInputRef, "bg-gray-100 dark:bg-gray-100")}
+          </div>
+          {errors.logoUpload && (
+            <p className="mt-3 text-sm text-status-blocked">{errors.logoUpload}</p>
+          )}
+        </div>
+
+        {/* Discord Integration */}
+        <div>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-accent/10 text-accent">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-medium mb-1 flex items-center gap-2">
+                Discord Integration
+                <span className="px-2 py-1 text-xs bg-muted/20 text-muted rounded-md">Coming Soon</span>
+              </h4>
+              <p className="text-sm text-muted">
+                Bot and notification channels will be configurable here in a future release.
+              </p>
+            </div>
+          </div>
+          <div className="p-4 bg-muted/10 border border-dashed border-muted/30 rounded-lg">
+            <p className="text-sm text-muted text-center">
+              Discord integration settings will be available here soon
+            </p>
+          </div>
+        </div>
+      </div>
+      )}
+    </div>
+  );
+}
 
 function MeetupNameCard() {
   const { meetupName, setMeetupName } = useAppSettings();
@@ -678,40 +1170,24 @@ export default function SettingsPage() {
         title="Settings"
         description="Configure your workspace"
       />
-      <div className="space-y-4">
-        <Link href="/settings/discord">
-          <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
-            <h3 className="font-semibold mb-1">Discord</h3>
-            <p className="text-sm text-muted">Bot and notification channels</p>
-          </div>
-        </Link>
-        <Link href="/settings/members">
+      <div className="space-y-6">
+        <Link href="/settings/members" className="block mb-4">
           <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
             <h3 className="font-semibold mb-1">Members</h3>
             <p className="text-sm text-muted">User roles and permissions</p>
           </div>
         </Link>
-        <Link href="/settings/permissions">
-          <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold">Permissions & Access</h3>
-              <Shield className="h-4 w-4 text-accent" />
-            </div>
-            <p className="text-sm text-muted">View the full permission matrix for all roles</p>
-          </div>
-        </Link>
         {isAdmin && (
-          <Link href="/settings/audit-log">
+          <Link href="/settings/audit-log" className="block mb-4">
             <div className="bg-surface border border-border rounded-xl p-6 hover:bg-surface-hover transition-colors">
               <h3 className="font-semibold mb-1">Audit Log</h3>
               <p className="text-sm text-muted">Track changes across your workspace</p>
             </div>
           </Link>
         )}
-        {isSuperAdmin && <MeetupNameCard />}
-        {isSuperAdmin && <LogoUploadCard />}
-        {isSuperAdmin && <VolunteerThresholdCard />}
-        {isSuperAdmin && <MinVolunteerTasksCard />}
+        <div className="mt-4">
+          {isSuperAdmin && <AppConfigCard />}
+        </div>
         {isAdmin && <TestEmailCard />}
       </div>
     </div>

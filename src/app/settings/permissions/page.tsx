@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/design-system";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import {
   Shield,
   ShieldCheck,
@@ -21,6 +22,7 @@ import {
   Check,
   X,
   Minus,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -351,6 +353,23 @@ export default function PermissionsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Quick Links ── */}
+      <div className="mb-8">
+        <Link
+          href="/settings/permissions/email-workflows"
+          className="group flex items-center gap-4 bg-surface border border-border rounded-xl p-5 hover:border-accent/30 hover:bg-surface-hover transition-all"
+        >
+          <div className="p-2.5 rounded-lg bg-amber-400/10 text-amber-400 group-hover:bg-amber-400/20 transition-colors">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm mb-0.5 group-hover:text-accent transition-colors">Email Workflows</h3>
+            <p className="text-xs text-muted">Complete reference for all 11 automated email notifications — who receives what and when</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" />
+        </Link>
+      </div>
 
       {/* ── Role Hierarchy ── */}
       <section className="mb-8">

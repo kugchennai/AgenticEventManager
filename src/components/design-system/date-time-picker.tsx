@@ -25,6 +25,7 @@ interface DateTimePickerProps {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  minDateTime?: string; // Minimum allowed date/time in ISO format
 }
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -35,6 +36,7 @@ export function DateTimePicker({
   required,
   placeholder = "Pick a date & time",
   className,
+  minDateTime,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => {
@@ -120,6 +122,16 @@ export function DateTimePicker({
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
 
   const today = startOfDay(new Date());
+  const minDateTimeObj = minDateTime ? new Date(minDateTime) : null;
+  const minDateOnly = minDateTimeObj ? startOfDay(minDateTimeObj) : null;
+
+  // Helper to check if a date/time combination is valid
+  const isDateTimeValid = (date: Date, h: number, m: number) => {
+    if (!minDateTimeObj) return true;
+    const candidate = new Date(date);
+    candidate.setHours(h, m, 0, 0);
+    return candidate >= minDateTimeObj;
+  };
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -203,18 +215,20 @@ export function DateTimePicker({
               const selected = selectedDate && isSameDay(day, selectedDate);
               const todayMark = isToday(day);
               const past = isBefore(day, today);
+              const beforeMin = minDateOnly && isBefore(day, minDateOnly);
+              const disabled = past || beforeMin;
 
               return (
                 <button
                   key={day.toISOString()}
                   type="button"
-                  disabled={past}
+                  disabled={!!disabled}
                   onClick={() => handleDayClick(day)}
                   className={cn(
                     "h-9 w-full flex items-center justify-center rounded-lg text-sm transition-all relative",
                     !inMonth && "text-muted/30",
-                    inMonth && !selected && !past && "text-foreground hover:bg-surface-hover",
-                    inMonth && past && "text-muted/30 cursor-not-allowed",
+                    inMonth && !selected && !disabled && "text-foreground hover:bg-surface-hover",
+                    inMonth && disabled && "text-muted/30 cursor-not-allowed",
                     selected &&
                       "bg-accent text-accent-fg font-semibold shadow-sm shadow-accent/25",
                     todayMark && !selected && inMonth && "font-semibold"
@@ -244,11 +258,14 @@ export function DateTimePicker({
                 onChange={(e) => handleHourChange(Number(e.target.value))}
                 className="bg-background border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:border-accent outline-none transition-all cursor-pointer appearance-none text-center w-[52px]"
               >
-                {Array.from({ length: 24 }, (_, i) => (
-                  <option key={i} value={i}>
-                    {String(i).padStart(2, "0")}
-                  </option>
-                ))}
+                {Array.from({ length: 24 }, (_, i) => {
+                  const isDisabled = selectedDate && !isDateTimeValid(selectedDate, i, minute);
+                  return (
+                    <option key={i} value={i} disabled={!!isDisabled}>
+                      {String(i).padStart(2, "0")}
+                    </option>
+                  );
+                })}
               </select>
               <span className="text-sm font-bold text-muted">:</span>
               <select
@@ -256,11 +273,14 @@ export function DateTimePicker({
                 onChange={(e) => handleMinuteChange(Number(e.target.value))}
                 className="bg-background border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:border-accent outline-none transition-all cursor-pointer appearance-none text-center w-[52px]"
               >
-                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
-                  <option key={m} value={m}>
-                    {String(m).padStart(2, "0")}
-                  </option>
-                ))}
+                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => {
+                  const isDisabled = selectedDate && !isDateTimeValid(selectedDate, hour, m);
+                  return (
+                    <option key={m} value={m} disabled={!!isDisabled}>
+                      {String(m).padStart(2, "0")}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
