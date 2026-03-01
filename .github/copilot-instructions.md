@@ -1,5 +1,9 @@
 # Copilot Instructions
 
+## Git Branch Rule
+
+**Before committing**, check if you're on the `main` branch. If so, create a new feature branch first before committing and pushing changes. Never commit directly to main.
+
 ## Git Push Rule
 
 **Before every `git push`**, remind the user to:

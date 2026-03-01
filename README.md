@@ -376,6 +376,12 @@ src/
 
 ---
 
+## Roadmap
+
+- **Agentic features** — AI-powered automation capabilities are in the pipeline
+
+---
+
 ## Contributing
 
 Contributions are welcome! Whether it's a bug fix, new feature, or documentation improvement — we'd love your help. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, database management guides, and development workflow details.
