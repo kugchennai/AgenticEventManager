@@ -61,6 +61,23 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Google Sign-In (OAuth) Setup
+
+This app uses NextAuth v5 with Google as the web sign-in provider.
+
+1. Open **Google Cloud Console** → **APIs & Services** → **Credentials**
+2. Click **Create Credentials** → **OAuth client ID**
+3. Choose **Web application**
+4. Add **Authorized redirect URIs**:
+   - `http://localhost:3000/api/auth/callback/google`
+   - `https://your-domain.com/api/auth/callback/google` (production)
+5. Copy credentials into `.env`:
+   - `AUTH_GOOGLE_ID`
+   - `AUTH_GOOGLE_SECRET`
+6. Ensure these are also set:
+   - `AUTH_SECRET`
+   - `SUPER_ADMIN_EMAIL`
+
 ---
 
 ## Features
