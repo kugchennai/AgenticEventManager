@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   Search,
   Building2,
+  FileText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -33,6 +34,7 @@ const COMMANDS: Command[] = [
   { label: "Speakers", href: "/speakers", icon: Mic2, group: "Navigate", minRole: "EVENT_LEAD" },
   { label: "Venue Partners", href: "/venues", icon: Building2, group: "Navigate", minRole: "EVENT_LEAD" },
   { label: "Volunteers", href: "/volunteers", icon: Users, group: "Navigate", minRole: "EVENT_LEAD" },
+  { label: "Code of Conduct", href: "/docs/code-of-conduct", icon: FileText, group: "Navigate" },
   { label: "SOP Templates", href: "/settings/templates", icon: ClipboardCheck, group: "Navigate", minRole: "EVENT_LEAD" },
   { label: "Settings", href: "/settings", icon: Settings, group: "Navigate", minRole: "ADMIN" },
 ];

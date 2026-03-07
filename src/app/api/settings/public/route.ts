@@ -4,9 +4,32 @@ import { prisma } from "@/lib/prisma";
 // Public endpoint - no auth required
 // Returns meetup name and logo for public pages
 export async function GET() {
-  const settings = await prisma.appSetting.findMany({
-    where: { key: { in: ["meetup_name", "meetup_description", "meetup_website", "meetup_past_event_link", "logo_light", "logo_dark"] } },
-  });
+  const [settings, superAdmins] = await Promise.all([
+    prisma.appSetting.findMany({
+      where: {
+        key: {
+          in: [
+            "meetup_name",
+            "meetup_description",
+            "meetup_website",
+            "meetup_past_event_link",
+            "logo_light",
+            "logo_dark",
+            "code_of_conduct_content",
+          ],
+        },
+      },
+    }),
+    prisma.user.findMany({
+      where: {
+        globalRole: "SUPER_ADMIN",
+        deletedAt: null,
+        email: { not: null },
+      },
+      select: { email: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
 
   const result: Record<string, string> = {};
   for (const s of settings) {
@@ -20,5 +43,7 @@ export async function GET() {
     meetupPastEventLink: result.meetup_past_event_link ?? "",
     logoLight: result.logo_light ?? null,
     logoDark: result.logo_dark ?? null,
+    codeOfConductContent: result.code_of_conduct_content ?? "",
+    superAdminEmails: superAdmins.map((admin) => admin.email).filter((email): email is string => Boolean(email)),
   });
 }

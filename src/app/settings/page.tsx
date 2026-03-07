@@ -31,6 +31,7 @@ function AppConfigCard() {
   const [config, setConfig] = useState({
     meetupName: "",
     meetupDescription: "",
+    codeOfConductContent: "",
     meetupWebsite: "",
     meetupPastEventLink: "",
     venueRequestCc: "",
@@ -66,6 +67,7 @@ function AppConfigCard() {
         setConfig(prev => ({
           ...prev,
           meetupDescription: data.meetup_description ?? "",
+          codeOfConductContent: data.code_of_conduct_content ?? "",
           meetupWebsite: data.meetup_website ?? "",
           meetupPastEventLink: data.meetup_past_event_link ?? "",
           venueRequestCc: data.venue_request_cc ?? "",
@@ -94,7 +96,13 @@ function AppConfigCard() {
         return;
       }
       value = trimmed;
-    } else if (key === "meetupDescription" || key === "meetupWebsite" || key === "meetupPastEventLink" || key === "venueRequestCc") {
+    } else if (
+      key === "meetupDescription" ||
+      key === "codeOfConductContent" ||
+      key === "meetupWebsite" ||
+      key === "meetupPastEventLink" ||
+      key === "venueRequestCc"
+    ) {
       value = value.trim();
     } else if (['volunteerThreshold', 'minVolunteerTasks', 'minEventDuration'].includes(key)) {
       const num = parseInt(value, 10);
@@ -116,6 +124,7 @@ function AppConfigCard() {
       const apiKey = {
         meetupName: 'meetup_name',
         meetupDescription: "meetup_description",
+        codeOfConductContent: "code_of_conduct_content",
         meetupWebsite: "meetup_website",
         meetupPastEventLink: "meetup_past_event_link",
         venueRequestCc: "venue_request_cc",
@@ -410,6 +419,52 @@ function AppConfigCard() {
             </div>
           </div>
           {errors.meetupDescription && <p className="mt-2 text-sm text-status-blocked">{errors.meetupDescription}</p>}
+        </div>
+
+        {/* Public Code of Conduct */}
+        <div>
+          <div className="flex flex-col gap-3">
+            <div className="max-w-[720px]">
+              <label className="block text-sm font-medium mb-1.5">
+                Public Code of Conduct
+              </label>
+              <textarea
+                value={config.codeOfConductContent}
+                onChange={(e) => {
+                  setConfig(prev => ({ ...prev, codeOfConductContent: e.target.value }));
+                  setSaved(prev => ({ ...prev, codeOfConductContent: false }));
+                }}
+                placeholder="<h2>Our Code of Conduct</h2><p>Write policy content using HTML tags like h2, p, ul, li, a, strong.</p>"
+                rows={10}
+                className={INPUT_CLASS}
+              />
+              <p className="mt-1 text-xs text-muted flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5" />
+                HTML content is shown on <span className="font-mono text-[11px]">/docs/code-of-conduct</span> for public visitors and logged-in users.
+              </p>
+            </div>
+            <div>
+              <Button
+                size="md"
+                onClick={() => handleSave("codeOfConductContent", config.codeOfConductContent)}
+                disabled={saving.codeOfConductContent}
+                className={cn(saved.codeOfConductContent && "bg-status-done/15 text-status-done border-status-done/20")}
+              >
+                {saved.codeOfConductContent ? (
+                  <>
+                    <Check className="h-4 w-4" /> Saved
+                  </>
+                ) : saving.codeOfConductContent ? (
+                  "Saving…"
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" /> Save
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+          {errors.codeOfConductContent && <p className="mt-2 text-sm text-status-blocked">{errors.codeOfConductContent}</p>}
         </div>
 
         {/* Meetup Website */}
