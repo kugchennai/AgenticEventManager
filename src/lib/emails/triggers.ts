@@ -538,11 +538,24 @@ export async function sendSpeakerInvitationEmail(
       where: { id: eventSpeakerId },
       include: {
         speaker: { select: { name: true, email: true, topic: true } },
-        event: { select: { title: true, date: true, endDate: true, venue: true } },
+        event: { select: { id: true, title: true, date: true, endDate: true, venue: true } },
       },
     });
 
     if (!link || !link.speaker.email) return;
+
+    const appUrl = getAppUrl();
+    const eventUrl = `${appUrl}/events/${link.event.id}`;
+    const icsContent = generateICS({
+      title: link.event.title,
+      description: link.speaker.topic
+        ? `Speaker invitation for ${link.event.title}. Topic: ${link.speaker.topic}`
+        : `Speaker invitation for ${link.event.title}`,
+      startDate: link.event.date,
+      endDate: link.event.endDate,
+      location: link.event.venue ?? undefined,
+      url: eventUrl,
+    });
 
     const branding = await getEmailBranding();
 
@@ -560,7 +573,15 @@ export async function sendSpeakerInvitationEmail(
         appName: branding.appName,
         logoUrl: branding.logoUrl,
       }),
-      brandingOptions(branding)
+      brandingOptions(branding, {
+        attachments: [
+          {
+            filename: "speaker-invitation.ics",
+            content: icsContent,
+            contentType: "text/calendar",
+          },
+        ],
+      })
     );
   } catch (err) {
     console.error("[Email] Speaker invitation trigger error:", err);

@@ -211,20 +211,38 @@ function buildTemplateElement(
           logoUrl,
         }),
       };
-    case "speaker-invitation":
+    case "speaker-invitation": {
+      const eventDate = new Date(Date.now() + 14 * 86400000);
+      const eventEndDate = new Date(eventDate.getTime() + 3 * 3600000);
+      const icsContent = generateICS({
+        title: "Sample Tech Meetup",
+        description: "Speaker invitation test for " + name,
+        startDate: eventDate,
+        endDate: eventEndDate,
+        location: "Innovation Hub, Downtown",
+        url: `${appUrl}/events/sample-123`,
+      });
       return {
         subject: `[Test] Speaker Invitation — ${name}`,
         element: React.createElement(SpeakerInvitationEmail, {
           speakerName: "Dr. Jane Smith",
           eventTitle: "Sample Tech Meetup",
           topic: "The Future of AI in Web Development",
-          date: new Date(Date.now() + 14 * 86400000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
-          endDate: new Date(Date.now() + 14 * 86400000 + 3 * 3600000).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          date: eventDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          endDate: eventEndDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
           venue: "Innovation Hub, Downtown",
           appName,
           logoUrl,
         }),
+        attachments: [
+          {
+            filename: "speaker-invitation.ics",
+            content: icsContent,
+            contentType: "text/calendar",
+          },
+        ],
       };
+    }
     case "venue-confirmed":
       return {
         subject: `[Test] Venue Confirmed — ${name}`,
