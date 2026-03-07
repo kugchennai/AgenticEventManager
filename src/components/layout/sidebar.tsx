@@ -21,7 +21,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useAppSettings } from "@/lib/app-settings-context";
 
-type NavItem = { label: string; href: string; icon: LucideIcon; minRole?: string };
+type NavItem = { label: string; href: string; icon: LucideIcon; minRole?: string; public?: boolean };
 
 const ROLE_LEVEL: Record<string, number> = {
   VIEWER: 0,
@@ -44,7 +44,8 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const DOCUMENTS_ITEMS: NavItem[] = [
-  { label: "How to Become a Member", href: "/docs/how-to-become-a-member", icon: Users },
+  { label: "How to Become a Member", href: "/docs/how-to-become-a-member", icon: Users, public: true },
+  { label: "Code of Conduct", href: "/docs/code-of-conduct", icon: FileText, public: true },
   { label: "Roles & Permissions", href: "/settings/permissions", icon: Shield },
 ];
 
@@ -157,6 +158,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 >
                   <Icon className={cn("h-4 w-4 shrink-0", active && "text-accent")} />
                   {!collapsed && <span>{item.label}</span>}
+                  {item.public && !collapsed && (
+                    <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent">
+                      Public
+                    </span>
+                  )}
                 </Link>
               );
             })}

@@ -6,7 +6,19 @@ import { logAudit } from "@/lib/audit";
 import type { GlobalRole } from "@/generated/prisma/enums";
 
 // Public settings anyone authenticated can read
-const PUBLIC_KEYS = ["volunteer_promotion_threshold", "meetup_name", "meetup_description", "meetup_website", "meetup_past_event_link", "venue_request_cc", "min_volunteer_tasks", "min_event_duration", "logo_light", "logo_dark"];
+const PUBLIC_KEYS = [
+  "volunteer_promotion_threshold",
+  "meetup_name",
+  "meetup_description",
+  "meetup_website",
+  "meetup_past_event_link",
+  "venue_request_cc",
+  "min_volunteer_tasks",
+  "min_event_duration",
+  "logo_light",
+  "logo_dark",
+  "code_of_conduct_content",
+];
 
 // Max size for base64 logo values (~200KB encoded)
 const MAX_LOGO_SIZE = 300_000;
